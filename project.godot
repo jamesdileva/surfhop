@@ -13,6 +13,17 @@ config_version=5
 config/name="Velocity"
 config/description="Velocity Engine - a modular movement engine. First game: Velocity (bhop / air-strafe / surf time trials)."
 
+[autoload]
+
+SignalBus="*res://scripts/managers/SignalBus.gd"
+GameManager="*res://scripts/managers/GameManager.gd"
+InputManager="*res://scripts/managers/InputManager.gd"
+TickManager="*res://scripts/managers/TickManager.gd"
+UIManager="*res://scripts/managers/UIManager.gd"
+SaveManager="*res://scripts/managers/SaveManager.gd"
+AudioManager="*res://scripts/managers/AudioManager.gd"
+LevelLoader="*res://scripts/managers/LevelLoader.gd"
+
 [physics]
 
 common/physics_fps=100

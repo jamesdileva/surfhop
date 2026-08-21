@@ -60,9 +60,24 @@ Notable cross-dependencies: Sprint 16 (HUD) needs 17 (Save) for PB display; Spri
 ## Environment
 
 - Godot binary: installed via winget (`godot` alias; actual exe under `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`).
-- Headless validation / import check:
-  ```
-  godot --headless --path . --quit
-  ```
-- Tests (from Sprint 2 onward): GUT, run headless per `docs/01_Master_Architecture.md §19`.
 - Git conventions: `main` = production-ready/tagged releases; feature branches merge to `develop`; commit style per above.
+
+## Commands (canonical — do not vary)
+
+There is no package manifest (plain Godot project), so these fixed commands are the single source of truth for agents and CI/external tooling:
+
+```sh
+# Validate / import check (no main scene needed)
+godot --headless --path . --editor --quit
+
+# Run all tests (from Sprint 2 onward; GUT via tests/test_runner.gd)
+godot --headless --path . --script res://tests/test_runner.gd
+
+# Launch the game (once a main scene exists, Sprint 4+)
+godot --path .
+```
+
+Notes:
+- All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.
+- Exit code 0 + no `ERROR` lines in stdout = success. Godot prints errors to stdout/stderr, so crash-signature scanning applies.
+
