@@ -9,6 +9,13 @@ var _checks: int = 0
 
 
 func _initialize() -> void:
+	# Defer to the first process frame: nodes added during _initialize are not
+	# yet part of an active tree (no _ready, no get_node absolute paths).
+	process_frame.connect(_run_all_tests)
+
+
+func _run_all_tests() -> void:
+	process_frame.disconnect(_run_all_tests)
 	_test_autoloads_registered()
 	_test_signal_bus_signals()
 	_test_game_manager_race_state()
@@ -20,6 +27,8 @@ func _initialize() -> void:
 	_test_binding_persistence()
 	_test_save_manager_defaults()
 	_test_ui_manager_show_menu()
+	_test_player_camera_look()
+	_test_player_camera_sensitivity_and_invert()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -171,6 +180,72 @@ func _test_binding_persistence() -> void:
 	InputMap.action_add_event("jump", space)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(im.BINDINGS_PATH))
 	_check(not FileAccess.file_exists(im.BINDINGS_PATH), "test cleanup removed bindings.cfg")
+
+
+func _mouse_motion(rel: Vector2) -> InputEventMouseMotion:
+	var motion := InputEventMouseMotion.new()
+	motion.relative = rel
+	return motion
+
+
+func _test_player_camera_look() -> void:
+	var body := Node3D.new()
+	body.name = "CameraTestBody"
+	root.add_child(body)
+	var cam: PlayerCamera = (load("res://scenes/player/PlayerCamera.tscn") as PackedScene).instantiate()
+	body.add_child(cam)
+
+	# Mouse right (+X) turns right (yaw decreases).
+	cam._input(_mouse_motion(Vector2(100.0, 0.0)))
+	_check(is_equal_approx(body.rotation.y, deg_to_rad(-10.0)),
+		"100px mouse right yaws -10 degrees (got %s)" % rad_to_deg(body.rotation.y))
+
+	# Mouse left (-X) turns left (yaw increases).
+	cam._input(_mouse_motion(Vector2(-100.0, 0.0)))
+	_check(is_equal_approx(body.rotation.y, 0.0),
+		"100px mouse left returns yaw to 0 (got %s)" % rad_to_deg(body.rotation.y))
+
+	# Mouse up (-Y) looks up (positive pitch).
+	cam._input(_mouse_motion(Vector2(0.0, -50.0)))
+	_check(cam.rotation.x > 0.0, "mouse up pitches up (got %s)" % rad_to_deg(cam.rotation.x))
+	cam._input(_mouse_motion(Vector2(0.0, 50.0)))
+	_check(is_equal_approx(cam.rotation.x, 0.0), "mouse down returns pitch to 0")
+
+	# Pitch clamped to +/-89 degrees.
+	cam._input(_mouse_motion(Vector2(0.0, -100000.0)))
+	_check(is_equal_approx(rad_to_deg(cam.rotation.x), 89.0),
+		"pitch clamps to +89 degrees (got %s)" % rad_to_deg(cam.rotation.x))
+	cam._input(_mouse_motion(Vector2(0.0, 200000.0)))
+	_check(is_equal_approx(rad_to_deg(cam.rotation.x), -89.0),
+		"pitch clamps to -89 degrees (got %s)" % rad_to_deg(cam.rotation.x))
+
+	body.queue_free()
+
+
+func _test_player_camera_sensitivity_and_invert() -> void:
+	var sm: Node = root.get_node("SaveManager")
+	var body := Node3D.new()
+	root.add_child(body)
+	var cam: PlayerCamera = (load("res://scenes/player/PlayerCamera.tscn") as PackedScene).instantiate()
+	body.add_child(cam)
+
+	sm.set_setting("input/mouse_sensitivity_x", 2.0)
+	cam.apply_settings()
+	cam._input(_mouse_motion(Vector2(50.0, 0.0)))
+	_check(is_equal_approx(body.rotation.y, deg_to_rad(-10.0)),
+		"sensitivity_x=2.0 doubles yaw per pixel (got %s)" % rad_to_deg(body.rotation.y))
+
+	sm.set_setting("input/invert_mouse_y", true)
+	cam.apply_settings()
+	cam._input(_mouse_motion(Vector2(0.0, 30.0)))
+	_check(cam.rotation.x > 0.0,
+		"invert_mouse_y flips pitch direction (got %s)" % rad_to_deg(cam.rotation.x))
+
+	# Restore defaults so other tests / runs see standard settings.
+	sm.set_setting("input/mouse_sensitivity_x", 1.0)
+	sm.set_setting("input/invert_mouse_y", false)
+
+	body.queue_free()
 
 
 func _test_save_manager_defaults() -> void:
