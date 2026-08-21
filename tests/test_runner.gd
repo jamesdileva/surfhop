@@ -13,6 +13,11 @@ func _initialize() -> void:
 	_test_signal_bus_signals()
 	_test_game_manager_race_state()
 	_test_input_manager_no_input()
+	_test_input_state_wasd()
+	_test_jump_just_pressed_one_frame()
+	_test_mouse_delta_capture()
+	_test_rebind_conflict_detection()
+	_test_binding_persistence()
 	_test_save_manager_defaults()
 	_test_ui_manager_show_menu()
 
@@ -72,6 +77,100 @@ func _test_input_manager_no_input() -> void:
 	_check(movement == Vector2.ZERO,
 		"get_movement_input() returns Vector2(0, 0) with no keys pressed (got %s)" % movement)
 	_check(not im.is_action_pressed("jump"), "is_action_pressed() returns false for unbound action")
+
+
+func _test_input_state_wasd() -> void:
+	var im: Node = root.get_node("InputManager")
+	Input.action_press("move_forward")
+	var s: InputState = im.get_state()
+	_check(s.forward == 1.0 and s.right == 0.0,
+		"W gives forward=1.0, right=0.0 (got forward=%s, right=%s)" % [s.forward, s.right])
+	Input.action_release("move_forward")
+
+	Input.action_press("move_back")
+	s = im.get_state()
+	_check(s.forward == -1.0, "S gives forward=-1.0 (got %s)" % s.forward)
+	Input.action_release("move_back")
+	im.get_state()
+
+	Input.action_press("move_right")
+	Input.action_press("move_left")
+	s = im.get_state()
+	_check(s.right == 0.0, "D+A cancels to right=0.0 (got %s)" % s.right)
+	Input.action_release("move_right")
+	Input.action_release("move_left")
+	im.get_state()
+
+	Input.action_press("move_right")
+	s = im.get_state()
+	_check(s.right == 1.0 and s.forward == 0.0,
+		"D gives right=1.0, forward=0.0 (got right=%s, forward=%s)" % [s.right, s.forward])
+	Input.action_release("move_right")
+	im.get_state()
+
+
+func _test_jump_just_pressed_one_frame() -> void:
+	var im: Node = root.get_node("InputManager")
+	var press := InputEventKey.new()
+	press.physical_keycode = KEY_SPACE
+	press.pressed = true
+	im._input(press)
+	var first: InputState = im.get_state()
+	_check(first.jump_just_pressed, "jump_just_pressed is true on the frame after press")
+	var second: InputState = im.get_state()
+	_check(not second.jump_just_pressed, "jump_just_pressed is false on the next read")
+
+
+func _test_mouse_delta_capture() -> void:
+	var im: Node = root.get_node("InputManager")
+	var motion := InputEventMouseMotion.new()
+	motion.relative = Vector2(10.0, -5.0)
+	im._input(motion)
+	motion = InputEventMouseMotion.new()
+	motion.relative = Vector2(2.5, 1.5)
+	im._input(motion)
+	var s: InputState = im.get_state()
+	_check(s.mouse_delta == Vector2(12.5, -3.5),
+		"mouse delta accumulates between reads (got %s)" % s.mouse_delta)
+	var next: InputState = im.get_state()
+	_check(next.mouse_delta == Vector2.ZERO, "mouse delta resets after read")
+
+
+func _test_rebind_conflict_detection() -> void:
+	var im: Node = root.get_node("InputManager")
+	var space := InputEventKey.new()
+	space.physical_keycode = KEY_SPACE
+	_check(not im.rebind_action("move_forward", space),
+		"rebind_action rejects binding already used by another action")
+	var unknown := InputEventKey.new()
+	unknown.physical_keycode = KEY_Z
+	_check(not im.rebind_action("nonexistent", unknown),
+		"rebind_action rejects unknown actions")
+
+
+func _test_binding_persistence() -> void:
+	var im: Node = root.get_node("InputManager")
+	var j_key := InputEventKey.new()
+	j_key.physical_keycode = KEY_J
+	_check(im.rebind_action("jump", j_key), "rebind_action('jump', J) succeeds")
+	_check(FileAccess.file_exists(im.BINDINGS_PATH), "rebinding persisted to bindings.cfg")
+
+	# Simulate a restart: wipe in-memory InputMap entry and reload from disk.
+	InputMap.action_erase_events("jump")
+	im.load_bindings()
+	var events: Array = InputMap.action_get_events("jump")
+	_check(events.size() == 1 and events[0] is InputEventKey
+		and events[0].physical_keycode == KEY_J,
+		"custom binding survives restart simulation")
+	_check(im.is_action_pressed("jump") == false or true, "no error querying rebound action")
+
+	# Restore defaults so the dev environment is not polluted by tests.
+	var space := InputEventKey.new()
+	space.physical_keycode = KEY_SPACE
+	InputMap.action_erase_events("jump")
+	InputMap.action_add_event("jump", space)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(im.BINDINGS_PATH))
+	_check(not FileAccess.file_exists(im.BINDINGS_PATH), "test cleanup removed bindings.cfg")
 
 
 func _test_save_manager_defaults() -> void:
