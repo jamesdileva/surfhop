@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_ybdod"]
+
+[sub_resource type="Resource" id="Resource_2s55i"]
+script = ExtResource("1_ybdod")
+map_id = "test_map"
+display_name = "Test Map"
+author = "Velocity Engine"
+tags = PackedStringArray("dev", "test")
+
+[node name="TestMap" type="Node3D" unique_id=1566105261]
+metadata/map_metadata = SubResource("Resource_2s55i")
+
+[node name="Floor" type="StaticBody3D" parent="." unique_id=1682426071]
+
+[node name="PlayerSpawn" type="Marker3D" parent="." unique_id=1261468165]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MapMetadata" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_cf5hs"]
+
+[resource]
+script = ExtResource("1_cf5hs")
+map_id = "tutorial"
+display_name = "Tutorial"
+author = "Velocity Engine"
+tags = PackedStringArray("bhop", "surf", "air-strafe", "tutorial")

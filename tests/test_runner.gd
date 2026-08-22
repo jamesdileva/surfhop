@@ -40,6 +40,7 @@ func _run_all_tests() -> void:
 	await _test_movement_debug_tools()
 	await _test_timer_system()
 	await _test_checkpoints()
+	await _test_map_loading()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1078,6 +1079,73 @@ func ts_queue_free() -> void:
 	for node in root.get_children():
 		if node is TimerSystem:
 			node.queue_free()
+
+
+func _test_map_loading() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+
+	# --- Discovery finds the fixture map and its metadata ---
+	var found: Array[Dictionary] = loader.discover_maps()
+	_check(found.size() >= 1, "discover_maps() found maps (got %d)" % found.size())
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "test_map":
+			entry = e
+			break
+	_check(not entry.is_empty(), "test_map discovered with metadata")
+	if entry.is_empty():
+		return
+	var meta: MapMetadata = entry["metadata"]
+	_check(meta.display_name == "Test Map" and meta.difficulty == 1,
+		"MapMetadata fields accessible (%s, difficulty %d)" % [meta.display_name, meta.difficulty])
+
+	# --- Async load: poll until current_map appears ---
+	# Spawn a standalone player so the loader has someone to reconfigure.
+	var player_root := Node3D.new()
+	player_root.name = "MapTestPlayerRoot"
+	root.add_child(player_root)
+	var spawned_player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, 0.0))
+	await _wait_ticks(2)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "load_map completes asynchronously")
+	_check(loader.current_map.name == "TestMap", "loaded map added to scene tree")
+	_check(gm.map_name == "test_map", "GameManager.map_name set from metadata")
+
+	# --- MovementConfig applied to the player's controller ---
+	await _wait_ticks(2)
+	var player: Player = get_first_node_in_group("player") as Player
+	_check(player != null, "player present for config application")
+	if player != null:
+		var cfg: MovementConfig = player.movement_controller.config
+		_check(cfg != null and cfg.resource_path == "res://resources/movement/default.tres",
+			"map MovementConfig applied to MovementController (%s)" % (cfg.resource_path if cfg else "null"))
+
+	# --- Reloading frees the previous instance (no leak) ---
+	var previous: Node = loader.current_map
+	loader.load_map(entry["path"])
+	var reloaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null and loader.current_map != previous:
+			reloaded = true
+			break
+	_check(reloaded, "reloading swaps current map")
+	await process_frame
+	await process_frame
+	_check(not is_instance_valid(previous), "previous map properly freed")
+
+	# Cleanup: leave no map loaded for other suites.
+	loader.unload_current()
+	player_root.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:
