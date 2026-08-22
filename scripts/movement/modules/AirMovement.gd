@@ -1,10 +1,11 @@
 class_name AirMovement
 extends MovementModule
 
-## Air acceleration with strafe-based speed gain (Gameplay Systems §1.4).
-## Same formula as ground acceleration but with the wish speed capped at
-## air_speed_cap (30 u/s), which produces the classic Quake air-strafe gain
-## when the wish direction is perpendicular-ish to velocity.
+## Air acceleration with strafe-based speed gain (Gameplay Systems §1.4,
+## Half-Life/CS variant): the air_speed_cap limits the PROJECTION check, but
+## the acceleration itself scales with the full move speed — this is what
+## makes classic circle-strafing (A-only + smooth mouse turn) possible.
+## NOTE: doc §1.4 shows the weaker Quake-1 variant; flagged as doc divergence.
 
 func enabled_in_state(state: int) -> bool:
 	return state == MovementState.AIR
@@ -23,11 +24,13 @@ func process(input: InputState, delta: float) -> void:
 
 func apply_air_acceleration(wish_dir: Vector3, delta: float) -> void:
 	var velocity := _controller.get_velocity()
-	var wish_spd: float = _controller.config.air_speed_cap
+	var projected_speed: float = _controller.config.air_speed_cap
 	var current := velocity.dot(wish_dir)
-	var add_speed := wish_spd - current
+	var add_speed := projected_speed - current
 	if add_speed <= 0.0:
 		return
-	var accel_speed := minf(_controller.config.air_accel * delta * wish_spd, add_speed)
+	var accel_speed := minf(
+		_controller.config.air_accel * delta * _controller.config.walk_speed,
+		add_speed)
 	velocity += wish_dir * accel_speed
 	_controller.set_velocity(velocity)

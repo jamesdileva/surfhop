@@ -592,6 +592,29 @@ func _test_air_strafing() -> void:
 	_check(strafe_right > start_right + 20.0,
 		"W+D + mouse-right turn gains air speed (%s -> %s)" % [start_right, strafe_right])
 
+	# --- Pure-A strafe (classic CS circle-strafe: NO forward key, just A
+	# + smooth mouse-left turn) must curve the path AND build speed ---
+	while not player.is_on_floor():
+		await physics_frame
+	player.velocity = Vector3.ZERO
+	player.rotation.y = 0.0
+	await _wait_ticks(2)
+	await _jump_from_ground(player)
+	Input.action_press("move_left")
+	var a_start := _h_speed(player)
+	var start_heading := Vector2(player.velocity.x, player.velocity.z).angle()
+	for i in 60:
+		player.rotation.y -= 0.05  # smooth continuous left turn
+		await physics_frame
+	var a_end_speed := _h_speed(player)
+	var end_heading := Vector2(player.velocity.x, player.velocity.z).angle()
+	Input.action_release("move_left")
+	var heading_change: float = absf(wrapf(end_heading - start_heading, -PI, PI))
+	_check(a_end_speed > a_start + 40.0,
+		"pure-A + mouse-turn accelerates without W (%s -> %s)" % [a_start, a_end_speed])
+	_check(heading_change > 1.0,
+		"pure-A strafing curves the flight path (%.0f deg turned)" % rad_to_deg(heading_change))
+
 	# --- Pure W in air must NOT gain significant speed (even from high
 	# speed: wish parallel to velocity has add_speed <= 0) ---
 	while not player.is_on_floor():
