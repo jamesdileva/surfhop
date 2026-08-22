@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/debug/MovementDebugger.gd" id="1_y7rp7"]
+[ext_resource type="PackedScene" path="res://scenes/player/VelocityVector.tscn" id="2_x116p"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tva3c"]
+shading_mode = 0
+albedo_color = Color(1, 0.25, 0.25, 1)
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_ucmwo"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v3ixu"]
+shading_mode = 0
+albedo_color = Color(0.25, 1, 0.4, 1)
+
+[node name="DebugOverlay" type="Node3D" unique_id=1813649702]
+script = ExtResource("1_y7rp7")
+
+[node name="VelocityVector" type="MeshInstance3D" parent="." unique_id=398086929 instance=ExtResource("2_x116p")]
+material_override = SubResource("StandardMaterial3D_tva3c")
+mesh = SubResource("ImmediateMesh_ucmwo")
+
+[node name="NormalVector" type="MeshInstance3D" parent="." unique_id=1204833910 instance=ExtResource("2_x116p")]
+material_override = SubResource("StandardMaterial3D_v3ixu")
+mesh = SubResource("ImmediateMesh_ucmwo")
+
+[node name="StateLabel" type="Label3D" parent="." unique_id=260085706]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 110, 0)
+pixel_size = 0.35
+billboard = 1
+no_depth_test = true

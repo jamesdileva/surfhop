@@ -37,6 +37,7 @@ func _run_all_tests() -> void:
 	await _test_surfing()
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
+	await _test_movement_debug_tools()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -776,6 +777,60 @@ func _test_fixed_tick_determinism() -> void:
 		"determinism: identical inputs give identical positions (a=%s b=%s)" % [run_a["pos"], run_b["pos"]])
 	_check(run_a["vel"] == run_b["vel"],
 		"determinism: identical inputs give identical velocity (a=%s b=%s)" % [run_a["vel"], run_b["vel"]])
+
+
+func _f1_press() -> InputEventKey:
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_F1
+	ev.pressed = true
+	return ev
+
+
+func _test_movement_debug_tools() -> void:
+	_check(InputMap.has_action("toggle_debug"), "toggle_debug action registered")
+
+	var ui: Node = root.get_node("UIManager")
+	var sm: Node = root.get_node("SaveManager")
+
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+
+	var overlay: MovementDebugger = player.get_node("DebugOverlay")
+	_check(overlay != null, "DebugOverlay present in Player scene")
+	_check(overlay.visible == bool(sm.get_setting("movement/show_debug")),
+		"overlay initial visibility follows saved setting")
+
+	# F1 press routes through InputManager -> UIManager -> overlay.
+	root.get_node("InputManager")._input(_f1_press())
+	await physics_frame
+	_check(ui.debug_visible == true, "F1 toggles debug on")
+	_check(overlay.visible == true, "overlay visible after F1")
+	_check(bool(sm.get_setting("movement/show_debug")) == true, "debug state persisted to settings")
+
+	# Overlay draws while moving (updated at physics tick rate).
+	Input.action_press("move_forward")
+	await _wait_ticks(5)
+	var velocity_mesh: ImmediateMesh = overlay.get_node("VelocityVector").mesh
+	_check(velocity_mesh.get_surface_count() >= 1,
+		"velocity arrow mesh updated while moving")
+	var label: Label3D = overlay.get_node("StateLabel")
+	_check(label.text.contains("GROUND") and label.text.contains("u/s"),
+		"state label shows movement state and speed (%s)" % label.text.replace("\n", " "))
+	Input.action_release("move_forward")
+
+	root.get_node("InputManager")._input(_f1_press())
+	await physics_frame
+	_check(ui.debug_visible == false and overlay.visible == false, "F1 toggles debug off")
+
+	world.queue_free()
+	await process_frame
+
+	# Restore pristine first-run state for other tests / dev environment.
+	sm.set_setting("movement/show_debug", false)
+	sm.save_settings()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.SETTINGS_PATH))
 
 
 func _test_save_manager_defaults() -> void:

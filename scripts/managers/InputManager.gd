@@ -4,7 +4,8 @@ extends Node
 ## movement framework. Handles rebinding with conflict detection and persists
 ## custom bindings across restarts. Defaults live in project.godot [input].
 
-const ACTIONS := ["move_forward", "move_back", "move_left", "move_right", "jump", "duck", "sprint"]
+const ACTIONS := ["move_forward", "move_back", "move_left", "move_right",
+	"jump", "duck", "sprint", "toggle_debug"]
 const BINDINGS_PATH := "user://save/bindings.cfg"
 
 var _mouse_delta: Vector2 = Vector2.ZERO
@@ -20,6 +21,10 @@ func _input(event: InputEvent) -> void:
 		_mouse_delta += event.relative
 	elif event.is_action_pressed("jump"):
 		_jump_just_pressed = true
+	elif event.is_action_pressed("toggle_debug"):
+		var ui_manager := get_node_or_null("/root/UIManager")
+		if ui_manager != null:
+			ui_manager.toggle_debug()
 
 
 func _process(_delta: float) -> void:
