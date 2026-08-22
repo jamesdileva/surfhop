@@ -1,0 +1,116 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_hrhc8"]
+[ext_resource type="PackedScene" path="res://scenes/world/StartTrigger.tscn" id="2_57ggm"]
+[ext_resource type="PackedScene" path="res://scenes/world/FinishTrigger.tscn" id="3_jvqc6"]
+[ext_resource type="Script" path="res://scripts/game/TutorialSign.gd" id="4_ybytg"]
+
+[sub_resource type="Resource" id="Resource_m62tc"]
+script = ExtResource("1_hrhc8")
+map_id = "tutorial"
+display_name = "Tutorial"
+author = "Velocity Engine"
+tags = PackedStringArray("bhop", "surf", "air-strafe", "tutorial")
+movement_config_path = "res://resources/movement/casual.tres"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vvy6s"]
+size = Vector3(800, 100, 1700)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_j5r57"]
+size = Vector3(800, 100, 700)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0752k"]
+size = Vector3(400, 40, 660)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_q6yd5"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_w3yyd"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rbpbn"]
+radius = 220.0
+
+[node name="TutorialMap" type="Node3D" unique_id=258698728]
+metadata/map_metadata = SubResource("Resource_m62tc")
+
+[node name="CourseFloor" type="StaticBody3D" parent="." unique_id=243314079]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -800)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CourseFloor" unique_id=771194675]
+shape = SubResource("BoxShape3D_vvy6s")
+
+[node name="LowerFloor" type="StaticBody3D" parent="." unique_id=1927488868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -464, -2100)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LowerFloor" unique_id=1338498592]
+shape = SubResource("BoxShape3D_j5r57")
+
+[node name="SurfRamp" type="StaticBody3D" parent="." unique_id=1899815191]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, -202, -1662)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp" unique_id=1490209740]
+shape = SubResource("BoxShape3D_0752k")
+
+[node name="StartTrigger" type="Area3D" parent="." unique_id=717442280 groups=["start_trigger"] instance=ExtResource("2_57ggm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -80)
+
+[node name="FinishTrigger" type="Area3D" parent="." unique_id=1013883136 groups=["finish_trigger"] instance=ExtResource("3_jvqc6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -364, -2250)
+
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=856144701]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)
+
+[node name="BhopSign" type="Area3D" parent="." unique_id=712644489]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -300)
+script = ExtResource("4_ybytg")
+sign_text = "BUNNY HOP
+Jump again the instant you land
+to keep your speed!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BhopSign" unique_id=106821096]
+shape = SubResource("SphereShape3D_q6yd5")
+
+[node name="SignLabel" type="Label3D" parent="BhopSign" unique_id=489650913]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="StrafeSign" type="Area3D" parent="." unique_id=438212228]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -950)
+script = ExtResource("4_ybytg")
+sign_text = "AIR STRAFE
+While airborne hold W + A
+and turn your mouse left."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StrafeSign" unique_id=1361028419]
+shape = SubResource("SphereShape3D_w3yyd")
+
+[node name="SignLabel" type="Label3D" parent="StrafeSign" unique_id=1712020792]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="SurfSign" type="Area3D" parent="." unique_id=132814347]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -1350)
+script = ExtResource("4_ybytg")
+sign_text = "SURF
+Hold forward and ride the ramp.
+Steer gently with A / D."
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfSign" unique_id=414750529]
+shape = SubResource("SphereShape3D_rbpbn")
+
+[node name="SignLabel" type="Label3D" parent="SurfSign" unique_id=1641286612]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48

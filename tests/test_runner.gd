@@ -44,6 +44,7 @@ func _run_all_tests() -> void:
 	await _test_hud()
 	await _test_save_system()
 	await _test_ghost_recording()
+	await _test_tutorial_map()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1401,6 +1402,114 @@ func _test_ghost_recording() -> void:
 	world.queue_free()
 	if sm.has_ghost("ghost_test_map"):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.ghost_path("ghost_test_map")))
+	await process_frame
+
+
+func _test_tutorial_map() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+
+	# --- Discovery + metadata point at the casual preset ---
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "tutorial":
+			entry = e
+			break
+	_check(not entry.is_empty(), "tutorial map discovered")
+	if entry.is_empty():
+		return
+	var meta: MapMetadata = entry["metadata"]
+	_check(meta.movement_config_path.ends_with("casual.tres"),
+		"tutorial uses casual movement config (%s)" % meta.movement_config_path)
+
+	# --- Load the map; player receives the casual config ---
+	root.get_node("SaveManager")  # touch to ensure autoload order sane
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var spawned_player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, 40.0))
+	var ts := TimerSystem.new()  # wires start/finish triggers for the traversal
+	root.add_child(ts)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "tutorial map loads")
+	await _wait_ticks(5)
+	var cfg: MovementConfig = spawned_player.movement_controller.config
+	_check(cfg != null and cfg.resource_path.ends_with("casual.tres"),
+		"casual config applied to player (%s)" % (cfg.resource_path if cfg else "null"))
+	_check(cfg.jump_buffer_ms == 80.0 and cfg.coyote_time_ms == 100.0,
+		"casual config is more forgiving (buffer %.0f, coyote %.0f)" %
+			[cfg.jump_buffer_ms, cfg.coyote_time_ms])
+
+	var map: Node3D = loader.current_map
+	_check(map.name == "TutorialMap", "map root present")
+
+	# --- Tutorial signs exist and reveal on proximity ---
+	var bhop_sign: Area3D = map.get_node("BhopSign")
+	var strafe_sign: Area3D = map.get_node("StrafeSign")
+	var surf_sign: Area3D = map.get_node("SurfSign")
+	for sign_area: Area3D in [bhop_sign, strafe_sign, surf_sign]:
+		_check(sign_area != null and sign_area is TutorialSign, "%s present" % sign_area.name)
+	var bhop_label: Label3D = bhop_sign.get_node("SignLabel")
+	_check(not bhop_label.visible, "sign hidden before approach")
+	_check(bhop_label.text.contains("BUNNY HOP"), "bhop sign text set")
+
+	spawned_player.velocity = Vector3.ZERO
+	spawned_player.position = bhop_sign.position + Vector3(0.0, -30.0, 0.0)
+	await _wait_ticks(4)
+	_check(bhop_label.visible, "sign appears when player approaches")
+	spawned_player.position += Vector3(0.0, 0.0, -600.0)
+	await _wait_ticks(4)
+	_check(not bhop_label.visible, "sign hides when player leaves")
+
+	# --- Traversal smoke test: start -> surf -> finish ---
+	gm.restart()
+	gm.kill_plane_y = -2000.0  # don't respawn-loop during the traversal checks
+	spawned_player.position = Vector3(0.0, 20.0, -40.0)  # on the start platform
+	await _wait_ticks(6)
+
+	Input.action_press("move_forward")
+	var running := false
+	for i in 120:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	_check(running, "leaving the tutorial start platform starts the race")
+
+	# Drop onto the middle of the surf ramp.
+	spawned_player.position = Vector3(0.0, -150.0, -1662.0)
+	spawned_player.velocity = Vector3(0.0, -50.0, -100.0)
+	var surfing := false
+	for i in 30:
+		await physics_frame
+		if spawned_player.movement_controller.state == MovementState.SURF:
+			surfing = true
+			break
+	_check(surfing, "surf ramp section produces SURF state")
+
+	# Land in the lower pool and cross the finish.
+	spawned_player.position = Vector3(0.0, -400.0, -2100.0)
+	await _wait_ticks(10)
+	spawned_player.position = Vector3(0.0, -364.0, -2255.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	Input.action_release("move_forward")
+	_check(finished, "map ends with a working finish line")
+
+	loader.unload_current()
+	player_root.queue_free()
+	ts.queue_free()
 	await process_frame
 
 

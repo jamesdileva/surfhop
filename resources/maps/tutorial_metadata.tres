@@ -8,3 +8,4 @@ map_id = "tutorial"
 display_name = "Tutorial"
 author = "Velocity Engine"
 tags = PackedStringArray("bhop", "surf", "air-strafe", "tutorial")
+movement_config_path = "res://resources/movement/casual.tres"

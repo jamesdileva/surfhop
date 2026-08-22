@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="MovementConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MovementConfig.gd" id="1_63qbc"]
+
+[resource]
+script = ExtResource("1_63qbc")
+coyote_time_ms = 100.0
+jump_buffer_ms = 80.0
+surf_angle_min_deg = 42.0
