@@ -29,6 +29,7 @@ func _run_all_tests() -> void:
 	_test_ui_manager_show_menu()
 	_test_player_camera_look()
 	_test_player_camera_sensitivity_and_invert()
+	await _test_player_basic_movement()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -246,6 +247,80 @@ func _test_player_camera_sensitivity_and_invert() -> void:
 	sm.set_setting("input/invert_mouse_y", false)
 
 	body.queue_free()
+
+
+func _wait_ticks(count: int) -> void:
+	for i in count:
+		await physics_frame
+
+
+func _test_player_basic_movement() -> void:
+	# Flat floor with top surface at y = 0 (Quake-scale world).
+	var world := Node3D.new()
+	world.name = "MovementTestWorld"
+	root.add_child(world)
+	var floor_body := StaticBody3D.new()
+	var floor_shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(4000.0, 100.0, 4000.0)
+	floor_shape.shape = box
+	floor_shape.position.y = -50.0
+	floor_body.add_child(floor_shape)
+	world.add_child(floor_body)
+
+	var player: Player = (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
+	player.position = Vector3(0.0, 40.0, 0.0)
+	world.add_child(player)
+
+	# Land on the floor first.
+	await _wait_ticks(40)
+	_check(player.is_on_floor(), "player lands on flat floor")
+
+	# W walks forward relative to camera facing (-Z), capped at walk_speed.
+	Input.action_press("move_forward")
+	await _wait_ticks(30)
+	var velocity := player.velocity
+	var h_speed := Vector2(velocity.x, velocity.z).length()
+	_check(h_speed > 100.0, "holding W accelerates the player (speed=%s)" % h_speed)
+	_check(h_speed <= player.movement_controller.config.walk_speed + 1.0,
+		"horizontal speed capped at walk_speed (speed=%s)" % h_speed)
+	_check(velocity.z < -50.0 and absf(velocity.x) < 1.0,
+		"movement is forward-relative-to-camera (-Z, got %s)" % velocity)
+
+	# Sustained ground movement never exceeds walk_speed.
+	await _wait_ticks(80)
+	h_speed = Vector2(player.velocity.x, player.velocity.z).length()
+	_check(h_speed <= player.movement_controller.config.walk_speed + 1.0,
+		"speed stays capped after sustained walking (speed=%s)" % h_speed)
+
+	# Stub jump: buffered jump press while grounded gives upward velocity.
+	var jump_press := InputEventKey.new()
+	jump_press.physical_keycode = KEY_SPACE
+	jump_press.pressed = true
+	var jumped := false
+	for i in 10:
+		root.get_node("InputManager")._input(jump_press)
+		await physics_frame
+		if player.velocity.y > 100.0:
+			jumped = true
+			break
+	_check(jumped, "jump stub applies upward impulse when grounded")
+	Input.action_release("move_forward")
+
+	# Fall under gravity, clamped at terminal velocity.
+	player.velocity = Vector3.ZERO
+	player.position.y += 5000.0
+	await _wait_ticks(140)
+	_check(player.velocity.y <= -999.0,
+		"gravity accelerates fall to terminal velocity (v_y=%s)" % player.velocity.y)
+	_check(player.velocity.y >= -player.movement_controller.config.max_fall_speed - 1.0,
+		"fall speed clamped at max_fall_speed (v_y=%s)" % player.velocity.y)
+
+	# Physics tick rate is configured at 100Hz.
+	_check(Engine.physics_ticks_per_second == 100, "physics configured for 100Hz ticks")
+
+	world.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:
