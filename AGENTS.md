@@ -86,12 +86,27 @@ godot --path . scenes/world/dev_tutorial.tscn
 godot --path . scenes/world/dev_beginner.tscn
 godot --path . scenes/world/dev_intermediate.tscn
 godot --path . scenes/world/dev_advanced.tscn   # added Sprint 22
+godot --path . scenes/world/dev_challenge_oc.tscn          # Sprint 23
+godot --path . scenes/world/dev_challenge_precision.tscn   # Sprint 23
+godot --path . scenes/world/dev_challenge_speedrun.tscn    # Sprint 23
 ```
 
 Controls: WASD move, Space jump, mouse look, R restart-from-checkpoint,
 F1 debug overlay (speed/state/vectors), Esc releases the mouse (click to
 re-capture). HUD shows live timer/PB/checkpoints; PB ghosts appear after a
 first record per map.
+
+## Deferred Polish Items (Sprint 25+ backlog)
+
+- **Jump-while-surfing**: currently possible (coyote window persists on ramp
+  walls). Playtester found it acceptable/even helpful for repositioning;
+  decide intentionally in polish: keep as feature or gate jumping to real
+  floors only.
+- **Visual materials**: maps are flat white boxes; docs call for neon edge
+  highlights and per-difficulty tinting (MapMetadata.vertex_color_tint).
+- **Ramp feel tuning**: air_accel (10), surf friction, gravity-conversion
+  strength — tune after extended play sessions.
+- **Gap jump distances** on intermediate/advanced need human validation.
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.

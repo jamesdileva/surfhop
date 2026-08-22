@@ -2,6 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_x5ym6"]
 
-[node name="dev_advanced" type="Node3D" unique_id=1133344544]
+[node name="dev_advanced" type="Node3D" unique_id=471189817]
 script = ExtResource("1_x5ym6")
 default_map = "res://scenes/maps/advanced.tscn"

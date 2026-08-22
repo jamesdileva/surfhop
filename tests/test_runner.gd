@@ -48,6 +48,7 @@ func _run_all_tests() -> void:
 	await _test_beginner_map()
 	await _test_intermediate_map()
 	await _test_advanced_map()
+	await _test_challenge_maps()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -824,6 +825,10 @@ func _test_movement_debug_tools() -> void:
 
 	var ui: Node = root.get_node("UIManager")
 	var sm: Node = root.get_node("SaveManager")
+	# Deterministic start: known setting value before the player exists
+	# (dev machines may carry show_debug=true from play sessions).
+	sm.set_setting("movement/show_debug", false)
+	sm.save_settings()
 
 	var spawned := _spawn_test_player()
 	var world: Node3D = spawned[0]
@@ -1901,6 +1906,88 @@ func _test_advanced_map() -> void:
 	player_root.queue_free()
 	ts.queue_free()
 	await process_frame
+
+
+func _test_challenge_maps() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+	var found: Array[Dictionary] = loader.discover_maps()
+
+	var expectations := {
+		"challenge_oc": {"difficulty": 3, "checkpoints": 2},
+		"challenge_precision": {"difficulty": 4, "checkpoints": 2},
+		"challenge_speedrun": {"difficulty": 4, "checkpoints": 0},
+	}
+
+	for map_id: String in expectations:
+		var entry: Dictionary = {}
+		for e in found:
+			if e["metadata"].map_id == map_id:
+				entry = e
+				break
+		_check(not entry.is_empty(), "%s discovered" % map_id)
+		if entry.is_empty():
+			continue
+		_check(entry["metadata"].difficulty == expectations[map_id]["difficulty"],
+			"%s difficulty %d" % [map_id, expectations[map_id]["difficulty"]])
+
+		var player_root := Node3D.new()
+		root.add_child(player_root)
+		var player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, -40.0))
+		var ts := TimerSystem.new()
+		root.add_child(ts)
+
+		loader.load_map(entry["path"])
+		var loaded := false
+		for i in 120:
+			await process_frame
+			if loader.current_map != null:
+				loaded = true
+				break
+		_check(loaded, "%s loads" % map_id)
+		await _wait_ticks(5)
+
+		_check(gm.total_checkpoints == expectations[map_id]["checkpoints"],
+			"%s has %d checkpoints (got %d)" % [map_id,
+				expectations[map_id]["checkpoints"], gm.total_checkpoints])
+
+		if map_id == "challenge_oc":
+			var mover: Node3D = loader.current_map.get_node_or_null("MovingWall1")
+			_check(mover != null, "moving wall present on obstacle course")
+			if mover != null:
+				var pos_a: Vector3 = mover.position
+				await _wait_ticks(30)
+				_check(mover.position.distance_to(pos_a) > 1.0,
+					"moving wall actually moves")
+
+		gm.restart()
+		player.position = Vector3(0.0, 20.0, -40.0)
+		await _wait_ticks(6)
+
+		Input.action_press("move_forward")
+		var running := false
+		for i in 120:
+			await physics_frame
+			if gm.race_state == gm.RaceState.RUNNING:
+				running = true
+				break
+		Input.action_release("move_forward")
+		_check(running, "%s run starts" % map_id)
+
+		var finish_node: Node3D = loader.current_map.get_node("FinishTrigger")
+		player.position = finish_node.position + Vector3(0.0, 6.0, 6.0)
+		var finished := false
+		for i in 30:
+			await physics_frame
+			if gm.race_state == gm.RaceState.FINISHED:
+				finished = true
+				break
+		_check(finished, "%s finish completes the run" % map_id)
+
+		loader.unload_current()
+		player_root.queue_free()
+		ts.queue_free()
+		await process_frame
 
 
 func _test_save_manager_defaults() -> void:

@@ -98,7 +98,7 @@ background_mode = 2
 sky = SubResource("Sky_2bnwc")
 ambient_light_source = 3
 
-[node name="BeginnerMap" type="Node3D" unique_id=79334632]
+[node name="BeginnerMap" type="Node3D" unique_id=380520904]
 metadata/map_metadata = SubResource("Resource_68whe")
 metadata/SurfRamp1_e1 = Vector3(0, 10, -2380)
 metadata/SurfRamp1_e2 = Vector3(0, -390, -2760)
@@ -107,73 +107,73 @@ metadata/SurfRamp2_e2 = Vector3(0, -840, -5030)
 metadata/SurfRamp3_e1 = Vector3(0, -840, -6720)
 metadata/SurfRamp3_e2 = Vector3(0, -1340, -7140)
 
-[node name="FloorA" type="StaticBody3D" parent="." unique_id=2090497329]
+[node name="FloorA" type="StaticBody3D" parent="." unique_id=1700125993]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -1250)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorA" unique_id=127283227]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorA" unique_id=1119395328]
 shape = SubResource("BoxShape3D_uyepb")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorA" unique_id=862396466]
+[node name="Visual" type="MeshInstance3D" parent="FloorA" unique_id=2112676589]
 material_override = SubResource("StandardMaterial3D_krsy3")
 mesh = SubResource("BoxMesh_mm1vk")
 
-[node name="FloorB" type="StaticBody3D" parent="." unique_id=181177648]
+[node name="FloorB" type="StaticBody3D" parent="." unique_id=2526636]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -450, -3750)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorB" unique_id=917706998]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorB" unique_id=1947916780]
 shape = SubResource("BoxShape3D_xg4h0")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorB" unique_id=1008355275]
+[node name="Visual" type="MeshInstance3D" parent="FloorB" unique_id=353346455]
 material_override = SubResource("StandardMaterial3D_wguy5")
 mesh = SubResource("BoxMesh_phj67")
 
-[node name="FloorC" type="StaticBody3D" parent="." unique_id=1918313592]
+[node name="FloorC" type="StaticBody3D" parent="." unique_id=708293504]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -900, -5850)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorC" unique_id=1278950784]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorC" unique_id=1144257797]
 shape = SubResource("BoxShape3D_a3pk6")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorC" unique_id=511548337]
+[node name="Visual" type="MeshInstance3D" parent="FloorC" unique_id=1757359143]
 material_override = SubResource("StandardMaterial3D_vd2dy")
 mesh = SubResource("BoxMesh_wio27")
 
-[node name="FloorD" type="StaticBody3D" parent="." unique_id=326977039]
+[node name="FloorD" type="StaticBody3D" parent="." unique_id=11587119]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1400, -7900)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorD" unique_id=1340636756]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorD" unique_id=452383793]
 shape = SubResource("BoxShape3D_d1nnd")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorD" unique_id=1056630015]
+[node name="Visual" type="MeshInstance3D" parent="FloorD" unique_id=1258649978]
 material_override = SubResource("StandardMaterial3D_y5ssa")
 mesh = SubResource("BoxMesh_autkl")
 
-[node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=2075907226]
+[node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=328835049]
 transform = Transform3D(1, 0, 0, 0, 0.6887495, 0.7249994, 0, -0.7249994, 0.6887495, 0, -210.32669, -2570)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp1" unique_id=1683291194]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp1" unique_id=781433673]
 shape = SubResource("BoxShape3D_rst24")
 
-[node name="Visual" type="MeshInstance3D" parent="SurfRamp1" unique_id=244509263]
+[node name="Visual" type="MeshInstance3D" parent="SurfRamp1" unique_id=601726466]
 material_override = SubResource("StandardMaterial3D_4gl20")
 mesh = SubResource("BoxMesh_thecr")
 
-[node name="SurfRamp2" type="StaticBody3D" parent="." unique_id=199037627]
+[node name="SurfRamp2" type="StaticBody3D" parent="." unique_id=572193391]
 transform = Transform3D(1, 0, 0, 0, 0.67349, 0.7391963, 0, -0.7391963, 0.67349, 0, -635.78723, -4825)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp2" unique_id=153566982]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp2" unique_id=890955812]
 shape = SubResource("BoxShape3D_4bckq")
 
-[node name="Visual" type="MeshInstance3D" parent="SurfRamp2" unique_id=1596651173]
+[node name="Visual" type="MeshInstance3D" parent="SurfRamp2" unique_id=534858198]
 material_override = SubResource("StandardMaterial3D_c66id")
 mesh = SubResource("BoxMesh_tqmrw")
 
-[node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=565704603]
+[node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=1682769248]
 transform = Transform3D(1, 0, 0, 0, 0.6431921, 0.7657049, 0, -0.7657049, 0.6431921, 0, -1111.7665, -6930)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp3" unique_id=87619578]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp3" unique_id=291000146]
 shape = SubResource("BoxShape3D_sc5jy")
 
-[node name="Visual" type="MeshInstance3D" parent="SurfRamp3" unique_id=1725392807]
+[node name="Visual" type="MeshInstance3D" parent="SurfRamp3" unique_id=22807100]
 material_override = SubResource("StandardMaterial3D_64rhu")
 mesh = SubResource("BoxMesh_n7m7r")
 
@@ -187,21 +187,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1314, -8550)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -1200)
 script = ExtResource("5_ketsd")
 
-[node name="Checkpoint2" type="Area3D" parent="." unique_id=2046718189 groups=["checkpoint"] instance=ExtResource("4_2ivg6")]
+[node name="Checkpoint2" type="Area3D" parent="." unique_id=1475060519 groups=["checkpoint"] instance=ExtResource("4_2ivg6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -360, -3600)
 script = ExtResource("5_ketsd")
 
-[node name="Checkpoint3" type="Area3D" parent="." unique_id=1558009373 groups=["checkpoint"] instance=ExtResource("4_2ivg6")]
+[node name="Checkpoint3" type="Area3D" parent="." unique_id=480477431 groups=["checkpoint"] instance=ExtResource("4_2ivg6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -810, -5800)
 script = ExtResource("5_ketsd")
 
-[node name="RespawnPoint" type="Marker3D" parent="." unique_id=452484662]
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1101234418]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=192222921]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1331406872]
 environment = SubResource("Environment_o10p0")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=228649345]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=928076121]
 transform = Transform3D(0.8480481, 0.41758206, -0.32625088, 0, 0.6156615, 0.7880107, 0.52991927, -0.668271, 0.5221106, 0, 0, 0)
 light_energy = 1.3
 shadow_enabled = true

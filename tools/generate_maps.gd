@@ -302,6 +302,133 @@ func build_advanced() -> void:
 	_finish_map("advanced")
 
 
+# --------------------------------------------------------------- challenges --
+
+## Oscillating wall/platform (AnimatableBody3D + MovingPlatform script).
+func _moving_body(body_name: String, size: Vector3, pos: Vector3,
+		axis: Vector3, amplitude: float, period: float) -> AnimatableBody3D:
+	var body := AnimatableBody3D.new()
+	body.name = body_name
+	body.set_script(load("res://scripts/game/MovingPlatform.gd"))
+	body.move_axis = axis
+	body.amplitude = amplitude
+	body.period_seconds = period
+	var shape := CollisionShape3D.new()
+	shape.name = "CollisionShape3D"
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	body.add_child(shape)
+	var visual := MeshInstance3D.new()
+	visual.name = "Visual"
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	visual.mesh = mesh
+	visual.material_override = _floor_material()
+	body.add_child(visual)
+	body.position = pos
+	map.add_child(body)
+	return body
+
+
+## Challenge 1: pillar slaloms, low walls, moving walls, narrow bridge.
+func build_challenge_oc() -> void:
+	map = Node3D.new()
+	map.name = "ObstacleCourseMap"
+	var meta := MapMetadata.new()
+	meta.map_id = "challenge_oc"
+	meta.display_name = "Obstacle Course"
+	meta.author = "Velocity Engine"
+	meta.difficulty = 3
+	meta.tags = PackedStringArray(["bhop", "obstacles"])
+	meta.movement_config_path = "res://resources/movement/default.tres"
+	meta.kill_plane_y = -600.0
+	map.set_meta("map_metadata", meta)
+
+	_static_body("FloorA", Vector3(500.0, 100.0, 3100.0), Vector3(0.0, -50.0, -1500.0)) # y=0 z 50..-3050
+	_static_body("FloorBridge", Vector3(150.0, 100.0, 1050.0), Vector3(0.0, -50.0, -3575.0)) # y=0 z -4100..-3050 (narrow!)
+	_static_body("FloorC", Vector3(500.0, 100.0, 1500.0), Vector3(0.0, -50.0, -4850.0))  # y=0 z -4100..-5600
+
+	# Pillar slalom 1.
+	for x: float in [-150.0, 0.0, 150.0]:
+		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 150.0, -800.0))
+	# Low wall: bhop over it.
+	_static_body("LowWall", Vector3(500.0, 80.0, 40.0), Vector3(0.0, 40.0, -1400.0))
+
+	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
+	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1700.0))
+
+	# Moving walls over the bridge approach.
+	_moving_body("MovingWall1", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 100.0, -2100.0),
+		Vector3.RIGHT, 200.0, 4.0)
+	_moving_body("MovingWall2", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 100.0, -2500.0),
+		Vector3.LEFT, 200.0, 5.0)
+
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -4500.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, 40.0, -3600.0))
+	_marker(Vector3(0.0, 30.0, -40.0))
+
+	_lighting()
+	_finish_map("challenge_oc")
+
+
+## Challenge 2: three narrow steep ramps; staying on them is the challenge.
+func build_challenge_precision() -> void:
+	map = Node3D.new()
+	map.name = "PrecisionSurfMap"
+	var meta := MapMetadata.new()
+	meta.map_id = "challenge_precision"
+	meta.display_name = "Precision Surf"
+	meta.author = "Velocity Engine"
+	meta.difficulty = 4
+	meta.tags = PackedStringArray(["surf", "precision"])
+	meta.movement_config_path = "res://resources/movement/default.tres"
+	meta.kill_plane_y = -1800.0
+	map.set_meta("map_metadata", meta)
+
+	_static_body("StartFloor", Vector3(400.0, 100.0, 850.0), Vector3(0.0, -50.0, -375.0))   # y=0 z 50..-800
+	_static_body("Pool1", Vector3(400.0, 100.0, 900.0), Vector3(0.0, -450.0, -1450.0))      # y=-400 z -1900..-1000
+	_static_body("Pool2", Vector3(400.0, 100.0, 800.0), Vector3(0.0, -840.0, -2460.0))      # y=-790 z -2860..-2060
+	_static_body("Pool3", Vector3(400.0, 100.0, 1100.0), Vector3(0.0, -1250.0, -3610.0))    # y=-1200 z -3160..-4060
+
+	_ramp("PrecisionRamp1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -410.0, -1044.0), 150.0)  # ~63 deg
+	_ramp("PrecisionRamp2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -810.0, -2092.0), 150.0)# ~63 deg
+	_ramp("PrecisionRamp3", Vector3(0.0, -800.0, -2800.0), Vector3(0.0, -1220.0, -3014.0), 150.0)# ~62 deg
+
+	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1160.0, -3800.0))
+	_checkpoint("Checkpoint1", Vector3(0.0, -360.0, -1300.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -750.0, -2400.0))
+	_marker(Vector3(0.0, 30.0, -40.0))
+
+	_lighting()
+	_finish_map("challenge_precision")
+
+
+## Challenge 3: one continuous flat line — pure bhop-chain and air-strafe test.
+func build_challenge_speedrun() -> void:
+	map = Node3D.new()
+	map.name = "SpeedRunMap"
+	var meta := MapMetadata.new()
+	meta.map_id = "challenge_speedrun"
+	meta.display_name = "Speed Run"
+	meta.author = "Velocity Engine"
+	meta.difficulty = 4
+	meta.tags = PackedStringArray(["bhop", "air-strafe", "speed"])
+	meta.movement_config_path = "res://resources/movement/default.tres"
+	meta.kill_plane_y = -1000.0
+	map.set_meta("map_metadata", meta)
+
+	_static_body("Runway", Vector3(340.0, 100.0, 6550.0), Vector3(0.0, -50.0, -3225.0)) # y=0 z 50..-6500
+
+	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -6200.0))
+	_marker(Vector3(0.0, 30.0, -40.0))
+
+	_lighting()
+	_finish_map("challenge_speedrun")
+
+
 # ------------------------------------------------------------------- extras --
 
 func build_metadata_and_presets() -> void:
@@ -317,6 +444,9 @@ func build_metadata_and_presets() -> void:
 		["beginner", "Beginner", 2, ["bhop", "surf"], "res://resources/movement/default.tres"],
 		["intermediate", "Intermediate", 3, ["bhop", "surf", "air-strafe"], "res://resources/movement/default.tres"],
 		["advanced", "Advanced", 4, ["bhop", "surf", "air-strafe", "high-speed"], "res://resources/movement/default.tres"],
+		["challenge_oc", "Obstacle Course", 3, ["bhop", "obstacles"], "res://resources/movement/default.tres", -600.0],
+		["challenge_precision", "Precision Surf", 4, ["surf", "precision"], "res://resources/movement/default.tres", -1800.0],
+		["challenge_speedrun", "Speed Run", 4, ["bhop", "air-strafe", "speed"], "res://resources/movement/default.tres", -1000.0],
 	]:
 		var meta := MapMetadata.new()
 		meta.map_id = m[0]
@@ -325,6 +455,7 @@ func build_metadata_and_presets() -> void:
 		meta.difficulty = m[2]
 		meta.tags = PackedStringArray(m[3])
 		meta.movement_config_path = m[4]
+		meta.kill_plane_y = m[5] if m.size() > 5 else -1000.0
 		print("%s metadata: %s" % [m[0], error_string(ResourceSaver.save(
 			meta, "res://resources/maps/%s_metadata.tres" % m[0]))])
 
@@ -335,6 +466,9 @@ func build_dev_scenes() -> void:
 		["dev_beginner", "res://scenes/maps/beginner.tscn"],
 		["dev_intermediate", "res://scenes/maps/intermediate.tscn"],
 		["dev_advanced", "res://scenes/maps/advanced.tscn"],
+		["dev_challenge_oc", "res://scenes/maps/challenge_oc.tscn"],
+		["dev_challenge_precision", "res://scenes/maps/challenge_precision.tscn"],
+		["dev_challenge_speedrun", "res://scenes/maps/challenge_speedrun.tscn"],
 	]:
 		var dev_root := Node3D.new()
 		dev_root.name = dev[0]
@@ -359,6 +493,9 @@ func _initialize() -> void:
 	build_beginner()
 	build_intermediate()
 	build_advanced()
+	build_challenge_oc()
+	build_challenge_precision()
+	build_challenge_speedrun()
 	build_dev_scenes()
 	print("ALL MAPS REGENERATED")
 	quit()

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MapMetadata" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_gc3db"]
+
+[resource]
+script = ExtResource("1_gc3db")
+map_id = "challenge_speedrun"
+display_name = "Speed Run"
+author = "Velocity Engine"
+difficulty = 4
+tags = PackedStringArray("bhop", "air-strafe", "speed")

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MapMetadata" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_stkow"]
+
+[resource]
+script = ExtResource("1_stkow")
+map_id = "challenge_oc"
+display_name = "Obstacle Course"
+author = "Velocity Engine"
+difficulty = 3
+tags = PackedStringArray("bhop", "obstacles")
+kill_plane_y = -600.0
