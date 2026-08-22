@@ -47,6 +47,7 @@ func _run_all_tests() -> void:
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
+	await _test_advanced_map()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1741,6 +1742,133 @@ func _test_intermediate_map() -> void:
 ## Ramp angle sanity helper: first ramp must be at least ~49 degrees.
 func r1_angle_ok(angle: float) -> bool:
 	return angle >= 49.0
+
+
+func _test_advanced_map() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "advanced":
+			entry = e
+			break
+	_check(not entry.is_empty(), "advanced map discovered")
+	if entry.is_empty():
+		return
+	_check(entry["metadata"].difficulty == 4, "advanced metadata difficulty 4")
+
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, -40.0))
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "advanced map loads")
+	await _wait_ticks(5)
+	var map: Node3D = loader.current_map
+
+	_check(gm.total_checkpoints == 6,
+		"exactly 6 checkpoints registered (got %d)" % gm.total_checkpoints)
+	_check(gm.kill_plane_y == -4600.0,
+		"metadata kill plane applied (%s)" % gm.kill_plane_y)
+
+	for ramp_name: String in ["SurfRamp1", "SurfRamp2", "SurfRamp2b", "SurfRamp4"]:
+		var angle: float = rad_to_deg(absf(map.get_node(ramp_name).rotation.x))
+		_check(angle >= 49.0 and angle <= 70.5,
+			"%s within 50-70 degrees (%.1f)" % [ramp_name, angle])
+
+	# Ramp-to-ramp seam: Ramp2's downhill end and Ramp2b's uphill end are
+	# geometry-adjacent so flight carries across without touching a floor.
+	var r2_end: Vector3 = map.get_meta("SurfRamp2_e2")
+	var r2b_start: Vector3 = map.get_meta("SurfRamp2b_e1")
+	_check(r2_end.distance_to(r2b_start) < 150.0,
+		"ramp-to-ramp transition is seamless (gap %.0fu)" % r2_end.distance_to(r2b_start))
+
+	# Void gaps are real.
+	var space := root.get_world_3d().direct_space_state
+	for gap_z: float in [-9010.0, -16590.0]:
+		var query := PhysicsRayQueryParameters3D.create(
+			Vector3(0.0, 3000.0, gap_z), Vector3(0.0, -6000.0, gap_z))
+		_check(space.intersect_ray(query).is_empty(),
+			"void gap at z=%.0f has no cheap floor" % gap_z)
+
+	# --- Traversal smoke test ---
+	gm.restart()
+	player.position = Vector3(0.0, 20.0, -40.0)
+	await _wait_ticks(6)
+
+	Input.action_press("move_forward")
+	var running := false
+	for i in 120:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	_check(running, "start trigger begins the run")
+
+	var cp_positions: Array[Vector3] = [
+		Vector3(0.0, 40.0, -2700.0),
+		Vector3(0.0, -760.0, -7300.0),
+		Vector3(0.0, -760.0, -10900.0),
+		Vector3(0.0, -2040.0, -13600.0),
+		Vector3(0.0, -2040.0, -18000.0),
+		Vector3(0.0, -2950.0, -21500.0),
+	]
+	for i in cp_positions.size():
+		player.position = cp_positions[i]
+		player.velocity = Vector3.ZERO
+		await _wait_ticks(4)
+		_check(gm.active_checkpoint_id == i,
+			"checkpoint %d reached in order" % (i + 1))
+	_check(gm.checkpoint_splits.size() == 6, "all six splits recorded while running")
+
+	# Steep-drop onto each ramp produces SURF (raycast-informed entry points).
+	for ramp_info: Array in [
+		["SurfRamp1", Vector3(0.0, -378.0, -5630.0)],
+		["SurfRamp2", Vector3(0.0, -1118.0, -12810.0)],
+		["SurfRamp4", Vector3(0.0, -2517.0, -19494.0)],
+	]:
+		player.position = ramp_info[1]
+		player.velocity = Vector3(0.0, -120.0, -30.0)
+		var surfing := false
+		for i in 30:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF:
+				surfing = true
+				break
+		_check(surfing, "%s produces SURF state" % ramp_info[0])
+
+	# Kill plane respawn mid-course.
+	player.position = Vector3(0.0, -4700.0, -9010.0)
+	await _wait_ticks(4)
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
+		"kill plane respawn works on advanced course")
+
+	# Finish.
+	player.position = Vector3(0.0, -2950.0, -22405.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	Input.action_release("move_forward")
+	_check(finished, "finish line completes the run")
+	_check(gm.checkpoint_splits.size() >= 6, "finish carries all checkpoint splits")
+
+	loader.unload_current()
+	player_root.queue_free()
+	ts.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:

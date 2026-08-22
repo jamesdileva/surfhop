@@ -77,6 +77,22 @@ godot --headless --path . --script res://tests/test_runner.gd
 godot --path .
 ```
 
+### Manual Playtesting (dev bootstrap scenes)
+
+No main menu exists yet; use the dev bootstrap scenes to play maps directly:
+
+```sh
+godot --path . scenes/world/dev_tutorial.tscn
+godot --path . scenes/world/dev_beginner.tscn
+godot --path . scenes/world/dev_intermediate.tscn
+godot --path . scenes/world/dev_advanced.tscn   # added Sprint 22
+```
+
+Controls: WASD move, Space jump, mouse look, R restart-from-checkpoint,
+F1 debug overlay (speed/state/vectors), Esc releases the mouse (click to
+re-capture). HUD shows live timer/PB/checkpoints; PB ghosts appear after a
+first record per map.
+
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.
 - Exit code 0 + no `ERROR` lines in stdout = success. Godot prints errors to stdout/stderr, so crash-signature scanning applies.
