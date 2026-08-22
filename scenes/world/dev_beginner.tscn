@@ -1,3 +1,7 @@
 [gd_scene format=3]
 
-[node name="dev_beginner" type="Node3D" unique_id=355465809]
+[ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_vtctn"]
+
+[node name="dev_beginner" type="Node3D" unique_id=1173647709]
+script = ExtResource("1_vtctn")
+default_map = "res://scenes/maps/beginner.tscn"

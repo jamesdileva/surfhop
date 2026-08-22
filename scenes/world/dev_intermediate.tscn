@@ -1,3 +1,7 @@
 [gd_scene format=3]
 
-[node name="dev_intermediate" type="Node3D" unique_id=480033196]
+[ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_fabrg"]
+
+[node name="dev_intermediate" type="Node3D" unique_id=268734982]
+script = ExtResource("1_fabrg")
+default_map = "res://scenes/maps/intermediate.tscn"
