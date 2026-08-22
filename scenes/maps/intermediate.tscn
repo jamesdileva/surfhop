@@ -1,0 +1,129 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_sx1mn"]
+[ext_resource type="PackedScene" path="res://scenes/world/StartTrigger.tscn" id="2_vgvmf"]
+[ext_resource type="PackedScene" path="res://scenes/world/FinishTrigger.tscn" id="3_x0eyj"]
+[ext_resource type="PackedScene" path="res://scenes/checkpoints/Checkpoint.tscn" id="4_8t05q"]
+[ext_resource type="Script" path="res://scripts/game/Checkpoint.gd" id="5_0ab51"]
+
+[sub_resource type="Resource" id="Resource_f4p0e"]
+script = ExtResource("1_sx1mn")
+map_id = "intermediate"
+display_name = "Intermediate"
+author = "Velocity Engine"
+difficulty = 3
+tags = PackedStringArray("bhop", "surf", "air-strafe")
+kill_plane_y = -2600.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ctbpa"]
+size = Vector3(340, 100, 3350)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4223t"]
+size = Vector3(340, 100, 2550)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_u677o"]
+size = Vector3(340, 100, 2560)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nnugf"]
+size = Vector3(340, 100, 2600)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qxv7a"]
+size = Vector3(340, 100, 2220)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_yoluo"]
+size = Vector3(340, 100, 2140)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_swxe1"]
+size = Vector3(340, 40, 705.23254)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y7bpx"]
+size = Vector3(340, 40, 725.0694)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y5dj1"]
+size = Vector3(340, 40, 997.72595)
+
+[node name="IntermediateMap" type="Node3D" unique_id=706549821]
+metadata/map_metadata = SubResource("Resource_f4p0e")
+
+[node name="FloorA" type="StaticBody3D" parent="." unique_id=1101216144]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -1625)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorA" unique_id=674637907]
+shape = SubResource("BoxShape3D_ctbpa")
+
+[node name="FloorB" type="StaticBody3D" parent="." unique_id=1795549530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -4925)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorB" unique_id=2106917562]
+shape = SubResource("BoxShape3D_4223t")
+
+[node name="FloorC" type="StaticBody3D" parent="." unique_id=1790326143]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -530, -7920)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorC" unique_id=1671974123]
+shape = SubResource("BoxShape3D_u677o")
+
+[node name="FloorD" type="StaticBody3D" parent="." unique_id=696159864]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1060, -10800)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorD" unique_id=833225215]
+shape = SubResource("BoxShape3D_nnugf")
+
+[node name="FloorE" type="StaticBody3D" parent="." unique_id=171545358]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1060, -13590)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorE" unique_id=1462637155]
+shape = SubResource("BoxShape3D_qxv7a")
+
+[node name="FloorF" type="StaticBody3D" parent="." unique_id=1881026028]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1850, -16130)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorF" unique_id=1068877997]
+shape = SubResource("BoxShape3D_yoluo")
+
+[node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=1521665893]
+transform = Transform3D(1, 0, 0, 0, 0.6431921, 0.7657049, 0, -0.7657049, 0.6431921, 0, -261.76645, -6390)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp1" unique_id=1896869090]
+shape = SubResource("BoxShape3D_swxe1")
+
+[node name="SurfRamp2" type="StaticBody3D" parent="." unique_id=805497693]
+transform = Transform3D(1, 0, 0, 0, 0.5734623, 0.8192319, 0, -0.8192319, 0.5734623, 0, -769.4131, -9342.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp2" unique_id=1272176139]
+shape = SubResource("BoxShape3D_y7bpx")
+
+[node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=1843589421]
+transform = Transform3D(1, 0, 0, 0, 0.5000972, 0.86596924, 0, -0.86596924, 0.5000972, 0, -1427.9945, -14881)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp3" unique_id=1492534594]
+shape = SubResource("BoxShape3D_y5dj1")
+
+[node name="StartTrigger" type="Area3D" parent="." unique_id=717442280 groups=["start_trigger"] instance=ExtResource("2_vgvmf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -80)
+
+[node name="FinishTrigger" type="Area3D" parent="." unique_id=1013883136 groups=["finish_trigger"] instance=ExtResource("3_x0eyj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1760, -16900)
+
+[node name="Checkpoint1" type="Area3D" parent="." unique_id=1626426342 groups=["checkpoint"] instance=ExtResource("4_8t05q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -1600)
+script = ExtResource("5_0ab51")
+
+[node name="Checkpoint2" type="Area3D" parent="." unique_id=1261499062 groups=["checkpoint"] instance=ExtResource("4_8t05q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -4900)
+script = ExtResource("5_0ab51")
+
+[node name="Checkpoint3" type="Area3D" parent="." unique_id=1987935914 groups=["checkpoint"] instance=ExtResource("4_8t05q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -440, -7900)
+script = ExtResource("5_0ab51")
+
+[node name="Checkpoint4" type="Area3D" parent="." unique_id=1993976602 groups=["checkpoint"] instance=ExtResource("4_8t05q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -970, -10900)
+script = ExtResource("5_0ab51")
+
+[node name="Checkpoint5" type="Area3D" parent="." unique_id=64981783 groups=["checkpoint"] instance=ExtResource("4_8t05q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -970, -13600)
+script = ExtResource("5_0ab51")
+
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1384841848]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)

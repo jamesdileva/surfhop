@@ -55,6 +55,10 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel") and mouse_captured:
 		# Temporary until GameManager owns pause state (Sprint 13+).
 		set_mouse_captured(false)
+	elif event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT and not mouse_captured:
+		# Click to re-capture after Esc (playtest QoL until pause menu exists).
+		set_mouse_captured(true)
 
 
 func _notification(what: int) -> void:

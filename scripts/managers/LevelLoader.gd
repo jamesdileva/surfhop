@@ -96,6 +96,7 @@ func _finalize_load(map: Node) -> void:
 		game_manager.total_checkpoints = 0
 		game_manager.active_checkpoint_id = -1
 		game_manager.checkpoint_splits.clear()
+		game_manager.kill_plane_y = metadata.kill_plane_y
 	_container.add_child(map)
 	current_map = map
 	current_metadata = metadata

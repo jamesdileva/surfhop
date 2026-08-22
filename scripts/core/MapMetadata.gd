@@ -11,3 +11,4 @@ extends Resource
 @export var tags: PackedStringArray = []
 @export var movement_config_path: String = "res://resources/movement/default.tres"
 @export var thumbnail_path: String = ""
+@export var kill_plane_y: float = -1000.0  # falling below this respawns at last checkpoint

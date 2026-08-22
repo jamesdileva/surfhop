@@ -46,6 +46,7 @@ func _run_all_tests() -> void:
 	await _test_ghost_recording()
 	await _test_tutorial_map()
 	await _test_beginner_map()
+	await _test_intermediate_map()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1619,6 +1620,127 @@ func _test_beginner_map() -> void:
 	player_root.queue_free()
 	ts.queue_free()
 	await process_frame
+
+
+func _test_intermediate_map() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "intermediate":
+			entry = e
+			break
+	_check(not entry.is_empty(), "intermediate map discovered")
+	if entry.is_empty():
+		return
+	_check(entry["metadata"].difficulty == 3, "intermediate metadata difficulty 3")
+
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, -40.0))
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "intermediate map loads")
+	await _wait_ticks(5)
+	var map: Node3D = loader.current_map
+
+	_check(gm.total_checkpoints == 5,
+		"exactly 5 checkpoints registered (got %d)" % gm.total_checkpoints)
+	_check(gm.kill_plane_y == -2600.0,
+		"metadata kill plane applied (%s)" % gm.kill_plane_y)
+
+	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
+	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
+	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
+	_check(r1_angle_ok(r1) and r1 < r2 and r2 < r3 and r3 <= 60.5,
+		"ramps steepen within 50-60 degrees (%.1f < %.1f < %.1f)" % [r1, r2, r3])
+
+	# Gaps are genuine voids: raycast down mid-gap must miss everything.
+	var space := root.get_world_3d().direct_space_state
+	for gap_z: float in [-3475.0, -12290.0]:
+		var query := PhysicsRayQueryParameters3D.create(
+			Vector3(0.0, 2000.0, gap_z), Vector3(0.0, -5000.0, gap_z))
+		_check(space.intersect_ray(query).is_empty(),
+			"gap at z=%.0f is a real void (no cheap floor)" % gap_z)
+
+	# --- Traversal smoke test ---
+	gm.restart()
+	player.position = Vector3(0.0, 20.0, -40.0)
+	await _wait_ticks(6)
+
+	Input.action_press("move_forward")
+	var running := false
+	for i in 120:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	_check(running, "start trigger begins the run")
+
+	# Touch all five checkpoints in order via their volumes.
+	var cp_positions: Array[Vector3] = [
+		Vector3(0.0, 40.0, -1600.0),
+		Vector3(0.0, 40.0, -4900.0),
+		Vector3(0.0, -440.0, -7900.0),
+		Vector3(0.0, -970.0, -10900.0),
+		Vector3(0.0, -970.0, -13600.0),
+	]
+	for i in cp_positions.size():
+		player.position = cp_positions[i]
+		player.velocity = Vector3.ZERO
+		await _wait_ticks(4)
+		_check(gm.active_checkpoint_id == i,
+			"checkpoint %d reached in order" % (i + 1))
+	_check(gm.checkpoint_splits.size() == 5, "all five splits recorded while running")
+
+	# Drop steeply onto ramp3 mid-section.
+	player.position = Vector3(0.0, -1395.0, -14881.0)
+	player.velocity = Vector3(0.0, -120.0, -30.0)
+	var surfing := false
+	for i in 30:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			surfing = true
+			break
+	_check(surfing, "final 60-degree ramp produces SURF state")
+
+	# Kill plane: falling into a gap respawns at the last checkpoint.
+	player.position = Vector3(0.0, -2700.0, -6850.0)
+	await _wait_ticks(4)
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
+		"kill plane respawn works on intermediate course")
+
+	# Finish the run.
+	player.position = Vector3(0.0, -1760.0, -16905.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	Input.action_release("move_forward")
+	_check(finished, "finish line completes the run")
+	_check(gm.checkpoint_splits.size() >= 5, "finish carries all checkpoint splits")
+
+	loader.unload_current()
+	player_root.queue_free()
+	ts.queue_free()
+	await process_frame
+
+
+## Ramp angle sanity helper: first ramp must be at least ~49 degrees.
+func r1_angle_ok(angle: float) -> bool:
+	return angle >= 49.0
 
 
 func _test_save_manager_defaults() -> void:
