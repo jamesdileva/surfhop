@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gv1sh"]
+transparency = 1
+albedo_color = Color(0.35, 0.75, 1, 0.45)
+emission_enabled = true
+emission = Color(0.15, 0.45, 0.8, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_djurm"]
+radius = 16.0
+height = 72.0
+
+[node name="GhostModel" type="Node3D" unique_id=223757628]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=322051695]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 36, 0)
+material_override = SubResource("StandardMaterial3D_gv1sh")
+cast_shadow = 0
+mesh = SubResource("CapsuleMesh_djurm")

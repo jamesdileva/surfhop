@@ -43,6 +43,7 @@ func _run_all_tests() -> void:
 	await _test_map_loading()
 	await _test_hud()
 	await _test_save_system()
+	await _test_ghost_recording()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1298,6 +1299,109 @@ func _test_save_system() -> void:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	sm._records = RecordsResource.new()
 	sm._settings = sm.DEFAULT_SETTINGS.duplicate(true)
+
+
+func _test_ghost_recording() -> void:
+	var gm: Node = root.get_node("GameManager")
+	var sm: Node = root.get_node("SaveManager")
+	gm.restart()
+	gm.map_name = "ghost_test_map"
+
+	var recorder := GhostRecorder.new()
+	root.add_child(recorder)
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	# World: floor, start volume, finish line.
+	var world := Node3D.new()
+	root.add_child(world)
+	var floor_body := StaticBody3D.new()
+	var fs := CollisionShape3D.new()
+	var fb := BoxShape3D.new()
+	fb.size = Vector3(4000.0, 100.0, 4000.0)
+	fs.shape = fb
+	fs.position.y = -50.0
+	floor_body.add_child(fs)
+	world.add_child(floor_body)
+
+	var start_area: Area3D = (load("res://scenes/world/StartTrigger.tscn") as PackedScene).instantiate()
+	start_area.position = Vector3.ZERO
+	world.add_child(start_area)
+	var finish_area: Area3D = (load("res://scenes/world/FinishTrigger.tscn") as PackedScene).instantiate()
+	finish_area.position = Vector3(0.0, 40.0, -300.0)
+	world.add_child(finish_area)
+
+	var player: Player = _spawn_test_player_at(world, Vector3(0.0, 10.0, 0.0))
+	await _wait_ticks(10)
+	_check(not recorder.is_recording, "recorder idle before race")
+
+	# --- Run 1: walk to finish; PB ghost must be saved ---
+	Input.action_press("move_forward")
+	for i in 80:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			break
+	_check(recorder.is_recording, "ghost starts recording when race starts")
+	for i in 250:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			break
+	Input.action_release("move_forward")
+	_check(gm.race_state == gm.RaceState.FINISHED and bool(sm.get_pb("ghost_test_map") < INF),
+		"first run finished as PB")
+
+	_check(sm.has_ghost("ghost_test_map"), "ghost saved when PB achieved")
+	var replay: GhostReplay = sm.load_ghost("ghost_test_map")
+	_check(replay != null and replay.frames.size() >= 40,
+		"replay contains the full run of frames (%d)" % (replay.frames.size() if replay else 0))
+	if replay != null and replay.frames.size() >= 12:
+		_check(replay.frames[10].tick == 10, "frames tick at 100Hz cadence")
+		_check(replay.frames[10].velocity != Vector3.ZERO or replay.frames[11].velocity != Vector3.ZERO,
+			"frames capture velocity")
+		_check(absf(replay.finish_time - gm.race_time) < 0.001,
+			"replay header stores finish time")
+
+	# --- Run 2: playback stays in lockstep with the race ---
+	gm.restart()
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(0.0, 10.0, 0.0)
+	await _wait_ticks(4)
+
+	var ghost := GhostPlayer.new()
+	world.add_child(ghost)
+	_check(ghost.load_replay("ghost_test_map"), "ghost player loads saved replay")
+	_check(not ghost.visible, "ghost hidden while not racing")
+
+	Input.action_press("move_forward")
+	for i in 80:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			break
+
+	for i in 30:
+		await physics_frame
+	Input.action_release("move_forward")
+
+	var index: int = ghost.current_frame_index()
+	_check(index >= 25, "playback advanced with the race (frame %d)" % index)
+	if replay.frames.size() > index and index >= 1:
+		var expected: ReplayFrame = replay.frames[index - 1]
+		_check(ghost.global_position == expected.position,
+			"ghost position matches recorded frame exactly (%s vs %s)" %
+				[ghost.global_position, expected.position])
+
+	# Visually distinct: translucent material on the ghost model.
+	var model_mat: StandardMaterial3D = ghost.get_node("GhostModel/MeshInstance3D").material_override
+	_check(model_mat.albedo_color.a < 1.0, "ghost model is translucent")
+
+	gm.restart()
+	ghost.queue_free()
+	recorder.queue_free()
+	ts.queue_free()
+	world.queue_free()
+	if sm.has_ghost("ghost_test_map"):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.ghost_path("ghost_test_map")))
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:
