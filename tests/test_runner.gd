@@ -33,6 +33,7 @@ func _run_all_tests() -> void:
 	await _test_ground_friction()
 	await _test_jump_coyote_and_no_double_jump()
 	await _test_bunny_hop_buffer()
+	await _test_air_strafing()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -521,6 +522,73 @@ func _spawn_test_player_at(world: Node3D, pos: Vector3) -> Player:
 	player.position = pos
 	world.add_child(player)
 	return player
+
+
+func _jump_from_ground(player: Player) -> void:
+	while not player.is_on_floor():
+		await physics_frame
+	await _wait_ticks(2)
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(3)
+
+
+func _test_air_strafing() -> void:
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+
+	# --- W+A + mouse left gains speed in air (from low speed, where the
+	# air-speed-cap mechanics produce visible gains) ---
+	player.rotation.y = 0.0
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(2)
+	await _jump_from_ground(player)
+	Input.action_press("move_left")
+	var start_speed := _h_speed(player)
+	for i in 60:  # simulate mouse-left turn while holding W+A
+		player.rotation.y -= 0.05
+		await physics_frame
+	var strafe_left := _h_speed(player)
+	_check(strafe_left > start_speed + 20.0,
+		"W+A + mouse-left turn gains air speed (%s -> %s)" % [start_speed, strafe_left])
+	Input.action_release("move_left")
+
+	# --- W+D + mouse right also gains speed ---
+	while not player.is_on_floor():
+		await physics_frame
+	await _wait_ticks(5)
+	player.rotation.y = 0.0
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(2)
+	await _jump_from_ground(player)
+	Input.action_press("move_right")
+	var start_right := _h_speed(player)
+	for i in 60:  # mouse-right turn
+		player.rotation.y += 0.05
+		await physics_frame
+	var strafe_right := _h_speed(player)
+	Input.action_release("move_right")
+	_check(strafe_right > start_right + 20.0,
+		"W+D + mouse-right turn gains air speed (%s -> %s)" % [start_right, strafe_right])
+
+	# --- Pure W in air must NOT gain significant speed (even from high
+	# speed: wish parallel to velocity has add_speed <= 0) ---
+	while not player.is_on_floor():
+		await physics_frame
+	Input.action_press("move_forward")
+	await _wait_ticks(30)
+	await _jump_from_ground(player)
+	var pure_start := _h_speed(player)
+	for i in 30:
+		await physics_frame
+	var pure_end := _h_speed(player)
+	_check(pure_end <= pure_start + 5.0,
+		"pure W in air does not gain speed (%s -> %s)" % [pure_start, pure_end])
+	Input.action_release("move_forward")
+
+	world.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:

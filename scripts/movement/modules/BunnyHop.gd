@@ -21,10 +21,10 @@ func process(input: InputState, delta: float) -> void:
 	jump_buffer_timer = maxf(0.0, jump_buffer_timer - delta)
 
 
-## Called by the controller when a landing transition is detected post-move
-## (§2.5 flow). fall_speed is the vertical speed the player arrived with.
-func on_landing(fall_speed: float) -> void:
-	var velocity := _controller.get_velocity()
+## Called by the controller's generic post-move dispatch when a landing
+## transition is detected (§2.5 flow). fall_speed is the vertical speed the
+## player arrived with.
+func on_land(velocity: Vector3, fall_speed: float) -> void:
 	var bus := _controller.get_tree().root.get_node_or_null("SignalBus")
 
 	if jump_buffer_timer > 0.0:

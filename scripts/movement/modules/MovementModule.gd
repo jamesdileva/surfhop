@@ -18,3 +18,13 @@ func enabled_in_state(state: int) -> bool:
 
 func process(input: InputState, delta: float) -> void:
 	pass
+
+
+## Optional post-move callback: the player just left the ground.
+func on_takeoff(velocity: Vector3) -> void:
+	pass
+
+
+## Optional post-move callback: the player just touched down.
+func on_land(velocity: Vector3, fall_speed: float) -> void:
+	pass
