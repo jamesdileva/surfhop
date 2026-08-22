@@ -44,6 +44,7 @@ func _run_all_tests() -> void:
 	await _test_hud()
 	await _test_save_system()
 	await _test_ghost_recording()
+	await _test_audio()
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
@@ -1988,6 +1989,73 @@ func _test_challenge_maps() -> void:
 		player_root.queue_free()
 		ts.queue_free()
 		await process_frame
+
+
+func _test_audio() -> void:
+	var am: Node = root.get_node("AudioManager")
+
+	# Buses exist.
+	for bus_name: String in ["Music", "SFX", "UI"]:
+		_check(AudioServer.get_bus_index(bus_name) != -1,
+			"audio bus '%s' exists" % bus_name)
+
+	# set_volume stores linear value (converted to dB internally).
+	am.set_volume("Music", 0.5)
+	var music_idx := AudioServer.get_bus_index("Music")
+	_check(absf(AudioServer.get_bus_volume_db(music_idx)
+		- linear_to_db(0.5)) < 0.01, "set_volume maps linear to dB")
+	am.set_volume("Music", 0.6)
+
+	# play_sfx + event wiring.
+	root.get_node("SignalBus").player_jumped.emit({})
+	await physics_frame
+	_check(int(am.play_counts.get("jump", 0)) >= 1, "player_jumped triggers jump sfx")
+
+	root.get_node("SignalBus").footstep.emit(300.0)
+	await physics_frame
+	var steps: int = int(am.play_counts.get("footstep_a", 0)) \
+		+ int(am.play_counts.get("footstep_b", 0))
+	_check(steps >= 1, "footstep event plays footstep sfx")
+
+	# Walking player emits real footsteps.
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+	var steps_before: int = int(am.play_counts.get("footstep_a", 0)) \
+		+ int(am.play_counts.get("footstep_b", 0))
+	Input.action_press("move_forward")
+	await _wait_ticks(80)  # enough distance to cross the 110u stride threshold
+	Input.action_release("move_forward")
+	var steps_after: int = int(am.play_counts.get("footstep_a", 0)) \
+		+ int(am.play_counts.get("footstep_b", 0))
+	_check(steps_after > steps_before, "walking emits footsteps (%d -> %d)" % [steps_before, steps_after])
+
+	# Surf loop starts/stops with surf transitions.
+	root.get_node("SignalBus").surf_entered.emit({"normal": Vector3.UP})
+	await physics_frame
+	_check(am._surfing and am._surf_player.playing, "surf loop plays during surf")
+	root.get_node("SignalBus").surf_exited.emit()
+	await physics_frame
+	_check(not am._surfing and not am._surf_player.playing, "surf loop stops on surf exit")
+
+	# Music stops when race starts; finish jingle; resumes after delay.
+	am.play_music()
+	_check(am._music_player.playing, "music playing after play_music")
+	root.get_node("SignalBus").race_started.emit({"time": 0.0})
+	await physics_frame
+	_check(not am._music_player.playing, "music stops when race starts")
+	var finish_before: int = int(am.play_counts.get("finish", 0))
+	root.get_node("SignalBus").race_finished.emit({"time": 1.0, "is_pb": false})
+	await physics_frame
+	_check(int(am.play_counts.get("finish", 0)) == finish_before + 1,
+		"race_finished triggers finish jingle")
+	am._music_resume_timer = 0.05
+	await _wait_ticks(12)
+	_check(am._music_player.playing, "music resumes after finish jingle")
+
+	world.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:

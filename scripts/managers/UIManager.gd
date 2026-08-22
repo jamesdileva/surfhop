@@ -58,6 +58,9 @@ func set_debug_visible(value: bool) -> void:
 func show_menu(menu_name: String) -> void:
 	assert(AVAILABLE_MENUS.has(menu_name), "Unknown menu: %s" % menu_name)
 	current_menu = menu_name
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.play_sfx("ui_click")
 	print("UIManager: showing menu '%s'" % menu_name)
 
 

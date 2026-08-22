@@ -8,6 +8,7 @@ extends MovementModule
 ## projects velocity onto the ramp plane and applies low surf friction.
 
 var _last_ramp_normal: Vector3 = Vector3.ZERO
+var _surf_active := false
 
 
 func enabled_in_state(state: int) -> bool:
@@ -24,6 +25,11 @@ func process(input: InputState, delta: float) -> void:
 	var normal := _controller.get_surface_normal()
 	if normal == Vector3.ZERO:
 		return
+	if not _surf_active:
+		_surf_active = true
+		var bus := _controller.get_node_or_null("/root/SignalBus")
+		if bus != null:
+			bus.surf_entered.emit({"normal": normal})
 	# Gravity has already run this tick (module order), so velocity is never
 	# zero on a ramp - the projection below converts it into downhill slide.
 	var velocity := process_surf(_controller.get_velocity(), normal, delta)
@@ -60,6 +66,11 @@ func anti_stuck(velocity: Vector3, normal: Vector3, delta: float) -> Vector3:
 ## Edge handling on leaving a ramp (§5.3): a small push in the ramp's
 ## "down-fling" direction keeps exits clean.
 func on_takeoff(velocity: Vector3) -> void:
+	if _surf_active:
+		_surf_active = false
+		var bus := _controller.get_node_or_null("/root/SignalBus")
+		if bus != null:
+			bus.surf_exited.emit()
 	if _last_ramp_normal == Vector3.ZERO:
 		return
 	var ramp_down := Vector3.DOWN - _last_ramp_normal

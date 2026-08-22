@@ -72,6 +72,7 @@ var friction_override: float = 1.0
 
 var _was_in_contact: bool = false
 var _steep_normal: Vector3 = Vector3.ZERO
+var _stride_accum: float = 0.0
 
 
 func _physics_process(delta: float) -> void:
@@ -93,7 +94,14 @@ func _physics_process(delta: float) -> void:
 
 	if _bus != null:
 		var v := _body.velocity
-		_bus.velocity_updated.emit(Vector2(v.x, v.z).length())
+		var h_speed := Vector2(v.x, v.z).length()
+		_bus.velocity_updated.emit(h_speed)
+		# Footsteps while walking/running on real ground.
+		if state == MovementState.GROUND and h_speed > 50.0:
+			_stride_accum += h_speed * delta
+			if _stride_accum >= 110.0:
+				_stride_accum = 0.0
+				_bus.footstep.emit(h_speed)
 
 	# Post-move contact classification (architecture §8.2 pipeline). Surf
 	# ramps are WALL contacts steeper than floor_max_angle; gravity pressing

@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS := {
 	"graphics/fps_cap": 0,
 	"movement/tick_rate": 100,
 	"movement/show_debug": false,
+	"audio/music_track": "placeholder",
 }
 
 var _settings: Dictionary = {}
