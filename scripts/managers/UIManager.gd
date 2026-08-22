@@ -8,6 +8,22 @@ var current_menu: String = ""
 
 var checkpoint_display: String = ""  # "Checkpoint N/M" (bound to HUD in Sprint 16)
 
+var _hud: Node = null
+
+
+## HUDController registers itself here on _ready.
+func register_hud(hud: Node) -> void:
+	_hud = hud
+	hud.set_debug_visible(debug_visible)
+
+
+func get_hud() -> Node:
+	return _hud
+
+
+func clear_hud() -> void:
+	_hud = null
+
 var debug_visible: bool = false
 var _debug_overlay: Node = null
 
@@ -35,6 +51,8 @@ func set_debug_visible(value: bool) -> void:
 		save_manager.save_settings()
 	if _debug_overlay != null:
 		_debug_overlay.visible = value
+	if _hud != null:
+		_hud.set_debug_visible(value)
 
 
 func show_menu(menu_name: String) -> void:

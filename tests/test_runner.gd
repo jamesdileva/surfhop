@@ -41,6 +41,7 @@ func _run_all_tests() -> void:
 	await _test_timer_system()
 	await _test_checkpoints()
 	await _test_map_loading()
+	await _test_hud()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1145,6 +1146,91 @@ func _test_map_loading() -> void:
 	# Cleanup: leave no map loaded for other suites.
 	loader.unload_current()
 	player_root.queue_free()
+	await process_frame
+
+
+func _test_hud() -> void:
+	var gm: Node = root.get_node("GameManager")
+	var ui: Node = root.get_node("UIManager")
+	gm.restart()
+
+	# --- Speed tiers (§13.3) ---
+	_check(HUDController.tier_color(100.0) == Color(0.55, 0.55, 0.55), "tier: gray below 200")
+	_check(HUDController.tier_color(300.0) == Color.WHITE, "tier: white 200-400")
+	_check(HUDController.tier_color(500.0) == Color(1.0, 0.9, 0.25), "tier: yellow 400-600")
+	_check(HUDController.tier_color(700.0) == Color(1.0, 0.55, 0.1), "tier: orange 600-800")
+	_check(HUDController.tier_color(900.0) == Color(1.0, 0.15, 0.15), "tier: red above 800")
+
+	# --- Live HUD with a moving player ---
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	var hud: HUDController = (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	root.add_child(hud)
+	for i in 80:  # helper spawns from y=40; wait for touchdown
+		await physics_frame
+		if player.is_on_floor():
+			break
+	await _wait_ticks(2)
+
+	Input.action_press("move_forward")
+	await _wait_ticks(30)  # past the 30Hz throttle window, speed ~320
+
+	var speed_text: String = hud.get_speed_text()
+	_check(speed_text.ends_with("u/s") and int(speed_text.trim_suffix(" u/s")) > 200,
+		"speed label shows live horizontal speed (%s)" % speed_text)
+	_check(hud.get_speed_label().modulate == HUDController.tier_color(320.0),
+		"speed label uses tier color")
+	Input.action_release("move_forward")
+
+	# Free the live emitter so the direct-emission check is deterministic
+	# (a decelerating player overwrites _latest_speed every tick).
+	world.queue_free()
+	await process_frame
+
+	# Direct emission drives the label (wait out the 30Hz throttle window).
+	root.get_node("SignalBus").velocity_updated.emit(650.0)
+	await _wait_ticks(5)
+	_check(hud.get_speed_label().text == "650 u/s", "velocity_updated drives speed label")
+	_check(hud.get_speed_label().modulate == HUDController.tier_color(650.0),
+		"650 u/s shows orange tier")
+
+	# --- Timer starts/stops with the race; PB updates on finish ---
+	gm.start_race()
+	await _wait_ticks(20)
+	var running_text: String = hud.get_timer_text()
+	_check(running_text != "0:00.000", "timer runs during race (%s)" % running_text)
+	gm.finish_race()
+	var frozen: String = hud.get_timer_text()
+	await _wait_ticks(5)
+	_check(hud.get_timer_text() == frozen, "timer freezes at finish")
+	_check(frozen.begins_with("0:") or frozen.begins_with("1:"),
+		"timer format is m:ss.mmm (%s)" % frozen)
+
+	# --- Checkpoint display flows to HUD ---
+	ui.show_checkpoint_progress(2, 5)
+	await _wait_ticks(2)
+	_check(hud.get_checkpoint_text() == "Checkpoint 2/5",
+		"checkpoint label shows N/M (%s)" % hud.get_checkpoint_text())
+
+	# --- Debug line visibility follows UIManager ---
+	ui.set_debug_visible(true)
+	await _wait_ticks(2)
+	_check(hud.is_debug_line_visible(),
+		"debug speed line visible in debug mode (ui.debug_visible=%s hud_registered=%s)" %
+			[ui.debug_visible, ui.get_hud() == hud])
+	ui.set_debug_visible(false)
+
+	# --- FPS counter populates within a second ---
+	var fps_before: String = hud.get_fps_text()
+	for i in 80:
+		await process_frame
+		if hud.get_fps_text() != fps_before and not hud.get_fps_text().ends_with("--"):
+			break
+	_check(hud.get_fps_text().begins_with("FPS: ") and not hud.get_fps_text().ends_with("--"),
+		"FPS counter shows real-time reading (%s)" % hud.get_fps_text())
+
+	hud.queue_free()
 	await process_frame
 
 

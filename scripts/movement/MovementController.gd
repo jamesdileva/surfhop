@@ -28,12 +28,14 @@ var _modules: Array[MovementModule] = []
 var _collision: Collision
 var _jump: Jump
 var _surf: Surf
+var _bus: Node
 
 
 func _ready() -> void:
 	_body = get_parent() as CharacterBody3D
 	_camera = _body.get_node_or_null("PlayerCamera") if _body != null else null
 	_input_manager = get_node_or_null("/root/InputManager")
+	_bus = get_node_or_null("/root/SignalBus")
 	if config == null:
 		push_error("MovementController: no MovementConfig resource assigned")
 		return
@@ -76,6 +78,10 @@ func _physics_process(delta: float) -> void:
 
 	var pre_move_velocity := _body.velocity
 	_body.move_and_slide()
+
+	if _bus != null:
+		var v := _body.velocity
+		_bus.velocity_updated.emit(Vector2(v.x, v.z).length())
 
 	# Post-move contact classification (architecture §8.2 pipeline). Surf
 	# ramps are WALL contacts steeper than floor_max_angle; gravity pressing

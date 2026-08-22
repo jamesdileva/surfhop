@@ -1,0 +1,63 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/HUDController.gd" id="1_kw0id"]
+
+[node name="HUD" type="CanvasLayer" unique_id=1920089975]
+script = ExtResource("1_kw0id")
+
+[node name="Root" type="Control" parent="." unique_id=864752878]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="SpeedLabel" type="Label" parent="Root" unique_id=1248515216]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 24.0
+offset_bottom = 24.0
+theme_override_font_sizes/font_size = 34
+
+[node name="TimerLabel" type="Label" parent="Root" unique_id=1482209176]
+layout_mode = 0
+offset_left = 880.0
+offset_top = 24.0
+offset_right = 880.0
+offset_bottom = 24.0
+theme_override_font_sizes/font_size = 30
+
+[node name="PRLabel" type="Label" parent="Root" unique_id=508636962]
+layout_mode = 0
+offset_left = 880.0
+offset_top = 64.0
+offset_right = 880.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 22
+
+[node name="CheckpointLabel" type="Label" parent="Root" unique_id=538054757]
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 24.0
+offset_right = 1500.0
+offset_bottom = 24.0
+theme_override_font_sizes/font_size = 24
+
+[node name="FPSLabel" type="Label" parent="Root" unique_id=165759973]
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 1030.0
+offset_right = 1720.0
+offset_bottom = 1030.0
+theme_override_font_sizes/font_size = 16
+text = "FPS: --"
+
+[node name="DebugSpeedLabel" type="Label" parent="Root" unique_id=1382473140]
+visible = false
+layout_mode = 0
+offset_left = 24.0
+offset_top = 1030.0
+offset_right = 24.0
+offset_bottom = 1030.0
+theme_override_font_sizes/font_size = 20

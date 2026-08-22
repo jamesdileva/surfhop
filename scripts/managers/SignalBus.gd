@@ -8,3 +8,4 @@ signal checkpoint_reached(data: Dictionary)
 signal player_landed(data: Dictionary)
 signal player_jumped(data: Dictionary)
 signal settings_changed(key: String, value: Variant)
+signal velocity_updated(speed: float)  # horizontal speed, emitted each physics tick
