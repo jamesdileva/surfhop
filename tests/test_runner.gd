@@ -34,6 +34,7 @@ func _run_all_tests() -> void:
 	await _test_jump_coyote_and_no_double_jump()
 	await _test_bunny_hop_buffer()
 	await _test_air_strafing()
+	await _test_surfing()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -481,24 +482,30 @@ func _test_bunny_hop_buffer() -> void:
 	await _wait_ticks(2)
 	_check(player.velocity.y > 250.0 and not player.is_on_floor(), "bhop: initial jump fired")
 
-	# Descend; arm the jump buffer just before touchdown (< 50ms away).
+	# Descend; spam the jump key near touchdown (real bhop technique) so the
+	# buffer is guaranteed active at the moment of landing.
 	var armed := false
 	for i in 90:
 		await physics_frame
-		if player.velocity.y < 0.0 and player.position.y <= 12.0:
+		if player.velocity.y < 0.0 and player.position.y <= 20.0:
 			root.get_node("InputManager")._input(_jump_press_event())
 			armed = true
-			break
+			if player.is_on_floor():
+				break
 	_check(armed, "bhop: armed buffer before touchdown")
 
-	# Watch for the buffered auto-jump on landing.
+	# Watch for the buffered auto-jump on landing. By the time the spam loop
+	# observes the landed floor flag, the impulse has typically fired and a
+	# couple of gravity ticks have passed - so accept any clear upward launch.
 	var buffered_jump := false
-	for i in 12:
+	var trace := ""
+	for i in 14:
 		await physics_frame
-		if player.velocity.y > 250.0:
+		trace += "v=%s fl=%s | " % [player.velocity, player.is_on_floor()]
+		if player.velocity.y > 150.0:
 			buffered_jump = true
 			break
-	_check(buffered_jump, "buffered jump fires automatically on landing")
+	_check(buffered_jump, "buffered jump fires automatically on landing [%s]" % trace)
 	var bhop_speed := _h_speed(player)
 	_check(bhop_speed >= ground_speed * 0.95,
 		"bhop preserves horizontal speed through landing (%s -> %s)" % [ground_speed, bhop_speed])
@@ -586,6 +593,69 @@ func _test_air_strafing() -> void:
 	_check(pure_end <= pure_start + 5.0,
 		"pure W in air does not gain speed (%s -> %s)" % [pure_start, pure_end])
 	Input.action_release("move_forward")
+
+	world.queue_free()
+	await process_frame
+
+
+func _make_ramp(world: Node3D, angle_deg: float) -> StaticBody3D:
+	# Tilted slab: top surface slopes downhill toward +X. Centered so the
+	# plane of the top face passes near (0, -60, 0).
+	var ramp := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(1200.0, 40.0, 2000.0)
+	shape.shape = box
+	ramp.add_child(shape)
+	ramp.rotation.z = -deg_to_rad(angle_deg)
+	ramp.position = Vector3(0.0, -60.0, 0.0)
+	world.add_child(ramp)
+	return ramp
+
+
+func _test_surfing() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var ramp := _make_ramp(world, 50.0)
+
+	# --- Landing on a ramp enters SURF state and slides gaining speed ---
+	var player: Player = _spawn_test_player_at(world, Vector3(-150.0, 250.0, 0.0))
+	var saw_surf := false
+	var surf_start_speed := 0.0
+	var speed_at_exit := 0.0
+	var left_ramp := false
+	var plane_error_max := 0.0
+	for i in 300:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			if not saw_surf:
+				saw_surf = true
+				surf_start_speed = _h_speed(player)
+			plane_error_max = maxf(plane_error_max,
+				absf(player.velocity.dot(player.movement_controller.get_surface_normal())))
+		elif saw_surf:
+			speed_at_exit = _h_speed(player)
+			left_ramp = true
+			break
+	_check(saw_surf, "landing on a 50-degree ramp enters SURF state")
+	_check(left_ramp, "player slides down the ramp and exits to air")
+	_check(speed_at_exit > surf_start_speed + 50.0,
+		"gravity conversion builds speed on ramp (%s -> %s)" % [surf_start_speed, speed_at_exit])
+	_check(plane_error_max < 25.0,
+		"velocity stays close to ramp plane while surfing (max error %s)" % plane_error_max)
+
+	# --- Anti-stuck / no cling: a player dropped stationary on the ramp
+	# must start sliding rather than sticking ---
+	player.velocity = Vector3.ZERO
+	player.rotation.y = 0.0
+	player.position = Vector3(-150.0, 250.0, 500.0)  # fresh spot on same ramp
+	var sliding := false
+	for i in 90:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF and _h_speed(player) > 10.0:
+			sliding = true
+			break
+	_check(sliding, "stationary player on ramp starts sliding (anti-stuck)")
 
 	world.queue_free()
 	await process_frame

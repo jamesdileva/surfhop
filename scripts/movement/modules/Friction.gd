@@ -6,6 +6,8 @@ extends MovementModule
 ## (Sprint 8) to reduce friction on buffered landing jumps.
 
 func enabled_in_state(state: int) -> bool:
+	# SURF friction is deliberately NOT handled here — the Surf module applies
+	# its own much lower ramp friction (§4.3). Ground friction only.
 	return state == MovementState.GROUND
 
 

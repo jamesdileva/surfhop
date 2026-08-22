@@ -14,7 +14,10 @@ func enabled_in_state(state: int) -> bool:
 
 
 func process(input: InputState, delta: float) -> void:
-	if _controller.is_on_floor():
+	# Surfing counts as grounded for jump purposes (jumping off ramps).
+	var grounded := _controller.is_on_floor() \
+		or _controller.state == MovementState.SURF
+	if grounded:
 		coyote_timer = _controller.config.coyote_time_ms / 1000.0
 	else:
 		coyote_timer = maxf(0.0, coyote_timer - delta)

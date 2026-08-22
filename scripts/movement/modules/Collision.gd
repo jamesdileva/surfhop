@@ -20,3 +20,16 @@ func floor_normal() -> Vector3:
 ## Slope angle in degrees between the floor normal and straight up.
 func slope_angle() -> float:
 	return rad_to_deg(floor_normal().angle_to(Vector3.UP))
+
+
+## Returns the first post-slide contact normal steeper than the walkable
+## limit (a surf ramp / wall), or ZERO when no such contact exists.
+## Ceilings (normals pointing downward) are ignored.
+func steep_normal() -> Vector3:
+	var body := _controller.get_body()
+	var limit: float = cos(deg_to_rad(_controller.config.surf_angle_min_deg))
+	for i in body.get_slide_collision_count():
+		var n := body.get_slide_collision(i).get_normal()
+		if n.dot(Vector3.UP) >= 0.0 and n.dot(Vector3.UP) < limit:
+			return n
+	return Vector3.ZERO
