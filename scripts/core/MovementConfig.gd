@@ -9,6 +9,7 @@ extends Resource
 @export var ground_accel: float = 10.0
 @export var ground_friction: float = 6.0
 @export var stop_speed: float = 8.0  # Friction base below this speed (clean stops, §1.3)
+@export var friction_override_factor: float = 0.1  # Friction multiplier on buffered bhop landing (§2.2)
 
 # Air movement
 @export var air_accel: float = 10.0

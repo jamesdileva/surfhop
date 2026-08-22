@@ -22,7 +22,7 @@ func apply_friction(delta: float, override: float = 1.0) -> void:
 		_controller.set_velocity(velocity)
 		return
 
-	var friction: float = _controller.config.ground_friction * override
+	var friction: float = _controller.config.ground_friction * _controller.friction_override * override
 	var control: float = maxf(speed, _controller.config.stop_speed)
 	var drop: float = minf(control * friction * delta, speed)
 

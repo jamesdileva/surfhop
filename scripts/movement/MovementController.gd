@@ -11,6 +11,7 @@ const MODULES := [
 	preload("res://scripts/movement/modules/Gravity.gd"),
 	preload("res://scripts/movement/modules/Collision.gd"),
 	preload("res://scripts/movement/modules/Jump.gd"),
+	preload("res://scripts/movement/modules/BunnyHop.gd"),
 	preload("res://scripts/movement/modules/Velocity.gd"),
 ]
 
@@ -39,6 +40,15 @@ func _ready() -> void:
 		_modules.append(module)
 	_collision = _get_module(Collision)
 	_jump = _get_module(Jump)
+	_bunny_hop = _get_module(BunnyHop)
+
+
+## Friction multiplier for the next Friction module run. Defaults to full
+## friction; BunnyHop lowers it on buffered landings (§2.5). Consumed once.
+var friction_override: float = 1.0
+
+var _bunny_hop: BunnyHop
+var _was_on_floor: bool = false
 
 
 func _physics_process(delta: float) -> void:
@@ -51,7 +61,19 @@ func _physics_process(delta: float) -> void:
 		if module.enabled_in_state(state):
 			module.process(input, delta)
 
+	# friction_override applies to exactly one Friction run (§2.2): consume
+	# it here so a value set by a later landing survives until the next tick.
+	friction_override = 1.0
+
+	var pre_move_velocity := _body.velocity
 	_body.move_and_slide()
+
+	# Post-move landing detection (architecture §8.2 pipeline).
+	var on_floor_now := _collision.on_floor()
+	if on_floor_now and not _was_on_floor:
+		var fall_speed := maxf(0.0, -pre_move_velocity.y)
+		_bunny_hop.on_landing(fall_speed)
+	_was_on_floor = on_floor_now
 
 
 ## State transitions come from the Collision module's ground detection

@@ -32,6 +32,7 @@ func _run_all_tests() -> void:
 	await _test_player_basic_movement()
 	await _test_ground_friction()
 	await _test_jump_coyote_and_no_double_jump()
+	await _test_bunny_hop_buffer()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -456,6 +457,60 @@ func _test_jump_coyote_and_no_double_jump() -> void:
 	await _wait_ticks(2)
 	_check(player.velocity.y > 250.0,
 		"grounded jump works after landing (v_y=%s)" % player.velocity.y)
+
+	world.queue_free()
+	await process_frame
+
+
+func _test_bunny_hop_buffer() -> void:
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+
+	# Reach full ground speed.
+	Input.action_press("move_forward")
+	await _wait_ticks(30)
+	var ground_speed := _h_speed(player)
+	_check(ground_speed > 300.0, "bhop test: reached run speed (%s)" % ground_speed)
+
+	# Jump, then press jump again mid-air within the 50ms buffer window of
+	# landing. Flight time is 75 ticks (v=300, g=800); land ~tick 75.
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(2)
+	_check(player.velocity.y > 250.0 and not player.is_on_floor(), "bhop: initial jump fired")
+
+	# Descend; arm the jump buffer just before touchdown (< 50ms away).
+	var armed := false
+	for i in 90:
+		await physics_frame
+		if player.velocity.y < 0.0 and player.position.y <= 12.0:
+			root.get_node("InputManager")._input(_jump_press_event())
+			armed = true
+			break
+	_check(armed, "bhop: armed buffer before touchdown")
+
+	# Watch for the buffered auto-jump on landing.
+	var buffered_jump := false
+	for i in 12:
+		await physics_frame
+		if player.velocity.y > 250.0:
+			buffered_jump = true
+			break
+	_check(buffered_jump, "buffered jump fires automatically on landing")
+	var bhop_speed := _h_speed(player)
+	_check(bhop_speed >= ground_speed * 0.95,
+		"bhop preserves horizontal speed through landing (%s -> %s)" % [ground_speed, bhop_speed])
+
+	# Land WITHOUT a buffer this time: full friction must apply and bleed speed.
+	await _wait_ticks(80)  # fly out and settle back on the floor
+	while not player.is_on_floor():
+		await physics_frame
+	Input.action_release("move_forward")
+	await _wait_ticks(30)
+	var after_friction := _h_speed(player)
+	_check(after_friction < bhop_speed * 0.5,
+		"unbuffered landing applies full friction (%s -> %s)" % [bhop_speed, after_friction])
 
 	world.queue_free()
 	await process_frame
