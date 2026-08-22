@@ -127,6 +127,15 @@
 - **Speed Run** (single 6,500u flat line; no checkpoints — pure momentum test).
 - `MovingPlatform.gd` (AnimatableBody3D sinusoidal mover) added to the framework.
 
+## Sprint 24 — Audio (`735e4c7`)
+
+- Full `AudioManager`: runtime Music/SFX/UI buses, SFX voice pool, volume API backed by saved settings, menu click sounds.
+- Event-driven sound: jump/land (fall-speed-scaled), footsteps (stride-distance based, two variants), surf loop with speed-scaled pitch, finish jingle; music stops on race start and resumes after the jingle.
+- Placeholder sounds + music loop are **synthesized** by `tools/generate_sfx.gd` — no licensing concerns; swap files under `assets/audio/` to replace.
+- Music stations designed for user-supplied royalty-free tracks: drop `assets/audio/music/<station>.ogg/.wav`, set `audio/music_track`; settings dropdown arrives in Sprint 26.
+- New SignalBus signals: `footstep`, `surf_entered`, `surf_exited`.
+- Lessons: `get_setting(key)` takes one arg (no inline default) — a bad call crashed `_ready` mid-setup and silently disconnected every later signal connection; prefer `ResourceLoader.exists()` before `load()` to keep stdout clean.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")

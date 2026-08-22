@@ -108,6 +108,8 @@ first record per map.
 - **Ramp feel tuning**: air_accel (10), surf friction, gravity-conversion
   strength — tune after extended play sessions.
 - **Gap jump distances** on intermediate/advanced need human validation.
+- **Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
+  and wire the `audio/music_track` setting into the Sprint 26 settings dropdown.
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.
