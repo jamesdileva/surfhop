@@ -85,14 +85,21 @@ func _process(_delta: float) -> void:
 func _finalize_load(map: Node) -> void:
 	if _container.get_parent() == null:
 		get_tree().root.add_child(_container)
+	var metadata := map.get_meta(METADATA_KEY) as MapMetadata \
+		if map.has_meta(METADATA_KEY) else null
+	var game_manager := get_node_or_null("/root/GameManager")
+	if game_manager != null and metadata != null:
+		game_manager.map_name = metadata.map_id
+		# Reset run state BEFORE mounting: checkpoint _ready handlers register
+		# during add_child and must start from a clean slate.
+		game_manager.restart()
+		game_manager.total_checkpoints = 0
+		game_manager.active_checkpoint_id = -1
+		game_manager.checkpoint_splits.clear()
 	_container.add_child(map)
 	current_map = map
-	current_metadata = map.get_meta(METADATA_KEY) as MapMetadata \
-		if map.has_meta(METADATA_KEY) else null
+	current_metadata = metadata
 	_apply_movement_config()
-	var game_manager := get_node_or_null("/root/GameManager")
-	if game_manager != null and current_metadata != null:
-		game_manager.map_name = current_metadata.map_id
 	map_loaded.emit(map)
 
 

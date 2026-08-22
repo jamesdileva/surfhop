@@ -38,16 +38,20 @@ func _wire(node: Node) -> void:
 
 
 func _on_start_body_exited(body: Node3D) -> void:
+	if not is_inside_tree() or not body.is_in_group("player"):
+		return
 	var game_manager := get_node_or_null("/root/GameManager")
-	if game_manager == null or not body.is_in_group("player"):
+	if game_manager == null:
 		return
 	if game_manager.race_state == game_manager.RaceState.IDLE:
 		game_manager.start_race()
 
 
 func _on_finish_body_entered(body: Node3D) -> void:
+	if not is_inside_tree() or not body.is_in_group("player"):
+		return
 	var game_manager := get_node_or_null("/root/GameManager")
-	if game_manager == null or not body.is_in_group("player"):
+	if game_manager == null:
 		return
 	if game_manager.race_state == game_manager.RaceState.RUNNING:
 		game_manager.finish_race()

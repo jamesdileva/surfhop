@@ -45,6 +45,7 @@ func _run_all_tests() -> void:
 	await _test_save_system()
 	await _test_ghost_recording()
 	await _test_tutorial_map()
+	await _test_beginner_map()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1506,6 +1507,113 @@ func _test_tutorial_map() -> void:
 			break
 	Input.action_release("move_forward")
 	_check(finished, "map ends with a working finish line")
+
+	loader.unload_current()
+	player_root.queue_free()
+	ts.queue_free()
+	await process_frame
+
+
+func _test_beginner_map() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "beginner":
+			entry = e
+			break
+	_check(not entry.is_empty(), "beginner map discovered")
+	if entry.is_empty():
+		return
+	var meta: MapMetadata = entry["metadata"]
+	_check(meta.difficulty == 2 and meta.movement_config_path.ends_with("default.tres"),
+		"beginner metadata: difficulty 2, standard config")
+
+	# Load with a player; checkpoint counters must reset per map.
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 20.0, -40.0))
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "beginner map loads")
+	await _wait_ticks(5)
+	var map: Node3D = loader.current_map
+	var cfg: MovementConfig = player.movement_controller.config
+	_check(cfg != null and cfg.resource_path.ends_with("default.tres"),
+		"standard config applied (%s)" % (cfg.resource_path if cfg else "null"))
+	_check(gm.total_checkpoints == 3,
+		"exactly 3 checkpoints registered on load (got %d)" % gm.total_checkpoints)
+	_check(map.get_node_or_null("SurfRamp1") != null and map.get_node_or_null("SurfRamp2") != null
+		and map.get_node_or_null("SurfRamp3") != null, "three surf ramps present")
+	var r1_angle: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
+	var r2_angle: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
+	var r3_angle: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
+	_check(r1_angle < r2_angle and r2_angle < r3_angle,
+		"ramps increase in angle (%.1f < %.1f < %.1f)" % [r1_angle, r2_angle, r3_angle])
+
+	# --- Traversal smoke test ---
+	gm.kill_plane_y = -3000.0
+	player.position = Vector3(0.0, 20.0, -40.0)
+	await _wait_ticks(6)
+
+	Input.action_press("move_forward")
+	var running := false
+	for i in 120:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	_check(running, "start trigger begins the run")
+
+	# Ride each ramp: teleport onto mid-ramp, expect SURF state each time.
+	# Drop steeply onto each ramp (raycast-verified surface points); a shallow
+	# fall with forward speed can parallel the slope without contacting.
+	for ramp_info: Array in [
+		["SurfRamp1", Vector3(0.0, -178.0, -2560.0)],
+		["SurfRamp2", Vector3(0.0, -608.0, -4825.0)],
+		["SurfRamp3", Vector3(0.0, -1083.0, -6930.0)],
+	]:
+		player.position = ramp_info[1]
+		player.velocity = Vector3(0.0, -120.0, -30.0)
+		var surfing := false
+		var ramp_trace := ""
+		for i in 30:
+			await physics_frame
+			ramp_trace += "%d:%d@(%d,%d,%d) " % [i, player.movement_controller.state,
+				player.position.x, player.position.y, player.position.z]
+			if player.movement_controller.state == MovementState.SURF:
+				surfing = true
+				break
+		_check(surfing, "%s produces SURF state [%s]" % [ramp_info[0], ramp_trace])
+
+	# Pass checkpoints via their volumes while running through the course.
+	player.position = Vector3(0.0, -360.0, -3600.0)
+	await _wait_ticks(4)
+	_check(gm.active_checkpoint_id >= 0, "checkpoint registers during traversal")
+	var splits_before: int = gm.checkpoint_splits.size()
+
+	# Cross the finish.
+	player.position = Vector3(0.0, -1314.0, -8555.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	Input.action_release("move_forward")
+	_check(finished, "finish line completes the run")
+	_check(gm.checkpoint_splits.size() >= splits_before,
+		"splits survive to finish")
 
 	loader.unload_current()
 	player_root.queue_free()
