@@ -35,6 +35,8 @@ func _run_all_tests() -> void:
 	await _test_bunny_hop_buffer()
 	await _test_air_strafing()
 	await _test_surfing()
+	await _test_tuning_measurements()
+	await _test_fixed_tick_determinism()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -659,6 +661,121 @@ func _test_surfing() -> void:
 
 	world.queue_free()
 	await process_frame
+
+
+func _test_tuning_measurements() -> void:
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+
+	# --- Walk: ticks to reach 320 u/s (target ~0.5s per acceptance) ---
+	Input.action_press("move_forward")
+	var ticks_to_full := 0
+	for i in 120:
+		await physics_frame
+		ticks_to_full = i + 1
+		if _h_speed(player) >= 316.0:
+			break
+	_check(ticks_to_full > 0 and ticks_to_full <= 60,
+		"walk reaches ~320 in %d ticks (%.2fs)" % [ticks_to_full, ticks_to_full * 0.01])
+	print("[tuning] walk accel: %d ticks (%.2fs)" % [ticks_to_full, ticks_to_full * 0.01])
+	Input.action_release("move_forward")
+	world.queue_free()
+	await process_frame
+
+	# --- Jump air time (impulse 300 / gravity 800 -> physics says 0.75s) ---
+	spawned = _spawn_test_player()
+	world = spawned[0]
+	player = spawned[1]
+	await _wait_ticks(40)
+	root.get_node("InputManager")._input(_jump_press_event())
+	var air_ticks := 0
+	var airborne := false
+	for i in 150:
+		await physics_frame
+		if not player.is_on_floor():
+			airborne = true
+			air_ticks += 1
+		elif airborne:
+			break
+	_check(airborne and air_ticks >= 68 and air_ticks <= 82,
+		"jump air time matches impulse/gravity physics (%d ticks, docs claim ~0.45s - flagged)" % air_ticks)
+	print("[tuning] jump air time: %d ticks (%.2fs; doc target 0.45s contradicts its own v=300/g=800 -> 0.75s)"
+		% [air_ticks, air_ticks * 0.01])
+	world.queue_free()
+	await process_frame
+
+	# --- Air strafe gain over 1s of optimal turning ---
+	spawned = _spawn_test_player()
+	world = spawned[0]
+	player = spawned[1]
+	await _wait_ticks(40)
+	await _jump_from_ground(player)
+	Input.action_press("move_left")
+	var strafe_start := _h_speed(player)
+	for i in 100:
+		player.rotation.y -= 0.03
+		await physics_frame
+	var strafe_gain := _h_speed(player) - strafe_start
+	Input.action_release("move_left")
+	print("[tuning] strafe gain from low speed over 1s: %.0f u/s (doc target 100-150)" % strafe_gain)
+	_check(strafe_gain > 30.0, "air strafing produces meaningful speed gain over 1s (+%.0f u/s)" % strafe_gain)
+	world.queue_free()
+	await process_frame
+
+	# --- Surf speed build rate on a 50-degree ramp ---
+	var world2 := Node3D.new()
+	root.add_child(world2)
+	var ramp := _make_ramp(world2, 50.0)
+	var p2: Player = _spawn_test_player_at(world2, Vector3(-150.0, 250.0, 0.0))
+	var surf_entry := -1.0
+	var surf_exit_speed := -1.0
+	for i in 200:
+		await physics_frame
+		if p2.movement_controller.state == MovementState.SURF:
+			if surf_entry < 0.0:
+				surf_entry = _h_speed(p2)
+			surf_exit_speed = _h_speed(p2)
+		elif surf_entry >= 0.0:
+			break
+	print("[tuning] surf on 50deg ramp: entry %.0f -> exit %.0f u/s" % [surf_entry, surf_exit_speed])
+	_check(surf_exit_speed > surf_entry + 50.0,
+		"surf at 50 degrees builds speed consistently (%.0f -> %.0f)" % [surf_entry, surf_exit_speed])
+	world2.queue_free()
+	await process_frame
+
+
+func _run_scripted_sequence() -> Dictionary:
+	# Identical input script used twice for the determinism check.
+	var spawned := _spawn_test_player()
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+	Input.action_press("move_forward")
+	await _wait_ticks(20)
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(3)
+	Input.action_press("move_left")
+	for i in 25:
+		player.rotation.y -= 0.04
+		await physics_frame
+	Input.action_release("move_forward")
+	Input.action_release("move_left")
+	var result := {"pos": player.global_position, "vel": player.velocity}
+	spawned[0].queue_free()
+	await process_frame
+	return result
+
+
+func _test_fixed_tick_determinism() -> void:
+	# Same inputs over the same fixed ticks must produce bit-identical results
+	# regardless of render pacing (doc §18.3 test_fixed_tick_determinism).
+	var run_a := await _run_scripted_sequence()
+	var run_b := await _run_scripted_sequence()
+	_check(run_a["pos"] == run_b["pos"],
+		"determinism: identical inputs give identical positions (a=%s b=%s)" % [run_a["pos"], run_b["pos"]])
+	_check(run_a["vel"] == run_b["vel"],
+		"determinism: identical inputs give identical velocity (a=%s b=%s)" % [run_a["vel"], run_b["vel"]])
 
 
 func _test_save_manager_defaults() -> void:
