@@ -1,0 +1,139 @@
+# Velocity Engine — Development History
+
+> A running log of what was built, decided, and broken along the way.
+> **Maintenance rule:** after every sprint commit+push, add or amend the
+> session's entry here (what shipped, decisions made, bugs worth remembering).
+
+---
+
+## Phase 0 — Ideation
+
+- Concept settled: first-person bhop / air-strafe / surf time-trial game ("Velocity") built on a reusable engine ("Velocity Engine"), Godot 4.x + GDScript, engine-first architecture (docs 01–03 authored before any code).
+
+## Sprint 1 — Project Setup (`6972e39`)
+
+- Project scaffolded; folder structure per architecture §5; `.gitignore`; `AGENTS.md`.
+- Godot 4.7.2 installed via winget. Decision: project name "Velocity", repo dir stays `surfhop`.
+
+## Sprint 2 — Core Managers (`861c2e3`)
+
+- 8 manager autoloads + SignalBus (6 event signals). All registered and validated.
+- Established the canonical headless test contract: everything reachable through `tests/test_runner.gd`; success = exit 0 + zero ERROR lines.
+
+## Sprint 3 — Input System (`b9fe23f`)
+
+- `InputState` struct + full `InputManager` (rebinding w/ conflict detection, persistence to `user://save/bindings.cfg`).
+- Lesson: input actions were written into `project.godot` programmatically so Godot serialized them; manually corrected `"device":16` → `-1` afterwards.
+
+## Sprint 4 — First-Person Camera (`e5390e5`)
+
+- `PlayerCamera`: yaw-on-body/pitch-on-camera, ±89° clamp, SaveManager-driven sensitivity, capture/release.
+- Pattern adopted: **autoload names are not compile-time globals under `-s` scripts** — gameplay code resolves managers via `get_node("/root/<Name>")`.
+
+## Sprint 5 — Basic Movement (`a3853b9`)
+
+- `Player` + `MovementController` + module pipeline (`GroundMovement`, `Gravity`); `MovementConfig`/`MovementState` added as flagged extras.
+- Decision: **Quake unit scale** (1 Godot unit = 1 Quake unit; capsule 72u) so documented numbers work verbatim.
+- **Doc bug flagged:** `physics/common/physics_fps` doesn't exist in Godot 4 — real setting is `physics_ticks_per_second`. Our 100 Hz was silently not applied until fixed.
+
+## Sprint 6 — Ground Physics (`c738947`)
+
+- `Friction` (PM_Friction + `stop_speed`, override param for later bhop use) + `Velocity` clamp module. Module order now friction-before-accelerate (Quake style).
+
+## Sprint 7 — Jumping (`944ea2a`)
+
+- `Jump` (impulse + coyote time) and `Collision` ground-detection wrapper; controller state machine driven through it.
+
+## Sprint 8 — Bunny Hopping (`1a56a72`)
+
+- `BunnyHop` buffer + landing dispatch + friction override. Ordering bug (override reset wiping a just-set value) caught during self-review.
+
+## Sprint 9 — Air Strafing (`d1ed4fb`)
+
+- `AirMovement` + generic `on_takeoff`/`on_land` hooks on the module base class.
+- Learning: strafe gain at high speed is physically tiny (Δv ≈ a²/2v) — authentic Quake behavior, kept as-is at this point.
+
+## Sprint 10 — Surfing (`8121da7`) — *the big one*
+
+- Final design: ramps steeper than `floor_max_angle` are treated as **walls** by grounded `move_and_slide`, which preserves tangential velocity; gravity pressing into the wall maintains contact. `Surf` module projects velocity onto the plane, applies low friction, anti-stuck (acceleration-based), exit boost.
+- Dead ends documented: raising `floor_max_angle` to 80° made grounded mode flatten v.y every tick (speed pinned); `MOTION_MODE_FLOATING` slides motion but never rewrites velocity or sets floor flags.
+- Lesson: an out-of-scope `delta` reference cascaded into a wall of Nil errors — always check the FIRST script error, not the flood.
+
+## Sprint 11 — Physics Tuning (`797a2dd`)
+
+- Measurement suite (walk/jump/strafe/surf rates) + **fixed-tick determinism test** (bitwise-identical runs).
+- Decision (user): keep documented Quake values; acceptance-target contradictions flagged for docs instead of retuning.
+
+## Sprint 12 — Debug Tools (`048b23c`)
+
+- F1-toggled overlay drawing velocity/surface-normal arrows + state label; visibility persisted via settings; overlays self-register with UIManager.
+
+## Sprint 13 — Timer System (`5b57b9a`)
+
+- `TimerSystem` wires scriptless trigger scenes by group; GameManager gained wall-clock race timing, PB checks, pause compensation.
+- Gotchas locked into team memory: `PackedScene.pack()` drops children without `owner`; `add_to_group` needs the persistent flag.
+
+## Sprint 14 — Checkpoints (`d459ccb`)
+
+- Forward-only checkpoint progression, splits into finish payload, kill-plane respawn (timer keeps running), R = reset + respawn.
+
+## Sprint 15 — Map Loading (`563e18b`)
+
+- Threaded async `LevelLoader`, discovery via node-metadata `map_metadata`, per-map MovementConfig applied to the player; `GameManager.map_name` set from metadata.
+
+## Sprint 16 — HUD (`88abf55`)
+
+- Speed (30 Hz throttled, §13.3 color tiers), live timer, PB, checkpoint progress, FPS, debug line. Flow: controller emits `SignalBus.velocity_updated` each tick.
+
+## Sprint 17 — Save System (`eb6a278`)
+
+- Full persistence: settings.cfg, records.tres (PBs + stats), ghosts under `user://ghosts/`. First-run defaults written automatically.
+- Lesson: inner classes don't resolve as cross-script static types — `MapRecord` promoted to its own file; defensive loading drops malformed legacy entries.
+
+## Sprint 18 — Ghosts (`d2c15af`)
+
+- `ReplayFrame`/`GhostReplay`, signal-driven recorder (saves only on PB), translucent `GhostPlayer` playing one frame per tick in lockstep with races.
+
+## Sprint 19 — Tutorial Map (`887e259`)
+
+- First content map: bhop runway → strafe field → 45° ramp → pool → finish, with proximity-revealed instruction signs and the forgiving `casual.tres` preset. Dev bootstrap scenes introduced for playtesting.
+
+## Sprint 20 — Beginner Map (`fdd8342`)
+
+- ~8600u course, three surf ramps of increasing angle, three checkpoints.
+- Integration fix: `LevelLoader` now resets race/checkpoint state when a map loads (state used to leak across maps).
+
+## Playtest Round 1 — The Invisible World
+
+- User reported a uniform gray screen. Root causes (both real): **no lights/environment anywhere**, and **no visual meshes at all** — maps were pure collision geometry.
+- Fix: sky + directional sun on every map; white BoxMesh visuals mirroring every collision box. All four generators consolidated into the permanent `tools/generate_maps.gd` (`efba8ea`). Empty-shell dev scenes regenerated (`8779928`).
+
+## Playtest Round 2 — Movement Feel
+
+- `a96eb7a` — wish direction now uses the camera's **global** basis (W follows look direction; prerequisite for real surfing).
+- `5d1ce38` — air acceleration switched from the Quake-1 variant to the **Half-Life/CS variant** (cap limits only the projection check; acceleration scales with move speed). This is what makes classic pure-A circle-strafing possible. Doc §1.4 divergence flagged.
+- `4353a2f` + `aa3343e` — tutorial ramp surf fixes: casual config lowers `floor_max_angle_deg` to 40°, and body physics are re-applied whenever a map swaps configs (player used to spawn before the map and keep stale body settings).
+- `923cddf` — CS 1.6 surf model finalized: A/D against the ramp + mouse steering (air-accel active while pressed into walls), no jumping off ramps, sign text updated.
+- `53a3704` — tutorial ramp steepened to 48° (exact-45.0° sat on the walkable-classification boundary); debug line always-on in dev scenes showing STATE / speed / slope-limit.
+
+## Sprint 22 — Advanced Map (`a30b454`)
+
+- ~26,000u course: four ramps up to 70°, a seamless ramp-to-ramp transition (endpoint metadata asserts adjacency), two void gaps, six checkpoints.
+
+## Sprint 23 — Challenge Maps (`c28e155`)
+
+- **Obstacle Course** (pillar slaloms, bhop-over walls, oscillating `MovingPlatform` walls, narrow bridge over void).
+- **Precision Surf** (three ~63° ramps, 150u-wide surfaces over pools).
+- **Speed Run** (single 6,500u flat line; no checkpoints — pure momentum test).
+- `MovingPlatform.gd` (AnimatableBody3D sinusoidal mover) added to the framework.
+
+---
+
+## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
+
+- Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).
+- Neon edge highlights / per-difficulty tinting (docs §16 aesthetic) — current maps are white-boxed.
+- Ramp & air-accel feel tuning after extended sessions; gap-distance validation needs human clears.
+- Main menu / results screen flow (dev bootstrap scenes are the current entry point).
+
+*(Entries above reconstructed verbatim from git history `e84efb9..c28e155`; going forward, append a new section after each sprint push.)*

@@ -38,6 +38,7 @@
 3. Implement: create/modify only the sprint's file list.
 4. Verify every acceptance criterion; run manual tests where possible.
 5. Commit using conventional-commit style: `feat(movement): ...`, `fix(physics): ...`, `docs: ...`.
+6. Update `docs/history.md` with the session's entry (what shipped, decisions, notable bugs) after every commit+push.
 
 ### Sprint Order & Parallelization
 
