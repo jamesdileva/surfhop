@@ -42,6 +42,7 @@ func _run_all_tests() -> void:
 	await _test_checkpoints()
 	await _test_map_loading()
 	await _test_hud()
+	await _test_save_system()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -1232,6 +1233,71 @@ func _test_hud() -> void:
 
 	hud.queue_free()
 	await process_frame
+
+
+func _test_save_system() -> void:
+	var sm: Node = root.get_node("SaveManager")
+	var user_save_dir := ProjectSettings.globalize_path(sm.SETTINGS_PATH.get_base_dir())
+
+	# --- Settings round-trip persists across a simulated restart ---
+	sm.set_setting("input/mouse_sensitivity_x", 1.75)
+	sm.save_settings()
+	_check(FileAccess.file_exists(sm.SETTINGS_PATH), "settings file created on save")
+	sm._settings = {}  # wipe memory; reload from disk like a fresh process
+	sm._settings = sm.load_settings()
+	var reloaded: Dictionary = sm._settings
+	_check(absf(reloaded["input/mouse_sensitivity_x"] - 1.75) < 0.001,
+		"settings persist to disk (%s)" % reloaded["input/mouse_sensitivity_x"])
+
+	# Typed schema view matches.
+	var typed: SettingsResource = sm.get_settings_resource()
+	_check(absf(typed.mouse_sensitivity_x - 1.75) < 0.001 and typed.tick_rate == 100,
+		"SettingsResource typed view works")
+
+	# --- First run: defaults are written when no settings exist ---
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.SETTINGS_PATH))
+	sm._settings = sm.load_settings()
+	sm.save_settings()
+	_check(FileAccess.file_exists(sm.SETTINGS_PATH), "first run creates default settings")
+
+	# --- PBs persist across a simulated restart ---
+	sm.save_pb("save_test_map", 12.34, 450.0, 7)
+	var first_record: MapRecord = sm._records.get_record("save_test_map")
+	_check(first_record.pb_time == 12.34, "PB recorded (12.34)")
+	_check(first_record.pb_date > 0, "PB date stamped")
+	_check(first_record.completion_count == 1, "completion count tracked")
+
+	sm._records = RecordsResource.new()  # simulate process restart
+	sm.load_records()
+	_check(sm.get_pb("save_test_map") == 12.34,
+		"PBs persist to records.tres across restart simulation")
+
+	# Faster time updates; slower keeps existing PB.
+	sm.save_pb("save_test_map", 10.5)
+	_check(sm.get_pb("save_test_map") == 10.5, "faster completion updates PB")
+	sm.save_pb("save_test_map", 15.0)
+	_check(sm.get_pb("save_test_map") == 10.5, "slower completion keeps PB")
+	var updated: MapRecord = sm._records.get_record("save_test_map")
+	_check(updated.completion_count == 3 and updated.best_speed == 450.0,
+		"stats accumulate independently of PB (%d runs)" % updated.completion_count)
+
+	# --- Ghost files round-trip through user://ghosts/ ---
+	var ghost := Resource.new()
+	ghost.set_meta("version", 1)
+	ghost.set_meta("frame_count", 3)  # placeholder payload; Sprint 18 owns format
+	_check(sm.save_ghost("save_test_map", ghost), "ghost saved to user://ghosts/")
+	_check(sm.has_ghost("save_test_map"), "has_ghost sees the saved replay")
+	var loaded_ghost: Resource = sm.load_ghost("save_test_map")
+	_check(loaded_ghost != null and loaded_ghost.get_meta("frame_count") == 3,
+		"ghost loads back with payload intact")
+	_check(sm.load_ghost("nonexistent_map") == null, "missing ghost returns null")
+
+	# --- Cleanup: restore pristine first-run state for dev environment ---
+	for path: String in [sm.SETTINGS_PATH, sm.RECORDS_PATH, sm.ghost_path("save_test_map")]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	sm._records = RecordsResource.new()
+	sm._settings = sm.DEFAULT_SETTINGS.duplicate(true)
 
 
 func _test_save_manager_defaults() -> void:
