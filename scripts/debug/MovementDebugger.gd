@@ -52,7 +52,8 @@ func _physics_process(_delta: float) -> void:
 	var speed := int(Vector2(_body.velocity.x, _body.velocity.z).length())
 	var state_name: String = STATE_NAMES[controller.state] \
 		if controller.state < STATE_NAMES.size() else "?"
-	_state_label.text = "%s\n%d u/s" % [state_name, speed]
+	_state_label.text = "%s\n%d u/s\nslope limit %.0f°" % [state_name, speed,
+		rad_to_deg(_body.floor_max_angle)]
 
 
 func _draw_arrow(mesh_instance: MeshInstance3D, from: Vector3, offset: Vector3) -> void:

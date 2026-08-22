@@ -169,9 +169,9 @@ func build_tutorial() -> void:
 	_static_body("CourseFloor", Vector3(800.0, 100.0, 1700.0), Vector3(0.0, -50.0, -800.0))
 	_static_body("LowerFloor", Vector3(800.0, 100.0, 700.0), Vector3(0.0, -464.0, -2100.0))
 
-	# Surf ramp: 45-degree slab, top surface from (y=10,z=-1430) down to
-	# (y=-424,z=-1895). Endpoint-based so it gets a visible mesh.
-	_ramp("SurfRamp", Vector3(0.0, 31.0, -1429.0), Vector3(0.0, -435.0, -1895.0), 400.0)
+	# Surf ramp: 48-degree slab (must exceed the 45-degree walkable limit
+	# unambiguously; exact 45 sat on the classification boundary).
+	_ramp("SurfRamp", Vector3(0.0, 31.0, -1429.0), Vector3(0.0, -405.0, -1822.0), 400.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -364.0, -2250.0))

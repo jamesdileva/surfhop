@@ -12,7 +12,12 @@ var _player: Player = null
 
 
 func _ready() -> void:
-	add_child((load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate())
+	var hud_instance := (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	add_child(hud_instance)
+	# Dev scenes always show the debug line (state/speed/slope limit) so
+	# playtest feedback can include it. Not persisted to settings.
+	if hud_instance.has_method("set_debug_visible"):
+		hud_instance.set_debug_visible(true)
 	var ts := TimerSystem.new()
 	ts.name = "TimerSystem"
 	add_child(ts)
