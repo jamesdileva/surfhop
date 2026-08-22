@@ -1532,6 +1532,12 @@ func _test_tutorial_map() -> void:
 			break
 	Input.action_release("move_forward")
 	_check(finished, "map ends with a working finish line")
+	var hud_nodes := root.get_children().filter(
+		func(n: Node) -> bool: return n is HUDController)
+	if hud_nodes.size() > 0:
+		var finish_text: String = hud_nodes[0].get_finish_text()
+		_check(finish_text.begins_with("FINISH"),
+			"HUD shows finish feedback (%s)" % finish_text)
 
 	loader.unload_current()
 	player_root.queue_free()

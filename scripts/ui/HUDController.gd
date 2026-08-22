@@ -14,12 +14,24 @@ const SPEED_UPDATE_INTERVAL := 1.0 / 30.0
 @onready var _fps_label: Label = $Root/FPSLabel
 @onready var _debug_label: Label = $Root/DebugSpeedLabel
 
+var _finish_label := Label.new()
+
 var _latest_speed: float = 0.0
 var _speed_accum := 0.0
 var _fps_accum := 0.0
+var _finish_display_timer := 0.0
 
 
 func _ready() -> void:
+	_finish_label.text = ""
+	_finish_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_finish_label.add_theme_font_size_override("font_size", 44)
+	_finish_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_finish_label.position = Vector2(400, 140)
+	_finish_label.size = Vector2(1120, 120)
+	_finish_label.visible = false
+	$Root.add_child(_finish_label)
+
 	var bus := get_node_or_null("/root/SignalBus")
 	if bus != null:
 		bus.velocity_updated.connect(_on_velocity_updated)
@@ -42,6 +54,11 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
+	if _finish_display_timer > 0.0:
+		_finish_display_timer -= delta
+		if _finish_display_timer <= 0.0:
+			_finish_label.visible = false
+
 	_speed_accum += delta
 	if _speed_accum >= SPEED_UPDATE_INTERVAL:
 		_speed_accum = 0.0
@@ -130,6 +147,10 @@ func is_debug_line_visible() -> bool:
 	return _debug_label.visible
 
 
+func get_finish_text() -> String:
+	return _finish_label.text
+
+
 func _refresh_pb() -> void:
 	var save_manager := get_node_or_null("/root/SaveManager")
 	var game_manager := get_node_or_null("/root/GameManager")
@@ -141,6 +162,11 @@ func _refresh_pb() -> void:
 
 func _on_race_finished(payload: Dictionary) -> void:
 	_timer_label.text = TimerSystem.format_time(payload["time"])
+	var pb_text := "  —  NEW PERSONAL BEST!" if bool(payload["is_pb"]) else ""
+	_finish_label.text = "FINISH  %s%s" % [TimerSystem.format_time(payload["time"]), pb_text]
+	_finish_label.modulate = Color(1.0, 0.85, 0.2) if bool(payload["is_pb"]) else Color.WHITE
+	_finish_label.visible = true
+	_finish_display_timer = 5.0
 	_refresh_pb()
 
 

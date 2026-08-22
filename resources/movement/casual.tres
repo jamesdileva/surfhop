@@ -7,3 +7,4 @@ script = ExtResource("1_63qbc")
 coyote_time_ms = 100.0
 jump_buffer_ms = 80.0
 surf_angle_min_deg = 42.0
+floor_max_angle_deg = 40.0

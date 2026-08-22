@@ -309,6 +309,7 @@ func build_metadata_and_presets() -> void:
 	casual.jump_buffer_ms = 80.0
 	casual.coyote_time_ms = 100.0
 	casual.surf_angle_min_deg = 42.0
+	casual.floor_max_angle_deg = 40.0  # 45-degree ramps count as surf walls on tutorial
 	print("casual.tres: ", error_string(ResourceSaver.save(casual, "res://resources/movement/casual.tres")))
 
 	for m: Array in [
