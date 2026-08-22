@@ -31,6 +31,7 @@ func _run_all_tests() -> void:
 	_test_player_camera_sensitivity_and_invert()
 	await _test_player_basic_movement()
 	await _test_ground_friction()
+	await _test_jump_coyote_and_no_double_jump()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -387,6 +388,84 @@ func _test_ground_friction() -> void:
 
 	world.queue_free()
 	await process_frame
+
+
+func _jump_press_event() -> InputEventKey:
+	var press := InputEventKey.new()
+	press.physical_keycode = KEY_SPACE
+	press.pressed = true
+	return press
+
+
+func _test_jump_coyote_and_no_double_jump() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+
+	# Floor slab with its -Z edge at z = -100, top surface at y = 0.
+	var floor_body := StaticBody3D.new()
+	var floor_shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(2000.0, 100.0, 200.0)
+	floor_shape.shape = box
+	floor_shape.position.y = -50.0
+	floor_body.add_child(floor_shape)
+	world.add_child(floor_body)
+
+	var spawned := _spawn_test_player_at(world, Vector3(0.0, 10.0, -60.0))
+	var player: Player = spawned
+	await _wait_ticks(30)
+	_check(player.is_on_floor(), "jump test: player landed")
+
+	# Walk forward (-Z) off the edge.
+	Input.action_press("move_forward")
+	var left_ground := false
+	for i in 150:
+		await physics_frame
+		if not player.is_on_floor():
+			left_ground = true
+			break
+	Input.action_release("move_forward")
+	_check(left_ground, "player walked off the ledge")
+
+	# Coyote time: jumping immediately after leaving the ground must fire.
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(2)
+	_check(player.velocity.y > 250.0,
+		"coyote jump fires just after leaving ground (v_y=%s)" % player.velocity.y)
+
+	# No double jump: past the coyote window a fresh press does nothing.
+	await _wait_ticks(40)
+	var v_before := player.velocity.y
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(2)
+	_check(player.velocity.y < 250.0 and absf(player.velocity.y - v_before) < 60.0,
+		"no double jump mid-air (before=%s after=%s)" % [v_before, player.velocity.y])
+
+	# Landing resets the coyote timer: a grounded jump works again.
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(0.0, 100.0, 0.0)
+	var landed := false
+	for i in 80:
+		await physics_frame
+		if player.is_on_floor():
+			landed = true
+			break
+	_check(landed, "player re-landed on floor")
+	await _wait_ticks(2)
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(2)
+	_check(player.velocity.y > 250.0,
+		"grounded jump works after landing (v_y=%s)" % player.velocity.y)
+
+	world.queue_free()
+	await process_frame
+
+
+func _spawn_test_player_at(world: Node3D, pos: Vector3) -> Player:
+	var player: Player = (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
+	player.position = pos
+	world.add_child(player)
+	return player
 
 
 func _test_save_manager_defaults() -> void:

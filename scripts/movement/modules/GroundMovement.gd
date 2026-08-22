@@ -9,6 +9,10 @@ func enabled_in_state(state: int) -> bool:
 
 
 func process(input: InputState, delta: float) -> void:
+	# Double-check ground contact via the Collision module (not just the
+	# controller state) so acceleration never applies while airborne.
+	if not _controller.is_on_floor():
+		return
 	var camera := _controller.get_camera()
 	if camera == null:
 		return
