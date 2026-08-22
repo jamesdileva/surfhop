@@ -6,6 +6,8 @@ const AVAILABLE_MENUS := ["main", "pause", "settings", "results", "credits", "ma
 
 var current_menu: String = ""
 
+var checkpoint_display: String = ""  # "Checkpoint N/M" (bound to HUD in Sprint 16)
+
 var debug_visible: bool = false
 var _debug_overlay: Node = null
 
@@ -22,8 +24,7 @@ func register_debug_overlay(overlay: Node) -> void:
 	overlay.visible = debug_visible
 
 
-func toggle_debug() -> void:
-	set_debug_visible(not debug_visible)
+func toggle_debug() -> void:	set_debug_visible(not debug_visible)
 
 
 func set_debug_visible(value: bool) -> void:
@@ -44,3 +45,7 @@ func show_menu(menu_name: String) -> void:
 
 func update_hud(data: Dictionary) -> void:
 	pass # Stub: implemented in Sprint 16 (HUD).
+
+## Checkpoint progress readout ("Checkpoint N/M"); HUD binds to this in Sprint 16.
+func show_checkpoint_progress(reached: int, total: int) -> void:
+	checkpoint_display = "Checkpoint %d/%d" % [reached, total]

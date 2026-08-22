@@ -5,7 +5,7 @@ extends Node
 ## custom bindings across restarts. Defaults live in project.godot [input].
 
 const ACTIONS := ["move_forward", "move_back", "move_left", "move_right",
-	"jump", "duck", "sprint", "toggle_debug"]
+	"jump", "duck", "sprint", "toggle_debug", "restart"]
 const BINDINGS_PATH := "user://save/bindings.cfg"
 
 var _mouse_delta: Vector2 = Vector2.ZERO
@@ -25,6 +25,10 @@ func _input(event: InputEvent) -> void:
 		var ui_manager := get_node_or_null("/root/UIManager")
 		if ui_manager != null:
 			ui_manager.toggle_debug()
+	elif event.is_action_pressed("restart"):
+		var game_manager := get_node_or_null("/root/GameManager")
+		if game_manager != null:
+			game_manager.player_restart()
 
 
 func _process(_delta: float) -> void:

@@ -39,6 +39,7 @@ func _run_all_tests() -> void:
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
 	await _test_timer_system()
+	await _test_checkpoints()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -951,6 +952,132 @@ func _test_timer_system() -> void:
 	ts.queue_free()
 	world.queue_free()
 	await process_frame
+
+
+func _r_press() -> InputEventKey:
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_R
+	ev.pressed = true
+	return ev
+
+
+func _test_checkpoints() -> void:
+	var gm: Node = root.get_node("GameManager")
+	gm.restart()
+	gm.total_checkpoints = 0
+	gm.active_checkpoint_id = -1
+	gm.kill_plane_y = -300.0
+	gm._spawn_captured = false  # autoload state leaks between suites; recapture
+
+	var ui: Node = root.get_node("UIManager")
+
+	# World: floor, start volume, two checkpoints, finish line.
+	var world := Node3D.new()
+	root.add_child(world)
+	var floor_body := StaticBody3D.new()
+	var fs := CollisionShape3D.new()
+	var fb := BoxShape3D.new()
+	fb.size = Vector3(4000.0, 100.0, 4000.0)
+	fs.shape = fb
+	fs.position.y = -50.0
+	floor_body.add_child(fs)
+	world.add_child(floor_body)
+
+	var start_area: Area3D = (load("res://scenes/world/StartTrigger.tscn") as PackedScene).instantiate()
+	start_area.position = Vector3.ZERO
+	world.add_child(start_area)
+
+	var cp1: Checkpoint = (load("res://scenes/checkpoints/Checkpoint.tscn") as PackedScene).instantiate()
+	cp1.position = Vector3(0.0, 40.0, -120.0)
+	world.add_child(cp1)
+	var cp2: Checkpoint = (load("res://scenes/checkpoints/Checkpoint.tscn") as PackedScene).instantiate()
+	cp2.position = Vector3(0.0, 40.0, -220.0)
+	world.add_child(cp2)
+
+	var finish_area: Area3D = (load("res://scenes/world/FinishTrigger.tscn") as PackedScene).instantiate()
+	finish_area.position = Vector3(0.0, 40.0, -320.0)
+	world.add_child(finish_area)
+
+	root.add_child(TimerSystem.new())
+	var player: Player = _spawn_test_player_at(world, Vector3(0.0, 10.0, 0.0))
+	await _wait_ticks(10)
+
+	_check(gm.total_checkpoints == 2, "two checkpoints registered (got %d)" % gm.total_checkpoints)
+	_check(cp1.checkpoint_id == 0 and cp2.checkpoint_id == 1,
+		"checkpoint ids assigned in tree order (%d, %d)" % [cp1.checkpoint_id, cp2.checkpoint_id])
+
+	# Walk the course: exit start -> cp1 -> cp2 -> finish.
+	Input.action_press("move_forward")
+	for i in 200:
+		await physics_frame
+		if player.position.z < -130.0:
+			break
+	_check(gm.active_checkpoint_id == 0, "checkpoint 1 reached")
+	_check(ui.checkpoint_display == "Checkpoint 1/2",
+		"UIManager shows checkpoint progress (%s)" % ui.checkpoint_display)
+	_check(not gm.checkpoint_splits.is_empty(), "split recorded on checkpoint reach")
+	var respawn_after_cp1: Vector3 = gm.respawn_transform.origin
+	_check(absf(respawn_after_cp1.z - (-120.0)) < 1.0,
+		"respawn position updated to checkpoint 1 (%s)" % respawn_after_cp1)
+
+	for i in 200:
+		await physics_frame
+		if player.position.z < -230.0:
+			break
+	_check(gm.active_checkpoint_id == 1, "checkpoint 2 reached (forward progress)")
+	_check(gm.checkpoint_splits.size() == 2, "second split recorded")
+	_check(ui.checkpoint_display == "Checkpoint 2/2", "UIManager shows 2/2")
+
+	# Stale checkpoints are ignored (no backward progress).
+	var splits_before: int = gm.checkpoint_splits.size()
+	gm._on_checkpoint_reached({"checkpoint_id": 0, "position": cp1.position,
+		"basis": Basis.IDENTITY, "time": 9.9})
+	_check(gm.active_checkpoint_id == 1 and gm.checkpoint_splits.size() == splits_before,
+		"re-touching an old checkpoint does not regress progress")
+
+	# Kill plane: falling below respawns at last checkpoint, race keeps running.
+	Input.action_release("move_forward")
+	var elapsed_before_fall: float = gm.elapsed_seconds()
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(0.0, -500.0, -220.0)
+	await _wait_ticks(3)
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
+		"falling below kill plane respawns at last checkpoint (at %s)" % player.position)
+	_check(Vector2(player.velocity.x, player.velocity.z).length() < 10.0,
+		"respawn zeroes horizontal velocity")
+	_check(gm.race_state == gm.RaceState.RUNNING and gm.elapsed_seconds() >= elapsed_before_fall,
+		"respawn does not reset the running timer")
+
+	# Finish with both splits present.
+	player.position = Vector3(0.0, 40.0, -320.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	_check(finished and gm.checkpoint_splits.size() == 2,
+		"finish records run with both checkpoint splits")
+
+	# R restarts the run and respawns at the last checkpoint.
+	root.get_node("InputManager")._input(_r_press())
+	await physics_frame
+	await physics_frame
+	_check(gm.race_state == gm.RaceState.IDLE, "R resets the race to IDLE")
+	_check(gm.checkpoint_splits.is_empty(), "R clears splits")
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
+		"R respawns at last checkpoint")
+
+	world.queue_free()
+	ts_queue_free()
+	await process_frame
+
+
+## Frees leftover TimerSystem instances from earlier suites.
+func ts_queue_free() -> void:
+	for node in root.get_children():
+		if node is TimerSystem:
+			node.queue_free()
 
 
 func _test_save_manager_defaults() -> void:
