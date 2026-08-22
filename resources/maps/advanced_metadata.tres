@@ -9,4 +9,3 @@ display_name = "Advanced"
 author = "Velocity Engine"
 difficulty = 4
 tags = PackedStringArray("bhop", "surf", "air-strafe", "high-speed")
-kill_plane_y = -4600.0
