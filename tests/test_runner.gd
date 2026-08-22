@@ -1469,6 +1469,9 @@ func _test_tutorial_map() -> void:
 	var cfg: MovementConfig = spawned_player.movement_controller.config
 	_check(cfg != null and cfg.resource_path.ends_with("casual.tres"),
 		"casual config applied to player (%s)" % (cfg.resource_path if cfg else "null"))
+	_check(absf(rad_to_deg(spawned_player.floor_max_angle) - 40.0) < 0.5,
+		"late config swap re-applies body physics (floor_max=%.1f deg)" %
+			rad_to_deg(spawned_player.floor_max_angle))
 	_check(cfg.jump_buffer_ms == 80.0 and cfg.coyote_time_ms == 100.0,
 		"casual config is more forgiving (buffer %.0f, coyote %.0f)" %
 			[cfg.jump_buffer_ms, cfg.coyote_time_ms])

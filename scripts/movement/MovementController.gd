@@ -17,7 +17,22 @@ const MODULES := [
 	preload("res://scripts/movement/modules/Velocity.gd"),
 ]
 
-@export var config: MovementConfig
+@export var config: MovementConfig:
+	set(value):
+		config = value
+		_apply_body_physics()
+
+
+## Pushes config-driven physics-body settings onto the parent. Re-applied
+## whenever the config changes (e.g. LevelLoader swapping in a map's preset).
+func _apply_body_physics() -> void:
+	if _body == null or config == null:
+		return
+	# Surfaces steeper than floor_max_angle are treated as walls by
+	# move_and_slide (grounded mode), which slides along them preserving
+	# tangential velocity - exactly Source-style surf behavior.
+	_body.floor_max_angle = deg_to_rad(config.floor_max_angle_deg)
+	_body.floor_stop_on_slope = false
 
 var state: int = MovementState.AIR
 
@@ -39,12 +54,9 @@ func _ready() -> void:
 	if config == null:
 		push_error("MovementController: no MovementConfig resource assigned")
 		return
-	# Surfaces steeper than floor_max_angle are treated as walls by
-	# move_and_slide (grounded mode), which slides along them preserving
-	# tangential velocity - exactly Source-style surf behavior. The Surf
-	# module classifies such contacts via their slide-collision normals.
-	_body.floor_max_angle = deg_to_rad(config.floor_max_angle_deg)
-	_body.floor_stop_on_slope = false
+	# Config may have been assigned before entering the tree (setter ran
+	# without a body); apply body physics now that _body is known.
+	_apply_body_physics()
 	for module_class: Resource in MODULES:
 		var module: MovementModule = module_class.new()
 		module.init(self)
