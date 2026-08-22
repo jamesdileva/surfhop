@@ -24,6 +24,8 @@ func process(input: InputState, delta: float) -> void:
 	var normal := _controller.get_surface_normal()
 	if normal == Vector3.ZERO:
 		return
+	# Gravity has already run this tick (module order), so velocity is never
+	# zero on a ramp - the projection below converts it into downhill slide.
 	var velocity := process_surf(_controller.get_velocity(), normal, delta)
 	velocity = anti_stuck(velocity, normal, delta)
 	_controller.set_velocity(velocity)

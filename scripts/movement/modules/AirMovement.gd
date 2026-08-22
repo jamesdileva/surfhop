@@ -8,7 +8,9 @@ extends MovementModule
 ## NOTE: doc §1.4 shows the weaker Quake-1 variant; flagged as doc divergence.
 
 func enabled_in_state(state: int) -> bool:
-	return state == MovementState.AIR
+	# Air acceleration also drives surf steering: pressing A/D while pressed
+	# against a ramp wall redirects momentum - classic CS 1.6 surfing.
+	return state == MovementState.AIR or state == MovementState.SURF
 
 
 func process(input: InputState, delta: float) -> void:

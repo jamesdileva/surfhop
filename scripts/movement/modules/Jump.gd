@@ -14,9 +14,8 @@ func enabled_in_state(state: int) -> bool:
 
 
 func process(input: InputState, delta: float) -> void:
-	# Surfing counts as grounded for jump purposes (jumping off ramps).
-	var grounded := _controller.is_on_floor() \
-		or _controller.state == MovementState.SURF
+	# Jumping requires REAL ground: no bunny-hop off surf ramps (CS behavior).
+	var grounded := _controller.is_on_floor()
 	if grounded:
 		coyote_timer = _controller.config.coyote_time_ms / 1000.0
 	else:

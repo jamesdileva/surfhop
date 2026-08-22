@@ -181,7 +181,7 @@ func build_tutorial() -> void:
 		Vector3(180.0, 40.0, -300.0))
 	_sign("StrafeSign", "AIR STRAFE\nWhile airborne hold W + A\nand turn your mouse left.",
 		Vector3(180.0, 40.0, -950.0))
-	_sign("SurfSign", "SURF\nHold forward and ride the ramp.\nSteer gently with A / D.",
+	_sign("SurfSign", "SURF\nHold A or D against the ramp\nand steer with your mouse.",
 		Vector3(180.0, 40.0, -1350.0))
 
 	_lighting()
