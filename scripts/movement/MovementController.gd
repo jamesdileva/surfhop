@@ -6,8 +6,10 @@ extends Node
 ## (architecture §8.2 pipeline).
 
 const MODULES := [
+	preload("res://scripts/movement/modules/Friction.gd"),
 	preload("res://scripts/movement/modules/GroundMovement.gd"),
 	preload("res://scripts/movement/modules/Gravity.gd"),
+	preload("res://scripts/movement/modules/Velocity.gd"),
 ]
 
 @export var config: MovementConfig

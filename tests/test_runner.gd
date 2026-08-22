@@ -30,6 +30,7 @@ func _run_all_tests() -> void:
 	_test_player_camera_look()
 	_test_player_camera_sensitivity_and_invert()
 	await _test_player_basic_movement()
+	await _test_ground_friction()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -318,6 +319,71 @@ func _test_player_basic_movement() -> void:
 
 	# Physics tick rate is configured at 100Hz.
 	_check(Engine.physics_ticks_per_second == 100, "physics configured for 100Hz ticks")
+
+	world.queue_free()
+	await process_frame
+
+
+func _spawn_test_player() -> Array:
+	# Returns [world: Node3D, player: Player] — flat floor with top at y = 0.
+	var world := Node3D.new()
+	world.name = "MovementTestWorld"
+	root.add_child(world)
+	var floor_body := StaticBody3D.new()
+	var floor_shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(4000.0, 100.0, 4000.0)
+	floor_shape.shape = box
+	floor_shape.position.y = -50.0
+	floor_body.add_child(floor_shape)
+	world.add_child(floor_body)
+
+	var player: Player = (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
+	player.position = Vector3(0.0, 40.0, 0.0)
+	world.add_child(player)
+	return [world, player]
+
+
+func _h_speed(player: CharacterBody3D) -> float:
+	return Vector2(player.velocity.x, player.velocity.z).length()
+
+
+func _test_ground_friction() -> void:
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+	_check(player.is_on_floor(), "friction test: player lands on flat floor")
+
+	# Accelerate smoothly toward walk_speed while holding W.
+	Input.action_press("move_forward")
+	await _wait_ticks(30)
+	var top_speed := _h_speed(player)
+	_check(top_speed > 250.0 and top_speed <= 321.0,
+		"W accelerates smoothly up to walk_speed (speed=%s)" % top_speed)
+
+	# Releasing input engages friction: exponential-ish decay.
+	Input.action_release("move_forward")
+	await _wait_ticks(20)  # 0.2s
+	var after_200ms := _h_speed(player)
+	_check(after_200ms < top_speed * 0.35,
+		"friction removes most speed within 0.2s (%s -> %s)" % [top_speed, after_200ms])
+
+	# Clean stop: stop_speed behavior decays linearly to an exact zero.
+	var ticks_to_stop := 0
+	while _h_speed(player) > 0.001 and ticks_to_stop < 200:
+		await physics_frame
+		ticks_to_stop += 1
+	_check(_h_speed(player) <= 0.001,
+		"player comes to a complete stop via friction (ticks=%d)" % ticks_to_stop)
+
+	# Velocity module reports consistent horizontal speed.
+	var vel_module: Velocity = null
+	for module in player.movement_controller._modules:
+		if module is Velocity:
+			vel_module = module
+	_check(vel_module != null and is_zero_approx(vel_module.horizontal_speed()),
+		"Velocity module horizontal_speed() agrees with stopped state")
 
 	world.queue_free()
 	await process_frame

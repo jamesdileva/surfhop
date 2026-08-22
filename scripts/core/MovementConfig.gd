@@ -8,6 +8,7 @@ extends Resource
 @export var walk_speed: float = 320.0
 @export var ground_accel: float = 10.0
 @export var ground_friction: float = 6.0
+@export var stop_speed: float = 8.0  # Friction base below this speed (clean stops, §1.3)
 
 # Air movement
 @export var air_accel: float = 10.0
