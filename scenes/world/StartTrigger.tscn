@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_30fmy"]
+size = Vector3(400, 200, 160)
+
+[node name="StartTrigger" type="Area3D" unique_id=717442280 groups=["start_trigger"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1746056991]
+shape = SubResource("BoxShape3D_30fmy")

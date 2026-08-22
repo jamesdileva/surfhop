@@ -38,6 +38,7 @@ func _run_all_tests() -> void:
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
+	await _test_timer_system()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -831,6 +832,125 @@ func _test_movement_debug_tools() -> void:
 	sm.set_setting("movement/show_debug", false)
 	sm.save_settings()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.SETTINGS_PATH))
+
+
+func _test_timer_system() -> void:
+	# --- Time formatting (0:00.000) ---
+	_check(TimerSystem.format_time(0.0) == "0:00.000",
+		"format_time(0) == 0:00.000")
+	_check(TimerSystem.format_time(65.5) == "1:05.500",
+		"format_time(65.5) == 1:05.500")
+	_check(TimerSystem.format_time(9.999) == "0:09.999",
+		"format_time(9.999) == 0:09.999")
+
+	var gm: Node = root.get_node("GameManager")
+	var sm: Node = root.get_node("SaveManager")
+	gm.restart()
+	gm.map_name = "timer_test_map"
+
+	var race_events: Array = []
+	var recorder := func(payload: Dictionary) -> void: race_events.append(payload)
+	root.get_node("SignalBus").race_finished.connect(recorder)
+
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	# --- World: floor, start volume at spawn, finish line ahead ---
+	var world := Node3D.new()
+	root.add_child(world)
+	var floor_body := StaticBody3D.new()
+	var fs := CollisionShape3D.new()
+	var fb := BoxShape3D.new()
+	fb.size = Vector3(4000.0, 100.0, 4000.0)
+	fs.shape = fb
+	fs.position.y = -50.0
+	floor_body.add_child(fs)
+	world.add_child(floor_body)
+
+	var start_area: Area3D = (load("res://scenes/world/StartTrigger.tscn") as PackedScene).instantiate()
+	start_area.position = Vector3.ZERO
+	world.add_child(start_area)
+	var finish_area: Area3D = (load("res://scenes/world/FinishTrigger.tscn") as PackedScene).instantiate()
+	finish_area.position = Vector3(0.0, 40.0, -300.0)
+	world.add_child(finish_area)
+
+	var player: Player = _spawn_test_player_at(world, Vector3(0.0, 10.0, 0.0))
+	await _wait_ticks(10)
+
+	# Player starts inside the start volume; walking out begins the race.
+	Input.action_press("move_forward")
+	var running := false
+	for i in 80:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	_check(running, "leaving the start trigger starts the race")
+
+	# Pause freezes the timer (paused wall-clock never counts).
+	paused = true
+	gm.pause()
+	await process_frame
+	await process_frame
+	var frozen_elapsed: float = gm.elapsed_seconds()
+	await process_frame
+	await process_frame
+	_check(gm.elapsed_seconds() == frozen_elapsed,
+		"pause stops the timer (elapsed unchanged while paused)")
+	paused = false
+	gm.resume()
+
+	# Run to the finish line.
+	var finished := false
+	for i in 200:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	Input.action_release("move_forward")
+	_check(finished, "crossing the finish trigger finishes the race")
+	_check(not race_events.is_empty(), "race_finished signal emitted with payload")
+	if not race_events.is_empty():
+		var payload: Dictionary = race_events.back()
+		_check(bool(payload["is_pb"]), "first completion sets initial PB")
+	_check(gm.race_time > 0.0 and gm.race_time < 60.0,
+		"recorded race time is plausible (%.3fs)" % gm.race_time)
+	_check(sm.get_pb("timer_test_map") == gm.race_time,
+		"PB stored via SaveManager matches finish time")
+	var first_pb: float = sm.get_pb("timer_test_map")
+
+	# --- Second, slower run must NOT beat the PB ---
+	gm.restart()
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(0.0, 10.0, 0.0)
+	await _wait_ticks(4)  # area re-detects overlap
+	Input.action_press("move_forward")
+	for i in 80:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			break
+	Input.action_release("move_forward")  # stop moving: dawdling must not cross the finish
+	for i in 100:  # dawdle so this run is slower than the first
+		await physics_frame
+	player.position = Vector3(0.0, 40.0, -320.0)  # teleport onto the finish
+	var second_finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			second_finished = true
+			break
+	Input.action_release("move_forward")
+	_check(second_finished, "second run completes")
+	if not race_events.is_empty():
+		var last_payload: Dictionary = race_events.back()
+		_check(not bool(last_payload["is_pb"]),
+			"slower completion does not update PB")
+	_check(sm.get_pb("timer_test_map") == first_pb,
+		"PB unchanged after slower run")
+
+	ts.queue_free()
+	world.queue_free()
+	await process_frame
 
 
 func _test_save_manager_defaults() -> void:

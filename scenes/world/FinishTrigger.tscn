@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plowr"]
+size = Vector3(600, 200, 100)
+
+[node name="FinishTrigger" type="Area3D" unique_id=1013883136 groups=["finish_trigger"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=912753054]
+shape = SubResource("BoxShape3D_plowr")

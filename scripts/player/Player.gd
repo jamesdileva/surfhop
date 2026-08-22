@@ -6,3 +6,7 @@ extends CharacterBody3D
 
 @onready var movement_controller: MovementController = $MovementController
 @onready var player_camera: PlayerCamera = $PlayerCamera
+
+
+func _ready() -> void:
+	add_to_group("player")
