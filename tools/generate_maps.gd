@@ -169,17 +169,9 @@ func build_tutorial() -> void:
 	_static_body("CourseFloor", Vector3(800.0, 100.0, 1700.0), Vector3(0.0, -50.0, -800.0))
 	_static_body("LowerFloor", Vector3(800.0, 100.0, 700.0), Vector3(0.0, -464.0, -2100.0))
 
-	var ramp := StaticBody3D.new()
-	ramp.name = "SurfRamp"
-	var ramp_shape := CollisionShape3D.new()
-	ramp_shape.name = "CollisionShape3D"
-	var ramp_box := BoxShape3D.new()
-	ramp_box.size = Vector3(400.0, 40.0, 660.0)
-	ramp_shape.shape = ramp_box
-	ramp.add_child(ramp_shape)
-	ramp.rotation.x = deg_to_rad(-45.0)
-	ramp.position = Vector3(0.0, -202.0, -1662.0)
-	map.add_child(ramp)
+	# Surf ramp: 45-degree slab, top surface from (y=10,z=-1430) down to
+	# (y=-424,z=-1895). Endpoint-based so it gets a visible mesh.
+	_ramp("SurfRamp", Vector3(0.0, 31.0, -1429.0), Vector3(0.0, -435.0, -1895.0), 400.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -364.0, -2250.0))

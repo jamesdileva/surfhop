@@ -22,7 +22,10 @@ func process(input: InputState, delta: float) -> void:
 	else:
 		coyote_timer = maxf(0.0, coyote_timer - delta)
 
-	if input.jump_just_pressed and coyote_timer > 0.0:
+	# Auto-bhop: holding jump re-hops on every landing (config-driven).
+	var wants_jump := input.jump_just_pressed \
+		or (_controller.config.auto_bhop and input.jump_held)
+	if wants_jump and coyote_timer > 0.0:
 		apply_jump_impulse()
 		coyote_timer = 0.0
 

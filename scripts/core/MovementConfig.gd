@@ -21,6 +21,7 @@ extends Resource
 @export var coyote_time_ms: float = 50.0
 @export var jump_buffer_ms: float = 50.0
 @export var max_jump_height: float = 56.25  # apex height for jump_impulse 300 / gravity 800
+@export var auto_bhop: bool = true          # holding jump re-hops on every landing
 
 # Gravity
 @export var gravity: float = 800.0

@@ -13,11 +13,11 @@ var sprint_held: bool = false
 var mouse_delta: Vector2 = Vector2.ZERO
 
 
-## Horizontal wish direction from WASD input relative to the camera's yaw
-## (Gameplay Systems §1.6). Returns ZERO when no movement keys are held.
+## Horizontal wish direction from WASD input relative to the camera's GLOBAL
+## orientation (Gameplay Systems §1.6). Returns ZERO when no keys are held.
 func compute_wish_dir(camera: Camera3D) -> Vector3:
-	var cam_forward := -camera.basis.z
-	var cam_right := camera.basis.x
+	var cam_forward := -camera.global_transform.basis.z
+	var cam_right := camera.global_transform.basis.x
 	cam_forward.y = 0.0
 	cam_right.y = 0.0
 	cam_forward = cam_forward.normalized()
