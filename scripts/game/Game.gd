@@ -9,13 +9,25 @@ extends Node3D
 const PLAYER_SCENE := preload("res://scenes/player/Player.tscn")
 const HUD_SCENE := preload("res://scenes/ui/HUD.tscn")
 
+const SMOKE_LOG_PATH_SUFFIX := "velocity_smoke.log"
+const SMOKE_STAGE_TIMEOUT_MS := 60000
+
 var _player: Player = null
+
+# --- Sentinel smoke mode (Sprint INT1) ---
+var _smoke_active := false
+var _smoke_map_id := "beginner"
+var _smoke_run_seconds := 8.0
+var _smoke_milestones: Array[String] = []
 
 
 func _ready() -> void:
 	var ui_manager: Node = get_node("/root/UIManager")
 	ui_manager.register_game(self)
+	_parse_smoke_args()
 	ui_manager.show_menu("main")
+	if _smoke_active:
+		_run_smoke()
 
 
 func _exit_tree() -> void:
@@ -23,6 +35,96 @@ func _exit_tree() -> void:
 	if ui_manager != null and ui_manager.get_game() == self:
 		ui_manager.session_active = false
 		ui_manager.register_game(null)
+
+
+## Self-driving smoke pass for external smoke testers (integration.md): boots
+## through the real menu flow into a map, simulates gameplay input, and exits
+## 0/1 so the harness's exit-code + crash-signature checks assert behavior.
+func _parse_smoke_args() -> void:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg == "--smoke":
+			_smoke_active = true
+		elif arg.begins_with("--smoke-map="):
+			_smoke_map_id = arg.substr(12)
+		elif arg.begins_with("--smoke-run-seconds="):
+			_smoke_run_seconds = float(arg.substr(20))
+
+
+func _run_smoke() -> void:
+	await get_tree().process_frame
+	var ui_manager: Node = get_node("/root/UIManager")
+
+	# Stage 1: main menu actually shown.
+	if not _smoke_stage("MENU_SHOWN",
+			ui_manager.current_menu == "main"
+			and ui_manager.get_node_or_null("MainMenu") != null
+			and ui_manager.get_node_or_null("MainMenu").visible):
+		return _smoke_finish(false, "main menu did not appear")
+
+	# Stage 2: resolve the requested map.
+	var loader: Node = get_node("/root/LevelLoader")
+	var map_path := ""
+	for entry: Dictionary in loader.discover_maps():
+		if entry["metadata"].map_id == _smoke_map_id:
+			map_path = entry["path"]
+			break
+	if map_path == "":
+		return _smoke_finish(false, "map id '%s' not found" % _smoke_map_id)
+
+	# Stage 3: launch and wait for the async load + player spawn.
+	ui_manager.launch_map(map_path)
+	_smoke_record("MAP_LOAD_STARTED", true)
+	var deadline := Time.get_ticks_msec() + SMOKE_STAGE_TIMEOUT_MS
+	while Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+		var player := get_tree().get_first_node_in_group("player") as Node3D
+		if player != null and loader.current_map != null:
+			break
+	if not _smoke_stage("PLAYER_SPAWNED",
+			get_tree().get_first_node_in_group("player") != null
+			and loader.current_map != null):
+		return _smoke_finish(false, "map/player never became ready")
+
+	# Stage 4: simulate gameplay; movement proves the simulation runs end to end.
+	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
+	var start_pos := player.global_position
+	Input.action_press("move_forward")
+	Input.action_press("jump")  # auto-bhop keeps a hopping pace
+	var play_deadline := Time.get_ticks_msec() + int(_smoke_run_seconds * 1000.0)
+	while Time.get_ticks_msec() < play_deadline:
+		await get_tree().physics_frame
+	Input.action_release("move_forward")
+	Input.action_release("jump")
+	var moved := player.global_position.distance_to(start_pos)
+	if not _smoke_stage("GAMEPLAY_OK", moved > 50.0):
+		return _smoke_finish(false, "player did not move (%.1fu)" % moved)
+	_smoke_finish(true, "moved %.0fu in %.0fs" % [moved, _smoke_run_seconds])
+
+
+func _smoke_record(stage: String, ok: bool) -> void:
+	_smoke_milestones.append("%s=%s" % [stage, "OK" if ok else "FAIL"])
+
+
+func _smoke_stage(stage: String, ok: bool) -> bool:
+	_smoke_record(stage, ok)
+	return ok
+
+
+func _smoke_finish(success: bool, detail: String) -> void:
+	var result := "OK" if success else "FAIL"
+	print("[smoke] RESULT=%s %s" % [result, detail])
+	for milestone: String in _smoke_milestones:
+		print("[smoke] " + milestone)
+	var temp_dir := OS.get_environment("TEMP")
+	if temp_dir != "":
+		var file := FileAccess.open(
+			temp_dir.path_join(SMOKE_LOG_PATH_SUFFIX), FileAccess.WRITE)
+		if file != null:
+			for milestone: String in _smoke_milestones:
+				file.store_line(milestone)
+			file.store_line("RESULT=%s %s" % [result, detail])
+			file.close()
+	get_tree().quit(0 if success else 1)
 
 
 ## Starts a map from the menu flow. Safe to call repeatedly: systems are

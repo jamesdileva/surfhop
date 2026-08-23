@@ -73,17 +73,31 @@ Notable cross-dependencies: Sprint 16 (HUD) needs 17 (Save) for PB display; Spri
 
 ## Commands (canonical — do not vary)
 
-There is no package manifest (plain Godot project), so these fixed commands are the single source of truth for agents and CI/external tooling:
+The repo carries a **shim `package.json`** (Sentinel integration) whose
+scripts are the single source of truth; they route through `tools\godot.cmd`,
+a locator wrapper resolving the engine exe (`GODOT_EXE` env var → `godot`
+on PATH → newest winget install):
 
 ```sh
 # Validate / import check (no main scene needed)
-godot --headless --path . --editor --quit
+tools\godot.cmd --headless --path . --editor --quit
 
-# Run all tests (from Sprint 2 onward; GUT via tests/test_runner.gd)
-godot --headless --path . --script res://tests/test_runner.gd
+# Run all tests (GUT via tests/test_runner.gd)
+tools\godot.cmd --headless --path . --script res://tests/test_runner.gd
 
-# Launch the game (once a main scene exists, Sprint 4+)
-godot --path .
+# Launch the game (main menu)
+tools\godot.cmd --path .
+
+# Self-driving Sentinel smoke pass (menu -> map -> gameplay -> exit 0/1)
+tools\godot.cmd --path . -- --smoke [--smoke-map=<id>] [--smoke-run-seconds=N]
+```
+
+Equivalent npm invocations work for Sentinel: `npm run test` / `start` /
+`build`. Direct `godot ...` calls remain valid when the binary is resolvable.
+Dev bootstrap scenes still bypass the menu:
+
+```sh
+godot --path . scenes/world/dev_tutorial.tscn   # etc. per scenes/world/
 ```
 
 ### Manual Playtesting (dev bootstrap scenes)

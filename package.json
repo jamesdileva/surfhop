@@ -1,0 +1,12 @@
+{
+  "name": "velocity",
+  "version": "0.9.0-dev",
+  "private": true,
+  "description": "Velocity Engine - bhop/air-strafe/surf time trials (Godot 4). Shim manifest so Sentinel's command extractor can find the canonical godot CLI commands; there is no npm tooling here.",
+  "scripts": {
+    "start": "tools\\godot.cmd --path . -- --smoke",
+    "test": "tools\\godot.cmd --headless --path . --script res://tests/test_runner.gd",
+    "build": "tools\\godot.cmd --headless --path . --editor --quit",
+    "smoke:headless": "tools\\godot.cmd --headless --path . -- --smoke"
+  }
+}

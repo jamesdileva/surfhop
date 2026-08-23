@@ -228,6 +228,17 @@
 
 ---
 
+## Sprint INT1 — Sentinel Integration
+
+- **Shim `package.json`**: first manifest in the repo; `start`/`test`/`build` map to the canonical godot CLI lines so Sentinel's extractor works unchanged. `npm run test` / `start` / `build` now work.
+- **Self-driving smoke mode** (`-- --smoke`, handled in Game.gd): boots the real menu flow, resolves a map (`--smoke-map=`, default beginner), waits for async load + player spawn, simulates ~8s of auto-bhop input, asserts the player moved >50u, then exits 0/1 with milestones printed to stdout and written to `%TEMP%\velocity_smoke.log`. Stages: MENU_SHOWN → MAP_LOAD_STARTED → PLAYER_SPAWNED → GAMEPLAY_OK. Windowed runs double as screenshot targets for Sentinel's smoke capture.
+- **`tools\godot.cmd` locator wrapper** (GODOT_EXE → PATH → winget scan): needed because bare shell lines can't resolve the winget user-PATH godot — integration.md's rule #1 bit us exactly as documented.
+- Bugs caught: bare `process_frame` doesn't exist on Node scripts (`get_tree().process_frame`); cmd parse-time `%errorlevel%` expansion inside for-blocks returns stale exit codes (restructured wrapper).
+- Verified live via `cmd /c "<string>"` for all three commands: test 406 checks ✅ · start windowed + headless ✅ (audio confirmed by user) · build ✅. Facts block appended to docs/integration.md §9.
+- Deferred: packaged-exe layout (`dist/win-unpacked/`) until P6 export.
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

@@ -147,3 +147,43 @@ Verified ground truth (<date>):
 - cleanup: taskkill /IM <App>.exe /T
 - sandbox notes: <first-run state, hermetic DB, etc.>
 ```
+
+---
+
+## 9. Velocity (Godot) integration notes
+
+First non-node integration. Godot projects have no lockfile/manifest, so a
+**shim `package.json`** carries the canonical commands; all of them route
+through `tools\godot.cmd`, a locator wrapper resolving the engine exe in
+order: `GODOT_EXE` env var → `godot` on PATH → newest winget install.
+
+Verified ground truth (2026-08-22):
+
+- launch: `tools\godot.cmd --path . -- --smoke` boots the real main menu,
+  self-drives into the configured map (`--smoke-map=<id>`, default
+  beginner), simulates ~8s of gameplay input, then **exits itself**
+  (`RESULT=OK` + exit 0). Milestones are printed to stdout and written to
+  `%TEMP%\velocity_smoke.log`.
+- stages asserted: `MENU_SHOWN → MAP_LOAD_STARTED → PLAYER_SPAWNED →
+  GAMEPLAY_OK` (player must move >50u or the run fails).
+- port: none (single-process game; no backend).
+- fallback: `--smoke-headless` script adds `--headless` for CI-style passes
+  without rendering.
+- cleanup: process exits by itself; if tree-killed, image name is the
+  Godot engine exe (`Godot_v*.exe`) — `taskkill /IM Godot_v4.7.2-stable_win64.exe /T`,
+  not the project name.
+- sandbox notes: first-run state writes `user://save/settings.cfg` on this
+  account (harmless); achievements unlock locally during smoke runs.
+
+Command contract:
+
+| Sentinel command | String | Pass condition |
+|---|---|---|
+| test | `tools\godot.cmd --headless --path . --script res://tests/test_runner.gd` | exit 0, stdout contains `ALL TESTS PASSED`, zero ERROR lines |
+| start | `tools\godot.cmd --path . -- --smoke` | exit 0, `[smoke] RESULT=OK` |
+| build | `tools\godot.cmd --headless --path . --editor --quit` | exit 0 |
+
+Preflight results (2026-08-22): test ✅ 406 checks · start ✅ windowed +
+headless · build ✅ · packaged-exe layout ⏳ deferred to release export
+(target `dist/win-unpacked/`). DOM feature-testers are N/A — no CDP/DOM in
+Godot; the smoke mode replaces click-through assertions.
