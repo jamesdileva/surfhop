@@ -19,6 +19,7 @@ var _smoke_active := false
 var _smoke_map_id := "beginner"
 var _smoke_run_seconds := 8.0
 var _smoke_hold_seconds := 0.0
+var _smoke_stage_pause := 0.0
 var _smoke_milestones: Array[String] = []
 
 
@@ -43,6 +44,8 @@ func _exit_tree() -> void:
 ## 0/1 so the harness's exit-code + crash-signature checks assert behavior.
 ## --smoke-hold=<seconds> keeps the window alive after RESULT so screenshot
 ## timing in smoke testers is not a race against self-exit.
+## --smoke-stage-pause=<seconds> dwells on each milestone (menu, map load,
+## gameplay) so external screenshot timing can catch the actual stage.
 func _parse_smoke_args() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg == "--smoke":
@@ -53,6 +56,13 @@ func _parse_smoke_args() -> void:
 			_smoke_run_seconds = float(arg.substr(20))
 		elif arg.begins_with("--smoke-hold="):
 			_smoke_hold_seconds = float(arg.substr(13))
+		elif arg.begins_with("--smoke-stage-pause="):
+			_smoke_stage_pause = float(arg.substr(20))
+
+
+func _smoke_beat() -> void:
+	if _smoke_stage_pause > 0.0:
+		await get_tree().create_timer(_smoke_stage_pause).timeout
 
 
 func _run_smoke() -> void:
@@ -65,6 +75,7 @@ func _run_smoke() -> void:
 			and ui_manager.get_node_or_null("MainMenu") != null
 			and ui_manager.get_node_or_null("MainMenu").visible):
 		return _smoke_finish(false, "main menu did not appear")
+	await _smoke_beat()
 
 	# Stage 2: resolve the requested map.
 	var loader: Node = get_node("/root/LevelLoader")
@@ -79,9 +90,10 @@ func _run_smoke() -> void:
 	# Stage 3: launch and wait for the async load + player spawn.
 	ui_manager.launch_map(map_path)
 	_smoke_record("MAP_LOAD_STARTED", true)
+	await _smoke_beat()
 	var deadline := Time.get_ticks_msec() + SMOKE_STAGE_TIMEOUT_MS
 	while Time.get_ticks_msec() < deadline:
-		await get_tree().process_frame
+		await get_tree().physics_frame
 		var player := get_tree().get_first_node_in_group("player") as Node3D
 		if player != null and loader.current_map != null:
 			break
@@ -89,6 +101,7 @@ func _run_smoke() -> void:
 			get_tree().get_first_node_in_group("player") != null
 			and loader.current_map != null):
 		return _smoke_finish(false, "map/player never became ready")
+	await _smoke_beat()
 
 	# Stage 4: simulate gameplay; movement proves the simulation runs end to end.
 	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
