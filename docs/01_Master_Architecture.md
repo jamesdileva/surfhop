@@ -1,6 +1,6 @@
 # Velocity Engine — Master Architecture
 
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** Draft — Sprint 0 (Pre-MVP)
 > **Audience:** Developers, AI coding agents, future contributors
 > **Related:** See `docs/02_Gameplay_Systems.md` for movement mathematics and `docs/03_Sprint_Plan.md` for the sprint-by-sprint roadmap.
@@ -1309,3 +1309,9 @@ These guidelines prevent architectural drift and ensure the modular, engine-firs
 *This is Document 1 of 3. For movement mathematics and implementation details, see `docs/02_Gameplay_Systems.md`. For the sprint-by-sprint roadmap, see `docs/03_Sprint_Plan.md`.
 
 © 2026 Velocity Engine — Development Architecture
+---
+
+## Revision History
+
+- **1.1 (Sprint 29):** Reconciled with implementation: CS/HL-variant air acceleration (pure-A circle strafe), wall-contact surf model with anti-stuck and exit boosts, casual/default movement presets, SteamManager added as a ninth manager, built-in physics interpolation enabled (Sprint 27), Interpolator teleport guard on the Player scene.
+- **1.0:** Initial authored version.

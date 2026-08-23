@@ -1,6 +1,6 @@
 # Velocity Engine — Development Roadmap
 
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** Draft - Sprint 0 (Pre-MVP)
 > **Audience:** Developers, AI coding agents, project managers
 > **Related:** See `docs/01_Master_Architecture.md` for architecture and `docs/02_Gameplay_Systems.md` for implementation details.
@@ -1326,3 +1326,10 @@ Sprint 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 *This is Document 3 of 3. For architecture, see `docs/01_Master_Architecture.md`. For implementation details, see `docs/02_Gameplay_Systems.md`.
 
 (c) 2026 Velocity Engine - Development Architecture
+
+---
+
+## Revision History
+
+- **1.1 (Sprint 29):** Sprints 1-28 executed; notable deviations: Sprint 25 VFX coordinator lives in scripts/debug/, Sprint 27 uses Godot built-in physics interpolation instead of a hand-rolled interpolator (Interpolator.gd is the teleport guard), Sprint 28 ships Steam integration in local mode behind manager seams (activation deferred to release). Sprint 29 documentation pass; Sprint 30 release build remains.
+- **1.0:** Initial authored version.

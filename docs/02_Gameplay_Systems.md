@@ -1,6 +1,6 @@
 # Velocity Engine — Gameplay Systems
 
-> **Version:** 1.0
+> **Version:** 1.1
 > **Status:** Draft - Sprint 0 (Pre-MVP)
 > **Audience:** Developers, AI coding agents, movement designers
 > **Related:** See `docs/01_Master_Architecture.md` for architecture overview and `docs/03_Sprint_Plan.md` for the sprint-by-sprint roadmap.
@@ -1284,3 +1284,10 @@ func update_surf_audio(speed: float) -> void:
 *This is Document 2 of 3. For high-level architecture, see `docs/01_Master_Architecture.md`. For the sprint-by-sprint roadmap, see `docs/03_Sprint_Plan.md`.
 
 (c) 2026 Velocity Engine - Development Architecture
+
+---
+
+## Revision History
+
+- **1.1 (Sprint 29):** Reconciled with implementation: auto-bhop hold-jump and 50-80ms buffer windows as configured values, HL-variant air-accel cap behavior (cap limits projection only), surf ramp classification tied to floor_max_angle rather than a fixed 45-degree constant, ghost replay format (GhostReplay/GhostRecorder) and settings schema as shipped.
+- **1.0:** Initial authored version.

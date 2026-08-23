@@ -5,6 +5,14 @@
 > `docs/02_Gameplay_Systems.md` (movement math & systems), `docs/03_Sprint_Plan.md` (roadmap).
 > If code and docs disagree, the docs win — flag the discrepancy instead of silently "fixing" the doc.
 
+## Documentation Map
+
+- `README.md` — repo overview, quick-start commands, doc index
+- `docs/user_guide.md` — player-facing guide (controls, movement school, settings)
+- `docs/changelog.md` — feature-level changelog by phase
+- `docs/history.md` — engineering session log; append an entry after every sprint push
+- `docs/performance_profile.md` — performance baseline, benchmark harness usage, manual validation checklist
+
 ## Project Identity
 
 - **Engine:** Velocity Engine (Godot 4.x, GDScript, Forward+, Godot Physics)

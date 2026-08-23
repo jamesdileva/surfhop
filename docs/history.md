@@ -184,6 +184,16 @@
 
 ---
 
+## Sprint 29 — Documentation
+
+- New: `docs/user_guide.md` (player-facing controls/movement school/maps/settings/achievements), `docs/changelog.md` (feature changelog by phase), and `README.md` (engine-first framing — flagged extra; acceptance required it but it wasn't in the sprint file list).
+- All three architecture docs bumped to **1.1** with revision-history sections reconciling them to the shipped implementation (HL-variant air accel, wall-contact surf model, 9th autoload, built-in interpolation).
+- AGENTS.md finalized with a Documentation Map section; backlog already current from prior sprints.
+- Decision: docs go 1.0 → 1.1 now; Sprint 30 aligns doc + project version at the v1.0 game release.
+- 358 checks passing (docs-only change, suite rerun for completeness).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).
