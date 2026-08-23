@@ -65,6 +65,7 @@ func save_settings() -> void:
 	DirAccess.make_dir_recursive_absolute(SETTINGS_PATH.get_base_dir())
 	if cfg.save(SETTINGS_PATH) != OK:
 		push_error("SaveManager: failed to write %s" % SETTINGS_PATH)
+	queue_cloud_sync()
 
 
 func get_setting(key: String) -> Variant:
@@ -109,6 +110,22 @@ func reset_settings_to_defaults() -> void:
 	apply_settings_to_engine()
 
 
+# ------------------------------------------------------- cloud (Sprint 28) --
+
+## Test/telemetry hook.
+var cloud_sync_calls := 0
+
+
+## Release-time seam: when SteamManager reports `available`, mirror changed
+## saves to Steam Cloud here. Local mode is a counted no-op.
+func queue_cloud_sync() -> void:
+	cloud_sync_calls += 1
+	if get_node_or_null("/root/SteamManager") == null:
+		return
+	# Intended: SteamManager.file_write(SETTINGS_PATH / RECORDS_PATH) once the
+	# GodotSteam GDExtension is live.
+
+
 ## Typed view of the current settings (SettingsResource schema).
 func get_settings_resource() -> SettingsResource:
 	return SettingsResource.from_dict(_settings)
@@ -133,6 +150,7 @@ func persist_records() -> void:
 	DirAccess.make_dir_recursive_absolute(RECORDS_PATH.get_base_dir())
 	if ResourceSaver.save(_records, RECORDS_PATH) != OK:
 		push_error("SaveManager: failed to write %s" % RECORDS_PATH)
+	queue_cloud_sync()
 
 
 func get_pb(map_name: String) -> float:

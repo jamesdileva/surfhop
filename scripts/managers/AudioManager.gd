@@ -11,6 +11,7 @@ const SFX := {
 	"footstep_a": "res://assets/audio/sfx/footstep_a.wav",
 	"footstep_b": "res://assets/audio/sfx/footstep_b.wav",
 	"finish": "res://assets/audio/sfx/finish.wav",
+	"achievement": "res://assets/audio/sfx/achievement.wav",
 	"ui_click": "res://assets/audio/sfx/ui_click.wav",
 }
 const SURF_LOOP := "res://assets/audio/sfx/surf_loop.wav"

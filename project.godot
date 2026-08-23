@@ -24,6 +24,7 @@ UIManager="*res://scripts/managers/UIManager.gd"
 SaveManager="*res://scripts/managers/SaveManager.gd"
 AudioManager="*res://scripts/managers/AudioManager.gd"
 LevelLoader="*res://scripts/managers/LevelLoader.gd"
+SteamManager="*res://scripts/managers/SteamManager.gd"
 
 [input]
 

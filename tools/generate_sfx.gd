@@ -126,6 +126,18 @@ func _initialize() -> void:
 		s[i] = sin(t * 1100.0 * TAU) * exp(-t * 90.0) * 0.6
 	_write_wav("res://assets/audio/sfx/ui_click.wav", s)
 
+	# achievement: bright two-note fanfare, distinct from the finish chime
+	n = int(0.8 * RATE)
+	s.resize(n)
+	var ach_notes := [[659.0, 0.0], [987.77, 0.16]]
+	for note in ach_notes:
+		var start_i := int(note[1] * RATE)
+		for i in range(start_i, n):
+			var t := float(i - start_i) / RATE
+			s[i] += sin(t * note[0] * TAU) * exp(-t * 4.5) * 0.45 \
+				+ sin(t * note[0] * 2.0 * TAU) * exp(-t * 6.0) * 0.12
+	_write_wav("res://assets/audio/sfx/achievement.wav", s)
+
 	# menu music placeholder: 9.6s loopable pad, Am - F - C - G feel
 	var chords := [
 		[220.0, 261.63, 329.63],

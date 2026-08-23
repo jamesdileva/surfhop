@@ -117,6 +117,11 @@ per map.
   `docs/performance_profile.md`; the manual checklist there (real-hardware
   profiler pass <1.5ms physics, 144+ FPS, 10-min memory soak) still needs a
   human run before release.
+- **Steam activation** (Sprint 28): achievements/cloud/leaderboards run in
+  local mode behind `SteamManager` seams. At release: buy AppID ($100),
+  install the GodotSteam GDExtension, add `steam_appid.txt`, then fill in
+  `_try_connect_steam()` / `_activate_on_steam()` / `submit_time()` — no
+  call-site changes needed.
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.

@@ -172,6 +172,18 @@
 
 ---
 
+## Sprint 28 — Steam Integration (local mode)
+
+- **Decision**: real Steam activation deferred to release (needs GodotSteam GDExtension + paid AppID + running client). Everything else ships now behind a facade: `SteamManager` runs in LOCAL mode (`available == false`) with three documented seams to fill later (`_try_connect_steam`, `_activate_on_steam`, `submit_time`) — no call-site changes needed at flip time.
+- Six achievements per spec: First Jump / First BHop / First Surf / First PB / Beat 300 u/s / Beat 600 u/s. All driven from existing SignalBus events; the bhop detection uses a landing→jump timing heuristic (~120ms window) so the movement layer stays untouched.
+- Unlocks are once-only, persisted to `user://save/achievements.cfg` (survive restarts), play a synthesized two-note chime (added to `tools/generate_sfx.gd`), and toast on the HUD ("ACHIEVEMENT UNLOCKED — …").
+- Cloud-save hook: `SaveManager.queue_cloud_sync()` called from `save_settings()`/`persist_records()`; counted no-op locally.
+- SteamManager registered as 9th autoload (deviation from the doc's 8-manager list — flagged).
+- Lesson: RNG-based generated WAVs churn byte-wise on every regeneration — restore untouched ones before committing; also, wall-clock heuristics in tests need explicit timestamp isolation or earlier suites' events leak in.
+- 358 checks passing (up from 343).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

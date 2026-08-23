@@ -53,6 +53,7 @@ func _run_all_tests() -> void:
 	await _test_intermediate_map()
 	await _test_advanced_map()
 	await _test_challenge_maps()
+	await _test_steam()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -75,6 +76,7 @@ func _test_autoloads_registered() -> void:
 	for manager: String in [
 		"SignalBus", "GameManager", "InputManager", "TickManager",
 		"UIManager", "SaveManager", "AudioManager", "LevelLoader",
+		"SteamManager",
 	]:
 		var node := root.get_node_or_null(NodePath(manager))
 		_check(node != null, "Autoload '%s' is registered" % manager)
@@ -2329,6 +2331,88 @@ func _test_optimization() -> void:
 			% player.movement_controller.last_script_step_us)
 
 	world.queue_free()
+	await process_frame
+
+
+func _test_steam() -> void:
+	var steam: Node = root.get_node("SteamManager")
+	var sm: Node = root.get_node("SaveManager")
+	var am: Node = root.get_node("AudioManager")
+	var bus: Node = root.get_node("SignalBus")
+
+	# Degraded/local mode until GodotSteam + a live AppID exist.
+	_check(steam.available == false,
+		"SteamManager runs in local mode without the Steam SDK")
+
+	# Clean slate so earlier suites' movement events can't pre-assert.
+	steam.reset_local_state()
+
+	# --- unlock(): signal, once-only, persistence, sound ---
+	var fired: Array = []
+	steam.achievement_unlocked.connect(func(id: String, name: String) -> void:
+		fired.append("%s:%s" % [id, name]))
+	steam.unlock("first_jump")
+	await physics_frame
+	_check(fired.size() == 1 and fired[0] == "first_jump:First Jump",
+		"unlock emits achievement_unlocked with display name")
+	steam.unlock("first_jump")
+	await physics_frame
+	_check(fired.size() == 1, "repeat unlock is suppressed")
+	_check(FileAccess.file_exists(steam.ACHIEVEMENTS_PATH),
+		"unlock persisted to achievements.cfg")
+	var sounds_before: int = int(am.play_counts.get("achievement", 0))
+	steam.unlock("first_surf")
+	await physics_frame
+	_check(int(am.play_counts.get("achievement", 0)) == sounds_before + 1,
+		"unlock plays the achievement chime")
+
+	# --- Event wiring for all six achievements ---
+	steam.reset_local_state()
+	bus.player_jumped.emit({"velocity": Vector3.ZERO})
+	await physics_frame
+	_check(steam.is_unlocked("first_jump"), "player_jumped unlocks first_jump")
+	bus.player_landed.emit({"velocity": Vector3.ZERO, "fall_speed": 500.0})
+	bus.player_jumped.emit({"velocity": Vector3.ZERO})
+	await physics_frame
+	_check(steam.is_unlocked("first_bhop"),
+		"jump fired right after landing unlocks first_bhop")
+	bus.surf_entered.emit({"normal": Vector3.UP, "position": Vector3.ZERO})
+	await physics_frame
+	_check(steam.is_unlocked("first_surf"), "surf_entered unlocks first_surf")
+	bus.race_finished.emit({"time": 12.0, "is_pb": true})
+	await physics_frame
+	_check(steam.is_unlocked("first_pb"), "PB finish unlocks first_pb")
+	bus.velocity_updated.emit(650.0)
+	await physics_frame
+	_check(steam.is_unlocked("speed_300") and steam.is_unlocked("speed_600"),
+		"650 u/s unlocks both speed tiers")
+
+	# --- Persistence across a simulated restart ---
+	steam._unlocked.clear()
+	steam._load_unlocked()
+	_check(steam.is_unlocked("first_bhop") and steam.is_unlocked("speed_300"),
+		"unlocks survive restart simulation via achievements.cfg")
+
+	# --- Cloud sync hook telemetry ---
+	var calls_before: int = int(sm.cloud_sync_calls)
+	sm.save_settings()
+	_check(int(sm.cloud_sync_calls) == calls_before + 1,
+		"save_settings queues cloud sync (local no-op)")
+
+	# --- HUD toast ---
+	steam.reset_local_state()
+	steam._last_landing_ms = -1000000  # isolate from earlier landings' clock
+	var hud: HUDController = (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	root.add_child(hud)
+	await process_frame
+	bus.player_jumped.emit({"velocity": Vector3.ZERO})
+	await physics_frame
+	_check(hud.get_achievement_text().contains("First Jump"),
+		"HUD shows achievement toast (%s)" % hud.get_achievement_text())
+	hud.queue_free()
+
+	# Leave pristine state for the dev environment.
+	steam.reset_local_state()
 	await process_frame
 
 

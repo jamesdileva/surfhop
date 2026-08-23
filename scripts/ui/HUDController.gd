@@ -15,11 +15,13 @@ const SPEED_UPDATE_INTERVAL := 1.0 / 30.0
 @onready var _debug_label: Label = $Root/DebugSpeedLabel
 
 var _finish_label := Label.new()
+var _achievement_label := Label.new()
 
 var _latest_speed: float = 0.0
 var _speed_accum := 0.0
 var _fps_accum := 0.0
 var _finish_display_timer := 0.0
+var _achievement_display_timer := 0.0
 
 
 func _ready() -> void:
@@ -32,10 +34,23 @@ func _ready() -> void:
 	_finish_label.visible = false
 	$Root.add_child(_finish_label)
 
+	_achievement_label.text = ""
+	_achievement_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_achievement_label.add_theme_font_size_override("font_size", 32)
+	_achievement_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_achievement_label.position = Vector2(400, 70)
+	_achievement_label.size = Vector2(1120, 60)
+	_achievement_label.modulate = Color(0.4, 1.0, 0.6)
+	_achievement_label.visible = false
+	$Root.add_child(_achievement_label)
+
 	var bus := get_node_or_null("/root/SignalBus")
 	if bus != null:
 		bus.velocity_updated.connect(_on_velocity_updated)
 		bus.race_finished.connect(_on_race_finished)
+	var steam_manager := get_node_or_null("/root/SteamManager")
+	if steam_manager != null:
+		steam_manager.achievement_unlocked.connect(_on_achievement_unlocked)
 	var loader := get_node_or_null("/root/LevelLoader")
 	if loader != null:
 		loader.map_loaded.connect(_on_map_loaded)
@@ -58,6 +73,10 @@ func _process(delta: float) -> void:
 		_finish_display_timer -= delta
 		if _finish_display_timer <= 0.0:
 			_finish_label.visible = false
+	if _achievement_display_timer > 0.0:
+		_achievement_display_timer -= delta
+		if _achievement_display_timer <= 0.0:
+			_achievement_label.visible = false
 
 	_speed_accum += delta
 	if _speed_accum >= SPEED_UPDATE_INTERVAL:
@@ -168,6 +187,16 @@ func _on_race_finished(payload: Dictionary) -> void:
 	_finish_label.visible = true
 	_finish_display_timer = 5.0
 	_refresh_pb()
+
+
+func _on_achievement_unlocked(_id: String, display_name: String) -> void:
+	_achievement_label.text = "ACHIEVEMENT UNLOCKED — %s" % display_name
+	_achievement_label.visible = true
+	_achievement_display_timer = 4.0
+
+
+func get_achievement_text() -> String:
+	return _achievement_label.text
 
 
 ## New map (re)loaded: PB belongs to the new map now.
