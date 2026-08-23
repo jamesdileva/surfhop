@@ -54,6 +54,7 @@ func _run_all_tests() -> void:
 	await _test_advanced_map()
 	await _test_challenge_maps()
 	await _test_steam()
+	await _test_main_menu_flow()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -2197,6 +2198,8 @@ func _test_settings_menu() -> void:
 	var am: Node = root.get_node("AudioManager")
 	var im: Node = root.get_node("InputManager")
 
+	ui.dismiss_menus()  # deterministic stack regardless of earlier suites
+
 	# --- Opening: overlay instantiated, menu state tracked ---
 	ui.show_menu("settings")
 	var menu: SettingsMenu = ui.get_node_or_null("SettingsMenu")
@@ -2416,6 +2419,90 @@ func _test_steam() -> void:
 	await process_frame
 
 
+func _test_main_menu_flow() -> void:
+	var ui: Node = root.get_node("UIManager")
+	var loader: Node = root.get_node("LevelLoader")
+	ui.dismiss_menus()
+
+	# --- Boot: Game scene shows the main menu ---
+	var game: Game = (load("res://scenes/world/Game.tscn") as PackedScene).instantiate()
+	root.add_child(game)
+	await process_frame
+	_check(ui.current_menu == "main", "boot shows the main menu")
+	_check(ui.get_game() == game, "Game registers itself with UIManager")
+	var main_menu: Node = ui.get_node_or_null("MainMenu")
+	_check(main_menu != null and main_menu.visible, "MainMenu overlay visible")
+
+	# --- Map select: populated from discover_maps() ---
+	ui.show_menu("map_select")
+	await process_frame
+	var select: Node = ui.get_node("MapSelect")
+	var rows: Node = select.get_node("Root/Panel/Column/Scroll/Rows")
+	_check(rows.get_child_count() >= 1,
+		"map select lists discovered maps (%d)" % rows.get_child_count())
+
+	# --- Launch a map through the flow ---
+	ui.launch_map("res://scenes/maps/test_map.tscn")
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "menu-launched map loads")
+	await _wait_ticks(5)
+	_check(ui.current_menu == "", "menus dismissed when the session starts")
+	_check(ui.session_active, "session active after launch")
+	var player: Player = get_first_node_in_group("player") as Player
+	_check(player != null and player.get_parent() == game,
+		"player spawned inside the Game scene")
+
+	# --- Pause: toggle pauses the tree; settings stack on top of pause ---
+	ui.toggle_pause()
+	await process_frame
+	_check(ui.current_menu == "pause" and paused,
+		"toggle_pause pauses the tree")
+	ui.show_menu("settings")
+	await physics_frame
+	_check(ui.current_menu == "settings" and paused,
+		"settings stacks on pause, still paused")
+	ui.close_menu()
+	await process_frame
+	_check(ui.current_menu == "pause", "closing settings returns to pause")
+	ui.close_menu()
+	await process_frame
+	_check(ui.current_menu == "" and not paused,
+		"closing pause resumes gameplay")
+
+	# --- Results: finish event opens results during a session ---
+	root.get_node("SignalBus").race_finished.emit({"time": 21.0, "is_pb": true})
+	await physics_frame
+	_check(ui.current_menu == "results", "finish opens the results screen")
+	var results: Node = ui.get_node("ResultsScreen")
+	var time_text: String = results.get_node(
+		"Root/Column/TimeLabel").text
+	_check(time_text == "0:21.000",
+		"results shows finish time (%s)" % time_text)
+	var pb_text: String = results.get_node("Root/Column/PbLabel").text
+	_check(pb_text == "NEW PERSONAL BEST!", "PB callout shown (%s)" % pb_text)
+
+	ui.close_menu()
+	await process_frame
+	_check(ui.current_menu == "" and not paused,
+		"results close returns to gameplay")
+
+	# --- Return to menu: teardown ---
+	game.return_to_menu()
+	await process_frame
+	await process_frame
+	_check(ui.current_menu == "main", "return_to_menu shows the main menu")
+	_check(not ui.session_active, "session inactive after return")
+	_check(loader.current_map == null, "map unloaded on return to menu")
+
+	game.queue_free()
+	await process_frame
+
+
 func _test_save_manager_defaults() -> void:
 	var sm: Node = root.get_node("SaveManager")
 	var settings: Dictionary = sm.load_settings()
@@ -2430,3 +2517,4 @@ func _test_ui_manager_show_menu() -> void:
 	var ui: Node = root.get_node("UIManager")
 	ui.show_menu("main")
 	_check(ui.current_menu == "main", "show_menu('main') sets current menu without error")
+	ui.dismiss_menus()  # leave a clean stack for later suites

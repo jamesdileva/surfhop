@@ -1249,6 +1249,34 @@ The polish phase adds audio, visual effects, settings, optimization, Steam integ
 
 ---
 
+## Phase 6: Pre-Release (Sprints P1-P6) — added Sprint 29, supersedes original ordering
+
+The v1.0 release (Sprint 30 above) was deferred: shipping it immediately would
+freeze a build with no main menu and unresolved polish. Phase 6 lands every
+deferred item BEFORE the version bump so the release build is cut once.
+
+- **P1 — Main menu & game flow:** boot scene (`Game.tscn` becomes main_scene),
+  main menu, map select from `LevelLoader.discover_maps()`, pause menu
+  (Esc; timer freeze via tree pause), results screen with splits. Implements
+  the four stubbed `UIManager.show_menu()` targets.
+- **P2 — Playtest polish pass:** ramp feel tuning (air_accel, surf friction,
+  gravity conversion), gap-jump validation, jump-while-surfing keep-or-gate
+  decision. Requires human play sessions.
+- **P3 — Visual materials pass:** neon edge highlights, per-difficulty tinting
+  (`MapMetadata.vertex_color_tint`), skybox.
+- **P4 — Audio completion:** licensed music tracks into
+  `assets/audio/music/<station>.ogg`, final mix pass.
+- **P5 — Performance certification:** execute the manual checklist in
+  `docs/performance_profile.md` (<1.5ms physics profiler pass, 144+ FPS,
+  10-minute memory soak).
+- **P6 — v1.0 release:** the original Sprint 30 spec, executed here. Align doc
+  versions with the game version, export, clean-machine test, tag.
+
+Steam activation follows P6 (buy AppID, install GodotSteam, fill the three
+`SteamManager` seams).
+
+---
+
 ## Sprint Summary Table
 
 | Sprint | Phase | Objective | Est. Time |
@@ -1332,4 +1360,5 @@ Sprint 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 ## Revision History
 
 - **1.1 (Sprint 29):** Sprints 1-28 executed; notable deviations: Sprint 25 VFX coordinator lives in scripts/debug/, Sprint 27 uses Godot built-in physics interpolation instead of a hand-rolled interpolator (Interpolator.gd is the teleport guard), Sprint 28 ships Steam integration in local mode behind manager seams (activation deferred to release). Sprint 29 documentation pass; Sprint 30 release build remains.
+- **1.1a (Phase 6, post-Sprint-29):** v1.0 release deferred; Phase 6 pre-release sprints P1-P6 inserted ahead of it (main menu/game flow first — the roadmap had no main-menu sprint).
 - **1.0:** Initial authored version.

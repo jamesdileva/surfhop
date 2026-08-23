@@ -101,10 +101,10 @@ godot --path . scenes/world/dev_challenge_speedrun.tscn    # Sprint 23
 ```
 
 Controls: WASD move, Space jump, mouse look, R restart-from-checkpoint,
-F1 debug overlay (speed/state/vectors), Esc opens/closes the settings menu
-(mouse is released while it's open; click to re-capture after closing).
-HUD shows live timer/PB/checkpoints; PB ghosts appear after a first record
-per map.
+F1 debug overlay (speed/state/vectors), Esc opens the pause menu (tree
+pauses; Settings lives inside pause; Esc again resumes). `godot --path .`
+boots to the main menu; dev bootstrap scenes still bypass it. HUD shows live
+timer/PB/checkpoints; PB ghosts appear after a first record per map.
 
 ## Deferred Polish Items (Sprint 27+ backlog)
 

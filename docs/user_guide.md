@@ -10,13 +10,18 @@ Velocity is not yet distributed; run it from source:
 
 1. Install [Godot 4.x](https://godotengine.org/download) (4.3 or newer).
 2. Clone this repository.
-3. Launch any map directly:
+3. Launch the game:
+
+```sh
+godot --path .
+```
+
+The main menu lets you pick a map and start racing. For one-off testing you
+can still launch maps directly:
 
 ```sh
 godot --path . scenes/world/dev_tutorial.tscn
 ```
-
-(Once a main menu ships, `godot --path .` launches the game directly.)
 
 ---
 
@@ -29,10 +34,11 @@ godot --path . scenes/world/dev_tutorial.tscn
 | `Space` | Jump (hold to auto-bunnyhop on every landing) |
 | `R` | Restart from last checkpoint |
 | `F1` | Debug overlay (speed, state, velocity vector) |
-| `Esc` | Open/close Settings |
+| `Esc` | Pause menu (resume / restart / settings / quit) |
 
-The mouse is captured while playing. Esc releases it into the settings menu;
-click anywhere after closing to re-capture.
+The mouse is captured while playing. Esc opens the pause menu and releases
+the mouse; click Resume (or press Esc again) to go back — the mouse
+re-captures automatically.
 
 ---
 
@@ -89,7 +95,9 @@ ghost of that record run replays beside you next attempt.
 
 ---
 
-## Settings (`Esc`)
+## Settings
+
+Reach Settings from the pause menu (`Esc`) or the main menu.
 
 - **Graphics** — fullscreen, vsync, FPS cap, windowed resolution
 - **Audio** — Master / Music / SFX volume (live preview)

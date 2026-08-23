@@ -21,6 +21,7 @@ var _status: Label
 
 
 func _ready() -> void:
+	visible = false  # shown via UIManager.show_menu()
 	var root := Control.new()
 	root.name = "Root"
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)

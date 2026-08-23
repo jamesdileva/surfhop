@@ -53,10 +53,10 @@ func _input(event: InputEvent) -> void:
 			parent_body.rotation.y = deg_to_rad(_yaw_deg)
 		rotation.x = deg_to_rad(_pitch_deg)
 	elif event.is_action_pressed("ui_cancel") and mouse_captured:
-		# Esc opens the settings overlay (mouse released by UIManager).
+		# Esc opens the pause menu (tree pauses; settings reachable from it).
 		var ui_manager := get_node_or_null("/root/UIManager")
 		if ui_manager != null:
-			ui_manager.show_menu("settings")
+			ui_manager.toggle_pause()
 		else:
 			set_mouse_captured(false)
 	elif event is InputEventMouseButton and event.pressed \

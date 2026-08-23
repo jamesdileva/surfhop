@@ -10,6 +10,7 @@ config_version=5
 
 [application]
 
+run/main_scene="res://scenes/world/Game.tscn"
 config/name="Velocity"
 config/description="Velocity Engine - a modular movement engine. First game: Velocity (bhop / air-strafe / surf time trials)."
 config/features=PackedStringArray("4.7")
