@@ -106,27 +106,23 @@ pauses; Settings lives inside pause; Esc again resumes). `godot --path .`
 boots to the main menu; dev bootstrap scenes still bypass it. HUD shows live
 timer/PB/checkpoints; PB ghosts appear after a first record per map.
 
-## Deferred Polish Items (Sprint 27+ backlog)
+## Deferred Polish Items (Phase 6 backlog)
 
-- **Jump-while-surfing**: currently possible (coyote window persists on ramp
-  walls). Playtester found it acceptable/even helpful for repositioning;
-  decide intentionally in polish: keep as feature or gate jumping to real
-  floors only.
-- **Visual materials**: maps are flat white boxes; docs call for neon edge
-  highlights and per-difficulty tinting (MapMetadata.vertex_color_tint).
-  Surf-ramp glow shader (Sprint 25) covers ramp feedback only.
-- **Ramp feel tuning**: air_accel (10), surf friction, gravity-conversion
-  strength — tune after extended play sessions.
-- **Gap jump distances** on intermediate/advanced need human validation.
-- **Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
-  — the `audio/music_track` dropdown already ships in the Sprint 26 settings
-  menu (Audio tab lists stations once files exist; placeholder until then).
-- **Performance certification** (Sprint 27): headless profile is in
+- **P2 Playtest polish pass**: ramp feel tuning (air_accel (10), surf
+  friction, gravity-conversion strength), gap-jump distance validation,
+  jump-while-surfing keep-or-gate decision — all need human play sessions.
+- **P3 Visual materials pass**: neon edge highlights, per-difficulty tinting
+  (`MapMetadata.vertex_color_tint`), skybox. Surf-ramp glow shader (Sprint 25)
+  covers ramp feedback only.
+- **P4 Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
+  — the `audio/music_track` dropdown already ships in the settings menu
+  (Audio tab lists stations once files exist; placeholder until then).
+- **P5 Performance certification**: headless profile is in
   `docs/performance_profile.md`; the manual checklist there (real-hardware
   profiler pass <1.5ms physics, 144+ FPS, 10-min memory soak) still needs a
   human run before release.
-- **Steam activation** (Sprint 28): achievements/cloud/leaderboards run in
-  local mode behind `SteamManager` seams. At release: buy AppID ($100),
+- **P6 v1.0 release** (original Sprint 30 spec): export, clean-machine test,
+  version alignment, tag. Steam activation follows P6: buy AppID ($100),
   install the GodotSteam GDExtension, add `steam_appid.txt`, then fill in
   `_try_connect_steam()` / `_activate_on_steam()` / `submit_time()` — no
   call-site changes needed.

@@ -194,6 +194,17 @@
 
 ---
 
+## Sprint P1 — Main Menu & Game Flow (Phase 6 begins)
+
+- **Roadmap change**: v1.0 release deferred — the roadmap never included a main menu, so shipping would have frozen a console-launched game. `docs/03_Sprint_Plan.md` gains a **Phase 6 (P1–P6)** section: main menu → playtest polish → visual materials → music completion → performance certification → v1.0 release; Steam activation follows.
+- **Game.tscn** is now the project main_scene: boot shows the main menu; picking a map wires HUD/timer/ghost systems (same assembly as DevMain), loads via LevelLoader and spawns the player. Dev bootstrap scenes unchanged.
+- Four new menus in the SettingsMenu programmatic style: MainMenu (Play/Settings/Quit), MapSelect (grid from discover_maps with difficulty stars), PauseMenu (resume/restart/settings/quit-to-menu/desktop), ResultsScreen (time, PB callout, splits; Retry/Map Select/Menu).
+- UIManager reworked to a **menu stack**: all menus instantiated eagerly and hidden (ResultsScreen must exist to open itself on race_finished); pause = real tree pause (timer freezes; UIManager runs in ALWAYS mode so menus work while paused); Esc during gameplay toggles pause instead of opening settings directly.
+- Lessons: don't generate .tscn files via PowerShell string interpolation (quote escaping silently ate closing quotes); eager instantiation requires every menu layer to self-hide in `_ready`; node paths in tests must match each scene's actual layout (ResultsScreen has no Panel wrapper).
+- 377 checks passing (up from 358).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).
