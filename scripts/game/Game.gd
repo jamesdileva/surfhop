@@ -18,6 +18,7 @@ var _player: Player = null
 var _smoke_active := false
 var _smoke_map_id := "beginner"
 var _smoke_run_seconds := 8.0
+var _smoke_hold_seconds := 0.0
 var _smoke_milestones: Array[String] = []
 
 
@@ -40,6 +41,8 @@ func _exit_tree() -> void:
 ## Self-driving smoke pass for external smoke testers (integration.md): boots
 ## through the real menu flow into a map, simulates gameplay input, and exits
 ## 0/1 so the harness's exit-code + crash-signature checks assert behavior.
+## --smoke-hold=<seconds> keeps the window alive after RESULT so screenshot
+## timing in smoke testers is not a race against self-exit.
 func _parse_smoke_args() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg == "--smoke":
@@ -48,6 +51,8 @@ func _parse_smoke_args() -> void:
 			_smoke_map_id = arg.substr(12)
 		elif arg.begins_with("--smoke-run-seconds="):
 			_smoke_run_seconds = float(arg.substr(20))
+		elif arg.begins_with("--smoke-hold="):
+			_smoke_hold_seconds = float(arg.substr(13))
 
 
 func _run_smoke() -> void:
@@ -124,6 +129,8 @@ func _smoke_finish(success: bool, detail: String) -> void:
 				file.store_line(milestone)
 			file.store_line("RESULT=%s %s" % [result, detail])
 			file.close()
+	if _smoke_hold_seconds > 0.0:
+		await get_tree().create_timer(_smoke_hold_seconds).timeout
 	get_tree().quit(0 if success else 1)
 
 
