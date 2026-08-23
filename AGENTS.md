@@ -93,11 +93,12 @@ godot --path . scenes/world/dev_challenge_speedrun.tscn    # Sprint 23
 ```
 
 Controls: WASD move, Space jump, mouse look, R restart-from-checkpoint,
-F1 debug overlay (speed/state/vectors), Esc releases the mouse (click to
-re-capture). HUD shows live timer/PB/checkpoints; PB ghosts appear after a
-first record per map.
+F1 debug overlay (speed/state/vectors), Esc opens/closes the settings menu
+(mouse is released while it's open; click to re-capture after closing).
+HUD shows live timer/PB/checkpoints; PB ghosts appear after a first record
+per map.
 
-## Deferred Polish Items (Sprint 25+ backlog)
+## Deferred Polish Items (Sprint 26+ backlog)
 
 - **Jump-while-surfing**: currently possible (coyote window persists on ramp
   walls). Playtester found it acceptable/even helpful for repositioning;
@@ -105,11 +106,13 @@ first record per map.
   floors only.
 - **Visual materials**: maps are flat white boxes; docs call for neon edge
   highlights and per-difficulty tinting (MapMetadata.vertex_color_tint).
+  Surf-ramp glow shader (Sprint 25) covers ramp feedback only.
 - **Ramp feel tuning**: air_accel (10), surf friction, gravity-conversion
   strength — tune after extended play sessions.
 - **Gap jump distances** on intermediate/advanced need human validation.
 - **Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
-  and wire the `audio/music_track` setting into the Sprint 26 settings dropdown.
+  — the `audio/music_track` dropdown already ships in the Sprint 26 settings
+  menu (Audio tab lists stations once files exist; placeholder until then).
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.

@@ -46,6 +46,7 @@ func _run_all_tests() -> void:
 	await _test_ghost_recording()
 	await _test_audio()
 	await _test_visual_effects()
+	await _test_settings_menu()
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
@@ -2184,6 +2185,107 @@ func _test_visual_effects() -> void:
 	player.movement_controller.set_physics_process(true)
 
 	world.queue_free()
+	await process_frame
+
+
+func _test_settings_menu() -> void:
+	var ui: Node = root.get_node("UIManager")
+	var sm: Node = root.get_node("SaveManager")
+	var am: Node = root.get_node("AudioManager")
+	var im: Node = root.get_node("InputManager")
+
+	# --- Opening: overlay instantiated, menu state tracked ---
+	ui.show_menu("settings")
+	var menu: SettingsMenu = ui.get_node_or_null("SettingsMenu")
+	_check(menu != null and menu.visible, "show_menu('settings') opens the overlay")
+	_check(ui.current_menu == "settings", "current_menu tracks settings")
+	if menu == null:
+		return
+
+	# --- Tab structure: Graphics / Audio / Input / Gameplay ---
+	var tabs: Node = menu.get_node("Root/Panel/Column/Tabs")
+	for tab_name: String in ["Graphics", "Audio", "Input", "Gameplay"]:
+		_check(tabs.get_node_or_null(tab_name) != null,
+			"settings tab '%s' present" % tab_name)
+	var tick_label: Label = tabs.get_node("Gameplay/TickRateLabel")
+	_check(tick_label.text.contains("engine-fixed"),
+		"tick rate is display-only (%s)" % tick_label.text)
+
+	# --- Audio sliders: live bus volume + persistence ---
+	menu._on_volume_changed(0.25, "Music")
+	await process_frame
+	_check(absf(am.get_volume("Music") - 0.25) < 0.001,
+		"audio slider updates the bus live")
+	_check(absf(float(sm.get_setting("audio/music_volume")) - 0.25) < 0.001,
+		"audio slider persists to settings")
+	am.set_volume("Music", 0.6)
+	sm.set_setting("audio/music_volume", 0.6)
+
+	# --- Graphics handlers persist and apply to the engine ---
+	menu._on_fps_cap_selected(3)  # 120 FPS
+	_check(Engine.max_fps == 120,
+		"fps cap applies to engine (max_fps=%d)" % Engine.max_fps)
+	_check(int(sm.get_setting("graphics/fps_cap")) == 120, "fps cap persists")
+	menu._on_resolution_selected(2)  # 1920x1080
+	_check(str(sm.get_setting("video/resolution")) == "1920x1080",
+		"resolution selection persists")
+	var res_option: OptionButton = tabs.get_node(
+		"Graphics/ResolutionRow/ResolutionOption")
+	res_option.disabled = false
+	menu._on_setting_bool(false, "graphics/fullscreen")
+	res_option.disabled = true  # restore default fullscreen state
+	menu._on_setting_bool(true, "graphics/fullscreen")
+
+	# --- Rebinding through the menu flow ---
+	var k_key := InputEventKey.new()
+	k_key.physical_keycode = KEY_K
+	k_key.pressed = true
+	menu._on_rebind_pressed("move_forward")
+	menu._unhandled_input(k_key)
+	var fwd_events: Array = InputMap.action_get_events("move_forward")
+	_check(fwd_events.size() == 1 and fwd_events[0].physical_keycode == KEY_K,
+		"menu rebind updates the action binding")
+	_check(FileAccess.file_exists(im.BINDINGS_PATH),
+		"menu rebind persisted to bindings.cfg")
+	# Conflict: K is now taken; rebinding move_back to it must be rejected.
+	menu._on_rebind_pressed("move_back")
+	menu._unhandled_input(k_key)
+	var back_events: Array = InputMap.action_get_events("move_back")
+	_check(back_events[0].physical_keycode == KEY_S
+		and menu.get_node("Root/Panel/Column/StatusLine").text.contains("already in use"),
+		"conflicting rebind rejected with feedback")
+	# Restore defaults so later suites / dev environment are unaffected.
+	var w_key := InputEventKey.new()
+	w_key.physical_keycode = KEY_W
+	InputMap.action_erase_events("move_forward")
+	InputMap.action_add_event("move_forward", w_key)
+
+	# --- Ghost auto-save gate reads the gameplay setting ---
+	sm.set_setting("gameplay/auto_save_ghost", false)
+	var recorder := GhostRecorder.new()
+	root.add_child(recorder)
+	_check(not recorder.should_autosave_ghost(sm),
+		"ghost autosave gate respects gameplay/auto_save_ghost=false")
+	recorder.queue_free()
+	sm.set_setting("gameplay/auto_save_ghost", true)
+
+	# --- Reset to Defaults restores factory settings and applies them ---
+	sm.set_setting("graphics/fps_cap", 30)
+	am.set_volume("Music", 1.0)
+	sm.set_setting("audio/music_volume", 1.0)
+	menu._on_reset_defaults()
+	_check(int(sm.get_setting("graphics/fps_cap")) == 0,
+		"reset restores fps cap default")
+	_check(absf(am.get_volume("Music") - 0.6) < 0.001,
+		"reset reapplies default bus volumes")
+	_check(Engine.max_fps == 0, "reset applies engine defaults (uncapped)")
+
+	# --- Back/Esc closes and returns to gameplay ---
+	ui.close_menu()
+	_check(ui.current_menu == "" and not menu.visible,
+		"close_menu hides the overlay and returns to gameplay")
+
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(im.BINDINGS_PATH))
 	await process_frame
 
 

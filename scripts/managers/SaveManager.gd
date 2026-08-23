@@ -20,8 +20,10 @@ const DEFAULT_SETTINGS := {
 	"graphics/fullscreen": true,
 	"graphics/vsync": true,
 	"graphics/fps_cap": 0,
+	"video/resolution": "1280x720",
 	"movement/tick_rate": 100,
 	"movement/show_debug": false,
+	"gameplay/auto_save_ghost": true,
 	"audio/music_track": "placeholder",
 }
 
@@ -36,6 +38,7 @@ func _ready() -> void:
 	else:
 		_settings = load_settings()
 	load_records()
+	apply_settings_to_engine()
 
 
 # ---------------------------------------------------------------- settings --
@@ -70,6 +73,40 @@ func get_setting(key: String) -> Variant:
 
 func set_setting(key: String, value: Variant) -> void:
 	_settings[key] = value
+
+
+## Pushes engine-level settings (window mode, vsync, fps cap) into the
+## engine/display server. Called at startup and by the settings menu.
+func apply_settings_to_engine() -> void:
+	if bool(get_setting("graphics/fullscreen")):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	if bool(get_setting("graphics/vsync")):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
+	else:
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	Engine.max_fps = int(get_setting("graphics/fps_cap"))
+	apply_windowed_resolution()
+
+
+func apply_windowed_resolution() -> void:
+	if bool(get_setting("graphics/fullscreen")):
+		return
+	var parts := str(get_setting("video/resolution")).split("x")
+	if parts.size() != 2:
+		return
+	var size := Vector2i(int(parts[0]), int(parts[1]))
+	if size.x > 0 and size.y > 0:
+		DisplayServer.window_set_size(size)
+
+
+## Restores factory settings (settings menu "Reset to Defaults") and applies
+## the engine-impacting ones immediately. Bindings are not touched.
+func reset_settings_to_defaults() -> void:
+	_settings = DEFAULT_SETTINGS.duplicate(true)
+	save_settings()
+	apply_settings_to_engine()
 
 
 ## Typed view of the current settings (SettingsResource schema).

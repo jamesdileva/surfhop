@@ -53,12 +53,18 @@ func _input(event: InputEvent) -> void:
 			parent_body.rotation.y = deg_to_rad(_yaw_deg)
 		rotation.x = deg_to_rad(_pitch_deg)
 	elif event.is_action_pressed("ui_cancel") and mouse_captured:
-		# Temporary until GameManager owns pause state (Sprint 13+).
-		set_mouse_captured(false)
+		# Esc opens the settings overlay (mouse released by UIManager).
+		var ui_manager := get_node_or_null("/root/UIManager")
+		if ui_manager != null:
+			ui_manager.show_menu("settings")
+		else:
+			set_mouse_captured(false)
 	elif event is InputEventMouseButton and event.pressed \
 			and event.button_index == MOUSE_BUTTON_LEFT and not mouse_captured:
 		# Click to re-capture after Esc (playtest QoL until pause menu exists).
-		set_mouse_captured(true)
+		var ui := get_node_or_null("/root/UIManager")
+		if ui == null or ui.current_menu == "":
+			set_mouse_captured(true)
 
 
 func _notification(what: int) -> void:

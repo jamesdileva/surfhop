@@ -73,5 +73,13 @@ func _on_race_finished(payload: Dictionary) -> void:
 	var save_manager := get_node_or_null("/root/SaveManager")
 	if game_manager == null or save_manager == null:
 		return
+	if not should_autosave_ghost(save_manager):
+		return  # user disabled ghost writing; PB itself still records
 	save_manager.save_ghost(game_manager.map_name,
 		build_replay(game_manager.map_name, payload["time"]))
+
+
+## Settings-menu hook (gameplay/auto_save_ghost): when off, replays are still
+## recorded in memory during the race but never written to disk.
+func should_autosave_ghost(save_manager: Node) -> bool:
+	return bool(save_manager.get_setting("gameplay/auto_save_ghost"))

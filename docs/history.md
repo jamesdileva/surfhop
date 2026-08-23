@@ -150,6 +150,18 @@
 
 ---
 
+## Sprint 26 — Settings Menu
+
+- `SettingsMenu` overlay (CanvasLayer + programmatic UI): Graphics (fullscreen, vsync, fps cap, windowed 16:9 resolution presets), Audio (Master/Music/SFX sliders with live bus preview + click blip), Input (per-action click-to-rebind with conflict feedback), Gameplay (debug toggle, auto-save ghost toggle, tick rate shown display-only).
+- All changes persist immediately (`settings.cfg` / `bindings.cfg`); engine-impacting ones apply live through new `SaveManager.apply_settings_to_engine()` (+`apply_windowed_resolution()`, `reset_settings_to_defaults()`). Reset-to-Defaults restores factory settings and re-applies bus volumes; Back/Esc returns to gameplay and recaptures the mouse.
+- Menu access decision: **Esc opens/closes settings** (replaces the old release-mouse-only behavior; click-to-recapture suppressed while a menu is open).
+- Tick-rate row kept display-only ("engine-fixed") per the docs' untouchable-100Hz rule.
+- New settings keys: `gameplay/auto_save_ghost` (off = PBs still record, replays not written — gated in `GhostRecorder.should_autosave_ghost()`), `video/resolution`.
+- Lessons: get_node paths must include intermediate container rows (`Graphics/ResolutionRow/ResolutionOption`) — two stale paths threw SCRIPT ERRORs after checks passed; remember the contract is exit 0 + **zero** ERROR lines, not just green checks.
+- 338 checks passing (up from 318).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

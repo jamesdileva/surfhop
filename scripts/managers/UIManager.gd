@@ -5,6 +5,7 @@ extends Node
 const AVAILABLE_MENUS := ["main", "pause", "settings", "results", "credits", "map_select"]
 
 const VISUAL_EFFECTS := preload("res://scripts/debug/VisualEffects.gd")
+const SETTINGS_MENU_SCENE := preload("res://scenes/menus/SettingsMenu.tscn")
 
 var current_menu: String = ""
 
@@ -14,6 +15,8 @@ var vfx_enabled: bool = true
 
 var _hud: Node = null
 var _vfx: Node = null
+var _settings_menu: Node = null
+var _previous_menu: String = ""
 
 
 func _ready() -> void:
@@ -80,11 +83,41 @@ func set_vfx_enabled(value: bool) -> void:
 
 func show_menu(menu_name: String) -> void:
 	assert(AVAILABLE_MENUS.has(menu_name), "Unknown menu: %s" % menu_name)
-	current_menu = menu_name
 	var audio_manager := get_node_or_null("/root/AudioManager")
 	if audio_manager != null:
 		audio_manager.play_sfx("ui_click")
+	current_menu = menu_name
+	_previous_menu = ""
+	if menu_name == "settings":
+		if _settings_menu == null:
+			_settings_menu = SETTINGS_MENU_SCENE.instantiate()
+			add_child(_settings_menu)
+		else:
+			_settings_menu.visible = true
+		_settings_menu.refresh_all()
+		set_mouse_captured(false)
 	print("UIManager: showing menu '%s'" % menu_name)
+
+
+## Closes the current menu; returns to the previous one if there is a menu
+## stack, otherwise back to gameplay (recaptures the mouse).
+func close_menu() -> void:
+	if current_menu == "":
+		return
+	var closed := current_menu
+	current_menu = _previous_menu
+	_previous_menu = ""
+	if closed == "settings" and _settings_menu != null:
+		_settings_menu.visible = false
+	if current_menu != "":
+		show_menu(current_menu)
+	else:
+		set_mouse_captured(true)
+
+
+func set_mouse_captured(captured: bool) -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if captured \
+		else Input.MOUSE_MODE_VISIBLE
 
 
 func update_hud(data: Dictionary) -> void:
