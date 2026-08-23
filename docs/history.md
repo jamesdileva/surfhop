@@ -138,6 +138,18 @@
 
 ---
 
+## Sprint 25 — Visual Effects
+
+- Event-driven `VisualEffects` coordinator (owned by UIManager, AudioManager listener pattern): landing dust puffs scaled by fall speed, takeoff puffs on **any** ground exit (jump, bhop, ledge walk-off), world-space speed trail above 600 u/s, surf-ramp glow.
+- Surf glow: `surf_ramp.gdshader` with a per-instance `glow` uniform is applied at runtime to every `SurfRamp*` StaticBody's meshes via the `node_added` signal — zero map-file edits, covers LevelLoader loads and dev scenes. Glow brightness scales with surf speed and decays after exit; the touched ramp is resolved by raycasting backwards along the surf contact normal.
+- Speed trail: `SpeedTrail.tscn` + additive `speed_trail.gdshader`; particles spawn with zero velocity so they linger as a streak behind the player.
+- Signal payload extensions: `player_landed` / `player_jumped` / `surf_entered` now carry world `position`; new `player_takeoff(data)` signal emitted by MovementController's post-move contact transition.
+- Settings: new `video/vfx_enabled` default (true); UIManager.set_vfx_enabled() persists it. UI toggle lands in Sprint 26.
+- Bugs caught by tests: telemetry counters incremented even while VFX was disabled (gate before counting); a `queue_free()`d dropper player kept emitting `velocity_updated(0)` for one more frame and zeroed synthetic trail speeds — flush a process frame after freeing before asserting on event-driven state.
+- 318 checks passing (up from 300).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

@@ -35,4 +35,4 @@ func apply_jump_impulse() -> void:
 	_controller.set_velocity(velocity)
 	var bus := _controller.get_tree().root.get_node_or_null("SignalBus")
 	if bus != null:
-		bus.player_jumped.emit({"velocity": velocity})
+		bus.player_jumped.emit({"velocity": velocity, "position": _controller.get_body().global_position})

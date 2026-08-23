@@ -34,4 +34,8 @@ func on_land(velocity: Vector3, fall_speed: float) -> void:
 		total_jumps += 1
 
 	if bus != null:
-		bus.player_landed.emit({"velocity": velocity, "fall_speed": fall_speed})
+		bus.player_landed.emit({
+			"velocity": velocity,
+			"fall_speed": fall_speed,
+			"position": _controller.get_body().global_position,
+		})

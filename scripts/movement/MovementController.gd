@@ -116,6 +116,8 @@ func _physics_process(delta: float) -> void:
 	elif not in_contact and _was_in_contact:
 		for module in _modules:
 			module.on_takeoff(pre_move_velocity)
+		if _bus != null:
+			_bus.player_takeoff.emit({"position": _body.global_position})
 	_was_in_contact = in_contact
 
 

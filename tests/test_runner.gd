@@ -45,6 +45,7 @@ func _run_all_tests() -> void:
 	await _test_save_system()
 	await _test_ghost_recording()
 	await _test_audio()
+	await _test_visual_effects()
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
@@ -81,7 +82,7 @@ func _test_autoloads_registered() -> void:
 
 func _test_signal_bus_signals() -> void:
 	var signal_names := ["race_started", "race_finished", "checkpoint_reached",
-		"player_landed", "player_jumped", "settings_changed"]
+		"player_landed", "player_jumped", "player_takeoff", "settings_changed"]
 	var bus: Node = root.get_node("SignalBus")
 	for signal_name: String in signal_names:
 		_check(bus.get_signal_list().any(
@@ -2053,6 +2054,134 @@ func _test_audio() -> void:
 	am._music_resume_timer = 0.05
 	await _wait_ticks(12)
 	_check(am._music_player.playing, "music resumes after finish jingle")
+
+	world.queue_free()
+	await process_frame
+
+
+func _test_visual_effects() -> void:
+	var ui: Node = root.get_node("UIManager")
+	var bus: Node = root.get_node("SignalBus")
+	var sm: Node = root.get_node("SaveManager")
+
+	var vfx: Node = ui.get_node_or_null("VisualEffects")
+	_check(vfx != null, "VisualEffects instantiated under UIManager")
+	if vfx == null:
+		return
+	ui.set_vfx_enabled(true)  # deterministic start regardless of saved state
+	_check(vfx.enabled, "vfx enabled follows video/vfx_enabled setting")
+
+	# --- Landing puffs: spawn on hard landings, scale with fall speed ---
+	var lands: int = int(vfx.effects_spawned.get("land", 0))
+	bus.player_landed.emit({"velocity": Vector3.ZERO, "fall_speed": 300.0,
+		"position": Vector3.ZERO})
+	await physics_frame
+	_check(int(vfx.effects_spawned.get("land", 0)) == lands + 1,
+		"hard landing spawns landing puff")
+	var low_intensity: float = vfx.last_land_intensity
+	bus.player_landed.emit({"velocity": Vector3.ZERO, "fall_speed": 900.0,
+		"position": Vector3.ZERO})
+	await physics_frame
+	_check(vfx.last_land_intensity > low_intensity,
+		"landing intensity scales with fall speed (%.2f -> %.2f)"
+			% [low_intensity, vfx.last_land_intensity])
+	lands = int(vfx.effects_spawned.get("land", 0))
+	bus.player_landed.emit({"velocity": Vector3.ZERO, "fall_speed": 50.0,
+		"position": Vector3.ZERO})
+	await physics_frame
+	_check(int(vfx.effects_spawned.get("land", 0)) == lands,
+		"soft landing below threshold spawns nothing")
+
+	# --- Takeoff puff fires on any ground exit event ---
+	var takeoffs: int = int(vfx.effects_spawned.get("takeoff", 0))
+	bus.player_takeoff.emit({"position": Vector3.ZERO})
+	await physics_frame
+	_check(int(vfx.effects_spawned.get("takeoff", 0)) == takeoffs + 1,
+		"ground exit spawns takeoff puff")
+
+	# --- World: player + a high drop for end-to-end wiring ---
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(30)
+
+	lands = int(vfx.effects_spawned.get("land", 0))
+	var dropper: Player = _spawn_test_player_at(world, Vector3(250.0, 600.0, 0.0))
+	for i in 240:
+		await physics_frame
+		if dropper.is_on_floor():
+			break
+	_check(dropper.is_on_floor(), "vfx test: dropper reached the floor")
+	_check(int(vfx.effects_spawned.get("land", 0)) > lands,
+		"real high fall emits player_landed and spawns puff")
+	dropper.queue_free()
+	await process_frame  # let the deferred free land before speed checks
+
+	# Freeze the controller so synthetic speeds are not overwritten each tick.
+	player.movement_controller.set_physics_process(false)
+
+	# --- Speed trail gates at 600 u/s horizontal ---
+	bus.velocity_updated.emit(650.0)
+	await _wait_ticks(2)
+	_check(vfx._trail.emitting, "trail emits above 600 u/s")
+	bus.velocity_updated.emit(300.0)
+	await _wait_ticks(2)
+	_check(not vfx._trail.emitting, "trail stops below 600 u/s")
+
+	# --- Surf ramp glow: shader applied to SurfRamp* meshes at load ---
+	var ramp := StaticBody3D.new()
+	ramp.name = "SurfRampVfxTest"
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(600.0, 20.0, 600.0)
+	shape.shape = box
+	shape.position.y = -50.0
+	ramp.add_child(shape)
+	var mesh := MeshInstance3D.new()
+	var box_mesh := BoxMesh.new()
+	box_mesh.size = Vector3(600.0, 20.0, 600.0)
+	mesh.mesh = box_mesh
+	mesh.position.y = -50.0
+	ramp.add_child(mesh)
+	world.add_child(ramp)
+	await _wait_ticks(2)
+	var mat := mesh.material_override as ShaderMaterial
+	_check(mat != null and mat.shader == vfx.SURF_RAMP_SHADER,
+		"SurfRamp* mesh receives glow shader override")
+
+	# Glow tracks surf contact and speed; fades after exit.
+	bus.velocity_updated.emit(500.0)
+	bus.surf_entered.emit({"normal": Vector3.UP, "position": Vector3(0.0, -30.0, 0.0)})
+	await _wait_ticks(2)
+	var glow_on: float = mesh.get_instance_shader_parameter("glow")
+	_check(glow_on > 0.3, "ramp glows while surfing (glow=%.2f)" % glow_on)
+	bus.surf_exited.emit()
+	await _wait_ticks(60)  # 0.6s of decay
+	var glow_off: float = mesh.get_instance_shader_parameter("glow")
+	_check(glow_off < glow_on and glow_off < 0.05,
+		"glow fades after surf exit (%.2f -> %.2f)" % [glow_on, glow_off])
+
+	# --- Settings gate: nothing spawns or emits while disabled ---
+	ui.set_vfx_enabled(false)
+	_check(not vfx.enabled and not bool(sm.get_setting("video/vfx_enabled")),
+		"set_vfx_enabled(false) persists to settings")
+	lands = int(vfx.effects_spawned.get("land", 0))
+	takeoffs = int(vfx.effects_spawned.get("takeoff", 0))
+	bus.player_landed.emit({"velocity": Vector3.ZERO, "fall_speed": 900.0,
+		"position": Vector3.ZERO})
+	bus.player_takeoff.emit({"position": Vector3.ZERO})
+	bus.velocity_updated.emit(650.0)
+	await _wait_ticks(2)
+	_check(int(vfx.effects_spawned.get("land", 0)) == lands,
+		"disabled: no landing puffs spawn")
+	_check(int(vfx.effects_spawned.get("takeoff", 0)) == takeoffs,
+		"disabled: no takeoff puffs spawn")
+	_check(not vfx._trail.emitting, "disabled: trail stays off")
+
+	# Restore defaults for the dev environment.
+	ui.set_vfx_enabled(true)
+	sm.set_setting("video/vfx_enabled", true)
+	player.movement_controller.set_physics_process(true)
 
 	world.queue_free()
 	await process_frame

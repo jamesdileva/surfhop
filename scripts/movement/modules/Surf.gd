@@ -29,7 +29,10 @@ func process(input: InputState, delta: float) -> void:
 		_surf_active = true
 		var bus := _controller.get_node_or_null("/root/SignalBus")
 		if bus != null:
-			bus.surf_entered.emit({"normal": normal})
+			bus.surf_entered.emit({
+				"normal": normal,
+				"position": _controller.get_body().global_position,
+			})
 	# Gravity has already run this tick (module order), so velocity is never
 	# zero on a ramp - the projection below converts it into downhill slide.
 	var velocity := process_surf(_controller.get_velocity(), normal, delta)

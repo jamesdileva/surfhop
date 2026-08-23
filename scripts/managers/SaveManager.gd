@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS := {
 	"audio/master_volume": 0.8,
 	"audio/music_volume": 0.6,
 	"audio/sfx_volume": 0.9,
+	"video/vfx_enabled": true,
 	"graphics/fullscreen": true,
 	"graphics/vsync": true,
 	"graphics/fps_cap": 0,

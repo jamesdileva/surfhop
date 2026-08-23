@@ -7,6 +7,7 @@ signal race_finished(data: Dictionary)
 signal checkpoint_reached(data: Dictionary)
 signal player_landed(data: Dictionary)
 signal player_jumped(data: Dictionary)
+signal player_takeoff(data: Dictionary)  # left ground: jump, bhop or ledge walk-off
 signal settings_changed(key: String, value: Variant)
 signal velocity_updated(speed: float)  # horizontal speed, emitted each physics tick
 signal footstep(speed: float)          # grounded stride, emitted by MovementController
