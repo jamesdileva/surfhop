@@ -10,6 +10,11 @@ extends MovementModule
 var _last_ramp_normal: Vector3 = Vector3.ZERO
 var _surf_active := false
 
+# Hot-path cache (Sprint 27): cos(surf_angle_min_deg) recomputed only when
+# the config instance changes; output is bit-identical to per-call evaluation.
+var _cached_config: MovementConfig = null
+var _surf_cos_min := 0.0
+
 
 func enabled_in_state(state: int) -> bool:
 	return state == MovementState.SURF
@@ -18,7 +23,10 @@ func enabled_in_state(state: int) -> bool:
 ## A surface is a surf ramp when its angle from horizontal exceeds the
 ## configured minimum (§4.2): normal.dot(UP) < cos(surf_angle_min_deg).
 func is_surf_normal(normal: Vector3) -> bool:
-	return normal.dot(Vector3.UP) < cos(deg_to_rad(_controller.config.surf_angle_min_deg))
+	if _cached_config != _controller.config:
+		_cached_config = _controller.config
+		_surf_cos_min = cos(deg_to_rad(_controller.config.surf_angle_min_deg))
+	return normal.dot(Vector3.UP) < _surf_cos_min
 
 
 func process(input: InputState, delta: float) -> void:

@@ -73,11 +73,15 @@ var friction_override: float = 1.0
 var _was_in_contact: bool = false
 var _steep_normal: Vector3 = Vector3.ZERO
 var _stride_accum: float = 0.0
+## Wall-clock cost of the last controller tick in microseconds (profiling
+## hook for tools/benchmark.gd and docs/performance_profile.md).
+var last_script_step_us: int = 0
 
 
 func _physics_process(delta: float) -> void:
 	if _body == null or config == null or _input_manager == null:
 		return
+	var t0 := Time.get_ticks_usec()
 	var input: InputState = _input_manager.get_state()
 	state = _resolve_state()
 
@@ -119,6 +123,7 @@ func _physics_process(delta: float) -> void:
 		if _bus != null:
 			_bus.player_takeoff.emit({"position": _body.global_position})
 	_was_in_contact = in_contact
+	last_script_step_us = Time.get_ticks_usec() - t0
 
 
 ## State transitions come from post-move contact classification

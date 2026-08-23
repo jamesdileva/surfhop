@@ -98,7 +98,7 @@ F1 debug overlay (speed/state/vectors), Esc opens/closes the settings menu
 HUD shows live timer/PB/checkpoints; PB ghosts appear after a first record
 per map.
 
-## Deferred Polish Items (Sprint 26+ backlog)
+## Deferred Polish Items (Sprint 27+ backlog)
 
 - **Jump-while-surfing**: currently possible (coyote window persists on ramp
   walls). Playtester found it acceptable/even helpful for repositioning;
@@ -113,6 +113,10 @@ per map.
 - **Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
   — the `audio/music_track` dropdown already ships in the Sprint 26 settings
   menu (Audio tab lists stations once files exist; placeholder until then).
+- **Performance certification** (Sprint 27): headless profile is in
+  `docs/performance_profile.md`; the manual checklist there (real-hardware
+  profiler pass <1.5ms physics, 144+ FPS, 10-min memory soak) still needs a
+  human run before release.
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.

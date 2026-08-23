@@ -162,6 +162,16 @@
 
 ---
 
+## Sprint 27 — Optimization
+
+- **Interpolation**: enabled Godot's built-in 3D physics interpolation (`physics/common/physics_interpolation=true`) instead of hand-rolling a lerp — the doc's custom-Interpolator idea predated the engine feature. `scripts/core/Interpolator.gd` survives as the teleport guard: any per-tick position jump >100u (checkpoint respawns, test teleports) calls `reset_physics_interpolation()` so the view snaps instead of gliding across the map. Node lives in Player.tscn per the sprint file contract.
+- **Hot-path opts, strictly non-semantic**: cached `cos(surf_angle_min_deg)` in Surf (recomputed only on config swap); cached player ref in VisualEffects trail update. Determinism suite passes bit-identical.
+- **Profiling**: new permanent hook `MovementController.last_script_step_us` + repeatable headless harness `tools/benchmark.gd` (env switches: BENCH_EMPTY / BENCH_NO_MOVE / BENCH_NO_VFX / BENCH_NO_INTERP). Results in docs/performance_profile.md: movement script cost ~0.10ms/tick p50; scene physics baseline ~1.9ms monitor reading is constant and environment-noisy (empty-world floor 0.37ms, jittery tail) — full-step <1.5ms certification deferred to the documented manual profiler pass. Memory flat (+0.3MB/60s).
+- Lesson: `Performance.TIME_PHYSICS_PROCESS` is smoothed and includes catch-up — measure your own code with `Time.get_ticks_usec()` before trusting it.
+- 343 checks passing (up from 338).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

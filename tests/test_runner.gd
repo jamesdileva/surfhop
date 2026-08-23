@@ -47,6 +47,7 @@ func _run_all_tests() -> void:
 	await _test_audio()
 	await _test_visual_effects()
 	await _test_settings_menu()
+	await _test_optimization()
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
@@ -2286,6 +2287,48 @@ func _test_settings_menu() -> void:
 		"close_menu hides the overlay and returns to gameplay")
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(im.BINDINGS_PATH))
+	await process_frame
+
+
+func _test_optimization() -> void:
+	# --- Built-in physics interpolation enabled (Sprint 27 contract) ---
+	_check(bool(ProjectSettings.get_setting(
+			"physics/common/physics_interpolation")),
+		"physics/common/physics_interpolation enabled")
+
+	# --- Player scene carries the Interpolator owner node ---
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(10)
+	var interp: Interpolator = player.get_node_or_null("Interpolator")
+	_check(interp != null, "Player.tscn contains an Interpolator node")
+	if interp == null:
+		world.queue_free()
+		await process_frame
+		return
+
+	# Teleport across the map: interpolation must be reset, and the tracker
+	# must follow the new position (no glide from the old spot).
+	player.movement_controller.set_physics_process(false)
+	player.position += Vector3(5000.0, 0.0, 0.0)
+	interp.notify_teleported()
+	await _wait_ticks(2)
+	_check(interp._last_position.distance_to(player.global_position) < 2.0,
+		"interpolator tracks post-teleport position (last=%s)"
+			% str(interp._last_position))
+	_check(player.is_queued_for_deletion() == false,
+		"interpolator teleport reset does not disturb the body")
+	player.movement_controller.set_physics_process(true)
+
+	# --- Profiling hook populated by the controller each tick ---
+	await _wait_ticks(5)
+	_check(player.movement_controller.last_script_step_us > 0
+		and player.movement_controller.last_script_step_us < 100000,
+		"controller profiling hook reports sane tick cost (%dus)"
+			% player.movement_controller.last_script_step_us)
+
+	world.queue_free()
 	await process_frame
 
 

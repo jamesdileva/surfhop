@@ -31,6 +31,8 @@ var _surfing := false
 var _glow := 0.0
 var _active_ramp: GeometryInstance3D = null
 var _ramp_meshes := {}  # StaticBody3D -> Array[GeometryInstance3D]
+# Hot-path cache (Sprint 27): avoid a group query every render frame.
+var _player_cache: Node3D = null
 
 
 func _ready() -> void:
@@ -133,12 +135,13 @@ func _grab_pooled() -> CPUParticles3D:
 func _update_trail() -> void:
 	if _trail == null:
 		return
-	var player := get_tree().get_first_node_in_group("player") as Node3D
-	var fast := enabled and player != null \
+	if _player_cache == null or not is_instance_valid(_player_cache):
+		_player_cache = get_tree().get_first_node_in_group("player") as Node3D
+	var fast := enabled and _player_cache != null \
 		and _latest_speed > TRAIL_SPEED_THRESHOLD
 	_trail.emitting = fast
 	if fast:
-		_trail.global_position = player.global_position
+		_trail.global_position = _player_cache.global_position
 
 
 func _update_glow(delta: float) -> void:
