@@ -263,6 +263,32 @@
   165 u/s mid-run / post-run hold at 56 u/s). Suite still 406 checks green.
   Commits: surfhop eed4cde→0cadf12→4cf6b68; Sentinel edf77ac→9022c94→5434927→2bd1509.
 
+## INT1 follow-up 2 — full menu coverage + music stations (2026-08-23)
+
+- **Music stations (P4)**: user dropped 7 pixabay tracks as MP3 into
+  `assets/audio/music/`. Godot 4 imports MP3 natively — added `.mp3` to
+  AudioManager's extension list; no external conversion needed.
+- **Docs discrepancy flagged & fixed**: AGENTS.md claimed the
+  `audio/music_track` dropdown "already ships" — the Audio tab only had
+  volume sliders. Implemented the dropdown per docs: scans MUSIC_DIR on
+  every settings open (new files appear without restart), persists via
+  SaveManager, switches station live. Excluded internal fallback
+  `menu_placeholder` from the list.
+- **Smoke coverage widened**: new `MAP_SELECT_SHOWN` / `SETTINGS_SHOWN`
+  stages dwell in the real Play flow (map select → settings overlay →
+  launch).
+- **Screenshot architecture rework**: log-gate-then-shoot proved unreliable
+  (app-log tail lag made shots photograph the NEXT stage — map_select shots
+  caught settings, settings shots caught map load). Definitive fix: the game
+  now dumps its own framebuffer per stage to `%TEMP%\velocity_smoke_*.png`
+  (`_smoke_capture`, awaited — fire-and-forget captures the next stage,
+  first bug found by inspection of the dumps). Tester registers the dumps
+  after RESULT; PrintWindow survives only as the hold-window sanity shot.
+- Verified: session PASSED with five correct screenshots (menu, map select,
+  settings, 165 u/s mid-run, post-run hold). Suite 406 checks green.
+  Commits: surfhop e1eb89a, 4290c51, cbe8146, a51f0cb(docs);
+  Sentinel 41e7ac6, 9bdee10.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")

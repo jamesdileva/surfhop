@@ -162,10 +162,16 @@ Verified ground truth (2026-08-22):
 - launch: `tools\godot.cmd --path . -- --smoke` boots the real main menu,
   self-drives into the configured map (`--smoke-map=<id>`, default
   beginner), simulates ~8s of gameplay input, then **exits itself**
-  (`RESULT=OK` + exit 0). Milestones are printed to stdout and written to
-  `%TEMP%\velocity_smoke.log`.
-- stages asserted: `MENU_SHOWN → MAP_LOAD_STARTED → PLAYER_SPAWNED →
-  GAMEPLAY_OK` (player must move >50u or the run fails).
+  (`RESULT=OK` + exit 0). Milestones are printed to stdout (live, per stage)
+  and written to `%TEMP%\velocity_smoke.log`.
+- stages asserted: `MENU_SHOWN → MAP_SELECT_SHOWN → SETTINGS_SHOWN →
+  MAP_LOAD_STARTED → PLAYER_SPAWNED → RUN_STARTED → GAMEPLAY_OK` (player
+  must move >50u or the run fails).
+- stage screenshots: the game dumps its own framebuffer per stage to
+  `%TEMP%\velocity_smoke_<stage>.png` (menu / map_select / settings /
+  gameplay at run+4s; skipped headless) — immune to window-capture blanking
+  and app-log tail lag. The tester registers these after RESULT and takes
+  one live PrintWindow shot of the hold window as a sanity capture.
 - port: none (single-process game; no backend).
 - fallback: `--smoke-headless` script adds `--headless` for CI-style passes
   without rendering.
@@ -219,5 +225,15 @@ because they generalize to any Godot project in Sentinel:
   print LIVE per stage plus a `RUN_STARTED` marker; `--smoke-stage-pause=<s>`
   dwells on menu/load/spawn so capture photographs the actual stage;
   `--smoke-hold=<s>` keeps the window alive after RESULT for post-pass shots.
-- Verified end state: session PASSED with three correctly-labeled screenshots
-  (real main menu / mid-run motion at speed / post-run hold frame).
+- **Log-gate lag makes timed external captures unreliable**: even with live
+  markers, app-log tail lag (seconds) means a gate-then-shoot pattern lands
+  after the game moved on — map_select shots caught the settings overlay,
+  settings shots caught the map load. Definitive fix: the GAME dumps its own
+  framebuffer per stage (`_smoke_capture`, awaited so it photographs the
+  current stage, skipped headless) and the tester registers the PNGs after
+  RESULT. External window capture is now only the post-pass hold shot.
+  Corollary: fire-and-forget capture coroutines photograph the NEXT stage —
+  always await them.
+- Verified end state: session PASSED with five correctly-labeled screenshots
+  (main menu / map select / settings / mid-run motion at speed / post-run
+  hold frame).
