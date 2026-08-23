@@ -12,3 +12,6 @@ extends Resource
 @export var movement_config_path: String = "res://resources/movement/default.tres"
 @export var thumbnail_path: String = ""
 @export var kill_plane_y: float = -1000.0  # falling below this respawns at last checkpoint
+## Optional surface tint override (architecture §16 aesthetic). When left
+## WHITE, WorldMaterials falls back to the per-difficulty palette.
+@export var vertex_color_tint: Color = Color.WHITE

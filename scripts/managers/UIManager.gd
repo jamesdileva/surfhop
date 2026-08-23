@@ -7,6 +7,7 @@ extends Node
 const AVAILABLE_MENUS := ["main", "pause", "settings", "results", "credits", "map_select"]
 
 const VISUAL_EFFECTS := preload("res://scripts/debug/VisualEffects.gd")
+const WORLD_MATERIALS := preload("res://scripts/debug/WorldMaterials.gd")
 const MENU_SCENES := {
 	"main": preload("res://scenes/menus/MainMenu.tscn"),
 	"pause": preload("res://scenes/menus/PauseMenu.tscn"),
@@ -45,6 +46,11 @@ func _ready() -> void:
 	_vfx = VISUAL_EFFECTS.new()
 	_vfx.name = "VisualEffects"
 	add_child(_vfx)
+	# WorldMaterials styles loaded maps (neon edges + tint) and owns the
+	# shared skybox environment.
+	var world_materials: Node = WORLD_MATERIALS.new()
+	world_materials.name = "WorldMaterials"
+	add_child(world_materials)
 	# All menus are created up front and kept hidden: ResultsScreen must exist
 	# to open itself on race_finished, and eager creation keeps show_menu()
 	# side-effect-free for hidden layers.

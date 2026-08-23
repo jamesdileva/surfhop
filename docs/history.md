@@ -205,6 +205,18 @@
 
 ---
 
+## Sprint P3 — Visual Materials Pass
+
+- **Neon-edge surface treatment** (`assets/shaders/neon_edge.gdshader`): flat white albedo with fresnel rim emission plus faint 128u world-space grid lines — the §16 "white geometry + neon edges" aesthetic in one unshaded shader.
+- **Per-difficulty tinting**: `WorldMaterials` (UIManager-owned sibling of VisualEffects) styles every loaded map's StaticBody3D/AnimatableBody3D meshes via `LevelLoader.map_loaded`, tinting from `MapMetadata.vertex_color_tint` or a difficulty palette (cyan→green→amber→orange→magenta). SurfRamp* bodies are skipped — the Sprint-25 interactive glow shader owns those surfaces.
+- **Skybox**: one shared `WorldEnvironment` under UIManager covers all scenes incl. dev bootstraps — dark procedural sky tuned so neon emissions pop.
+- Flagged extra: `MapMetadata.vertex_color_tint` export added (doc-specified field that didn't exist); existing `.tres` metadata untouched (hand-editing forbidden) — palette fallback covers all shipped maps, per-map overrides can be set programmatically later.
+- Deferred: P2 playtest polish pass moved behind P3 by decision (needs human sessions).
+- Lesson: `map_loaded` fires after `current_metadata` is set in `_finalize_load` — ordering dependency worth keeping documented.
+- 386 checks passing (up from 377).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

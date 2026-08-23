@@ -108,12 +108,12 @@ timer/PB/checkpoints; PB ghosts appear after a first record per map.
 
 ## Deferred Polish Items (Phase 6 backlog)
 
-- **P2 Playtest polish pass**: ramp feel tuning (air_accel (10), surf
-  friction, gravity-conversion strength), gap-jump distance validation,
-  jump-while-surfing keep-or-gate decision — all need human play sessions.
-- **P3 Visual materials pass**: neon edge highlights, per-difficulty tinting
-  (`MapMetadata.vertex_color_tint`), skybox. Surf-ramp glow shader (Sprint 25)
-  covers ramp feedback only.
+- **P2 Playtest polish pass** (deferred behind P3 by decision): ramp feel
+  tuning (air_accel (10), surf friction, gravity-conversion strength),
+  gap-jump distance validation, jump-while-surfing keep-or-gate decision —
+  all need human play sessions.
+- ~~**P3 Visual materials pass**~~ — DONE (Sprint P3): neon-edge shader,
+  per-difficulty tinting via `WorldMaterials`, procedural skybox.
 - **P4 Music stations**: drop royalty-free tracks into `assets/audio/music/<station>.ogg/.wav`
   — the `audio/music_track` dropdown already ships in the settings menu
   (Audio tab lists stations once files exist; placeholder until then).

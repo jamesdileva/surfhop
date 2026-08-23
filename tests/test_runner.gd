@@ -55,6 +55,7 @@ func _run_all_tests() -> void:
 	await _test_challenge_maps()
 	await _test_steam()
 	await _test_main_menu_flow()
+	await _test_visual_materials()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -2500,6 +2501,90 @@ func _test_main_menu_flow() -> void:
 	_check(loader.current_map == null, "map unloaded on return to menu")
 
 	game.queue_free()
+	await process_frame
+
+
+func _test_visual_materials() -> void:
+	var ui: Node = root.get_node("UIManager")
+	var loader: Node = root.get_node("LevelLoader")
+
+	# --- Styling node + shared skybox environment exist ---
+	var materials: Node = ui.get_node_or_null("WorldMaterials")
+	_check(materials != null, "WorldMaterials owned by UIManager")
+	if materials == null:
+		return
+	var world_env: WorldEnvironment = materials.get_node_or_null("WorldEnvironment")
+	_check(world_env != null and world_env.environment != null
+		and world_env.environment.sky != null,
+		"shared procedural skybox environment present")
+
+	# --- Tint resolution: explicit override wins, else difficulty palette ---
+	var meta := MapMetadata.new()
+	meta.difficulty = 3
+	_check(materials.tint_for_metadata(meta) == materials.DIFFICULTY_TINTS[3],
+		"default tint comes from the difficulty palette")
+	meta.vertex_color_tint = Color(0.1, 0.2, 0.9)
+	_check(materials.tint_for_metadata(meta) == Color(0.1, 0.2, 0.9),
+		"explicit vertex_color_tint overrides the palette")
+
+	# --- Loaded map: non-ramp surfaces get neon+tint; ramps keep glow shader ---
+	ui.dismiss_menus()
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	_spawn_test_player_at(player_root, Vector3(0.0, 20.0, 40.0))
+	await _wait_ticks(2)
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "tutorial":
+			entry = e
+			break
+	_check(not entry.is_empty(), "tutorial discovered for material styling")
+	if entry.is_empty():
+		player_root.queue_free()
+		return
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "tutorial loads for styling")
+	await _wait_ticks(2)
+	var map_node: Node = loader.current_map
+
+	var styled_mesh: MeshInstance3D = null
+	var ramp_mesh: MeshInstance3D = null
+	for body in map_node.get_children():
+		if body is StaticBody3D:
+			for mesh in body.find_children("*", "MeshInstance3D", true, false):
+				if String(body.name).begins_with("SurfRamp"):
+					ramp_mesh = mesh as MeshInstance3D
+				elif styled_mesh == null:
+					styled_mesh = mesh as MeshInstance3D
+
+	if styled_mesh != null:
+		var mat := styled_mesh.material_override as ShaderMaterial
+		_check(mat != null and mat.shader == materials.NEON_SHADER,
+			"non-ramp surface carries the neon-edge shader")
+		_check(styled_mesh.get_instance_shader_parameter("tint")
+			== materials.DIFFICULTY_TINTS[1],
+			"tint matches the difficulty-1 palette")
+	else:
+		_check(false, "found a styled non-ramp mesh on tutorial")
+	if ramp_mesh != null:
+		var ramp_mat := ramp_mesh.material_override as ShaderMaterial
+		_check(ramp_mat != null and ramp_mat.shader == VisualEffects.SURF_RAMP_SHADER,
+			"surf ramp keeps its interactive glow shader")
+	else:
+		_check(false, "found a surf-ramp mesh on tutorial")
+
+	loader.unload_current()
+	ui.dismiss_menus()
+	player_root.queue_free()
 	await process_frame
 
 
