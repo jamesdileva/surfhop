@@ -77,6 +77,24 @@ func _run_smoke() -> void:
 		return _smoke_finish(false, "main menu did not appear")
 	await _smoke_beat()
 
+	# Stage 1b: map select screen (the real Play flow).
+	ui_manager.show_menu("map_select")
+	if not _smoke_stage("MAP_SELECT_SHOWN",
+			ui_manager.current_menu == "map_select"
+			and ui_manager.get_node_or_null("MapSelect") != null
+			and ui_manager.get_node_or_null("MapSelect").visible):
+		return _smoke_finish(false, "map select did not appear")
+	await _smoke_beat()
+
+	# Stage 1c: settings overlay (opened on top, as a real user would).
+	ui_manager.show_menu("settings")
+	if not _smoke_stage("SETTINGS_SHOWN",
+			ui_manager.current_menu == "settings"
+			and ui_manager.get_node_or_null("SettingsMenu") != null
+			and ui_manager.get_node_or_null("SettingsMenu").visible):
+		return _smoke_finish(false, "settings did not appear")
+	await _smoke_beat()
+
 	# Stage 2: resolve the requested map.
 	var loader: Node = get_node("/root/LevelLoader")
 	var map_path := ""
