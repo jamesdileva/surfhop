@@ -106,6 +106,17 @@ func refresh_all() -> void:
 	for bus_name: String in ["Master", "Music", "SFX"]:
 		var slider: HSlider = _tabs.get_node("Audio/%sRow/%sSlider" % [bus_name, bus_name])
 		slider.set_value_no_signal(float(_audio_manager.get_volume(bus_name)))
+	var station_option: OptionButton = _tabs.get_node(
+		"Audio/MusicStationRow/MusicStationOption")
+	station_option.clear()
+	var current_station := str(_save_manager.get_setting("audio/music_track"))
+	var stations := _music_stations()
+	var selected_station := 0
+	for i: int in stations.size():
+		station_option.add_item(stations[i])
+		if stations[i] == current_station:
+			selected_station = i
+	station_option.select(selected_station)
 	for action: String in _input_manager.ACTIONS:
 		var button: Button = _tabs.get_node("Input/%sRow/BindButton" % action)
 		button.text = binding_text(action)
@@ -196,6 +207,53 @@ func _build_audio_tab() -> void:
 		slider.value_changed.connect(_on_volume_changed.bind(bus_name))
 		row.add_child(slider)
 		tab.add_child(row)
+
+	# Music station picker: scans assets/audio/music/ so dropped tracks
+	# appear without a rebuild (re-populated by refresh_all on open).
+	var station_row := HBoxContainer.new()
+	station_row.name = "MusicStationRow"
+	var station_label := Label.new()
+	station_label.text = "Music Station"
+	station_label.custom_minimum_size.x = 200.0
+	station_row.add_child(station_label)
+	var station_option := OptionButton.new()
+	station_option.name = "MusicStationOption"
+	station_option.item_selected.connect(_on_music_station_selected)
+	station_row.add_child(station_option)
+	tab.add_child(station_row)
+
+
+## Available stations: the virtual "placeholder" default plus every audio
+## file basename in assets/audio/music/ (menu_placeholder is the internal
+## fallback file, not a selectable station).
+func _music_stations() -> Array[String]:
+	var stations: Array[String] = ["placeholder"]
+	var dir := DirAccess.open("res://assets/audio/music/")
+	if dir != null:
+		var found: Array[String] = []
+		dir.list_dir_begin()
+		var fname := dir.get_next()
+		while fname != "":
+			if not dir.current_is_dir():
+				for ext: String in [".ogg", ".wav", ".mp3", ".tres"]:
+					if fname.ends_with(ext) \
+							and fname.get_basename() != "menu_placeholder":
+						found.append(fname.get_basename())
+						break
+			fname = dir.get_next()
+		found.sort()
+		stations.append_array(found)
+	return stations
+
+
+func _on_music_station_selected(index: int) -> void:
+	var option: OptionButton = _tabs.get_node(
+		"Audio/MusicStationRow/MusicStationOption")
+	var track := option.get_item_text(index)
+	_save_manager.set_setting("audio/music_track", track)
+	_save_manager.save_settings()
+	_audio_manager.play_music(track)
+	set_rebind_status("Music station: %s" % track)
 
 
 func _build_input_tab() -> void:

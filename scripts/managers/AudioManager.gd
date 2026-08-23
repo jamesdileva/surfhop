@@ -3,7 +3,7 @@ extends Node
 ## Music playback, SFX management and volume control (architecture §13).
 ## Placeholder sounds are synthesized by tools/generate_sfx.gd; swap the files
 ## under assets/audio/ to replace them. Music stations are selectable via the
-## audio/music_track setting (drop .wav/.ogg files into assets/audio/music/).
+## audio/music_track setting (drop .wav/.ogg/.mp3 files into assets/audio/music/).
 
 const SFX := {
 	"jump": "res://assets/audio/sfx/jump.wav",
@@ -160,7 +160,7 @@ func play_music(track := "") -> void:
 	if track == "" or track == "<null>":
 		track = "placeholder"
 	var stream: AudioStream = null
-	for ext: String in [".ogg", ".wav", ".tres"]:
+	for ext: String in [".ogg", ".wav", ".mp3", ".tres"]:
 		var candidate := MUSIC_DIR + track + ext
 		if ResourceLoader.exists(candidate):
 			stream = ResourceLoader.load(candidate)
