@@ -1277,6 +1277,18 @@ Steam activation follows P6 (buy AppID, install GodotSteam, fill the three
 
 ---
 
+## Phase 7: Post-v1.0 Content (added post-P3) — P2/P4/P5/P6 remain parked on human blockers
+
+- **E1 — Endless Movement mode** (idea.md "Game Modes"): a large skatepark
+  map (`scenes/maps/endless.tscn`, tagged `"endless"` in metadata) with no
+  finish line or race triggers. Score is speed: session peak plus an all-time
+  top per map persisted in `MapRecord.best_speed` via
+  `SaveManager.record_top_speed()` / `get_top_speed()`. `TopSpeed` tracker
+  emits `SignalBus.top_speed_beaten`; the HUD swaps to a TOP-speed layout on
+  endless-tagged maps. Race systems stay dormant; R respawns at spawn.
+
+---
+
 ## Sprint Summary Table
 
 | Sprint | Phase | Objective | Est. Time |

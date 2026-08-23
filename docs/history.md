@@ -217,6 +217,17 @@
 
 ---
 
+## Sprint E1 — Endless Movement Mode (Phase 7 begins)
+
+- **Endless Skatepark** (`scenes/maps/endless.tscn`): 8000u floor, three surf ramps (45/50/60°), two elevated platforms with walkable approach inclines, a strafe corridor; tagged `"endless"` in metadata. Generated programmatically by `tools/generate_endless_map.gd` (ResourceSaver/PackedScene, per the never-hand-edit-resources rule).
+- **Scoring**: session peak + all-time top speed per map. `TopSpeed` tracker (UIManager-owned) activates only on `"endless"`-tagged metadata; improvements persist through `SaveManager.record_top_speed()` into the existing `MapRecord.best_speed` field; `SignalBus.top_speed_beaten` announces with a 25 u/s margin so the HUD flash doesn't spam.
+- **HUD**: endless maps hide timer/PB/checkpoint labels and show a persistent TOP readout with a green flash on new records. Race systems stay dormant (no triggers → no race/results/ghost recording); R respawn works via spawn capture.
+- Bugs caught: `PackedScene.pack()` silently drops children without `owner` set — first generated park was an empty root (found via all-miss raycasts); regenerating requires actually rerunning the generator after edits; E1's HUD edit accidentally deleted the SteamManager achievement-toast wiring — restored, caught by the Sprint-28 toast test.
+- Lesson: `--script` runs can lose the global class cache after new `class_name`s appear — run the editor import pass before tooling scripts that reference project classes.
+- 406 checks passing (up from 386).
+
+---
+
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
 
 - Decide jump-while-surfing policy permanently (currently allowed via coyote window; playtester finds it useful for repositioning).

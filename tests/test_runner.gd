@@ -56,6 +56,7 @@ func _run_all_tests() -> void:
 	await _test_steam()
 	await _test_main_menu_flow()
 	await _test_visual_materials()
+	await _test_endless_mode()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -2584,6 +2585,139 @@ func _test_visual_materials() -> void:
 
 	loader.unload_current()
 	ui.dismiss_menus()
+	player_root.queue_free()
+	await process_frame
+
+
+func _test_endless_mode() -> void:
+	var ui: Node = root.get_node("UIManager")
+	var loader: Node = root.get_node("LevelLoader")
+	var sm: Node = root.get_node("SaveManager")
+	var bus: Node = root.get_node("SignalBus")
+	var tracker: Node = ui.get_node_or_null("TopSpeed")
+	_check(tracker != null, "TopSpeed tracker owned by UIManager")
+	if tracker == null:
+		return
+
+	# --- Discovery + metadata tag ---
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "endless":
+			entry = e
+			break
+	_check(not entry.is_empty(), "endless map discovered")
+	if entry.is_empty():
+		return
+	_check(entry["metadata"].tags.has("endless"),
+		"endless metadata carries the 'endless' tag")
+	_check(entry["metadata"].movement_config_path.ends_with("default.tres"),
+		"endless uses the standard movement config")
+
+	# --- Top-speed persistence: roundtrip + only-increases rule ---
+	sm.record_top_speed("endless_test_map", 420.0)
+	_check(sm.get_top_speed("endless_test_map") == 420.0,
+		"record_top_speed stores a new top")
+	sm.record_top_speed("endless_test_map", 380.0)
+	_check(sm.get_top_speed("endless_test_map") == 420.0,
+		"slower speeds do not lower the all-time top")
+	sm.record_top_speed("endless_test_map", 555.5)
+	_check(sm.get_top_speed("endless_test_map") == 555.5,
+		"faster speeds raise the all-time top")
+
+	# --- Tracker gating: dormant on non-endless maps ---
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	_spawn_test_player_at(player_root, Vector3(0.0, 40.0, 3000.0))
+	await _wait_ticks(2)
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "endless map loads")
+	await _wait_ticks(3)
+	_check(tracker.endless_active, "tracker activates on endless-tagged map")
+
+	# Clean slate for the speed assertions.
+	sm._records.records.erase("endless")
+	tracker._on_map_loaded(loader.current_map)
+	_check(tracker.all_time_top == 0.0, "tracker loaded the reset all-time top")
+
+	var beaten_events: Array[float] = []
+	bus.top_speed_beaten.connect(func(speed: float) -> void:
+		beaten_events.append(speed))
+
+	# Direct emission below/above thresholds.
+	bus.velocity_updated.emit(300.0)
+	await physics_frame
+	_check(tracker.session_top == 300.0 and tracker.all_time_top == 300.0,
+		"session peak recorded and persisted (300)")
+	_check(not beaten_events.is_empty(), "first crossing announces top speed")
+	bus.velocity_updated.emit(200.0)
+	await physics_frame
+	_check(tracker.session_top == 300.0,
+		"slower speeds do not reduce the session peak")
+	bus.velocity_updated.emit(310.0)
+	await physics_frame
+	_check(beaten_events.size() == 1,
+		"sub-threshold improvements do not re-announce (%d events)"
+			% beaten_events.size())
+	bus.velocity_updated.emit(340.0)
+	await physics_frame
+	_check(beaten_events.size() >= 2,
+		"+25 u/s over the last announcement re-announces")
+
+	# --- HUD endless layout ---
+	var hud: HUDController = (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	root.add_child(hud)
+	hud._on_map_loaded(loader.current_map)
+	await process_frame
+	_check(not hud.get_timer_label().visible,
+		"timer hidden in endless mode")
+	_check(hud.get_top_speed_label().visible, "TOP label shown in endless mode")
+	_check(hud.get_top_speed_text().contains("TOP"),
+		"top-speed readout populated (%s)" % hud.get_top_speed_text())
+	hud.queue_free()
+
+	# --- Park geometry produces surf state ---
+	var player: Player = get_first_node_in_group("player") as Player
+	if player != null:
+		# Find an exposed steep face by raycasting down the ramp1 line.
+		var space := root.get_world_3d().direct_space_state
+		var drop := Vector3.INF
+		for z: int in range(200, 2100, 25):
+			var from := Vector3(0.0, 1500.0, float(z))
+			var query := PhysicsRayQueryParameters3D.create(
+				from, from + Vector3(0.0, -4000.0, 0.0))
+			var hit := space.intersect_ray(query)
+			if not hit.is_empty() \
+					and (hit["normal"] as Vector3).dot(Vector3.UP) < 0.85:
+				drop = (hit["position"] as Vector3) + Vector3(0.0, 30.0, 0.0)
+				break
+		_check(drop != Vector3.INF, "found an exposed ramp face in the park")
+		var surfing := false
+		if drop != Vector3.INF:
+			player.position = drop
+			player.velocity = Vector3(0.0, -120.0, -40.0)
+			for i in 40:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF:
+					surfing = true
+					break
+		_check(surfing, "park ramp produces SURF state")
+	else:
+		_check(false, "player present in endless session")
+
+	# Cleanup: records + map.
+	var record_path := ProjectSettings.globalize_path(sm.RECORDS_PATH)
+	loader.unload_current()
+	ui.dismiss_menus()
+	sm._records = RecordsResource.new()
+	if FileAccess.file_exists(sm.RECORDS_PATH):
+		DirAccess.remove_absolute(record_path)
 	player_root.queue_free()
 	await process_frame
 

@@ -13,3 +13,4 @@ signal velocity_updated(speed: float)  # horizontal speed, emitted each physics 
 signal footstep(speed: float)          # grounded stride, emitted by MovementController
 signal surf_entered(data: Dictionary)  # player landed on / started a ramp wall
 signal surf_exited()                   # player left ramp contact
+signal top_speed_beaten(speed: float)  # endless mode: all-time top speed raised

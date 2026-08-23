@@ -158,6 +158,22 @@ func get_pb(map_name: String) -> float:
 	return record.pb_time if record != null else INF
 
 
+## Endless-mode scoring (Phase 7): the all-time fastest speed seen on a map,
+## stored in MapRecord.best_speed.
+func get_top_speed(map_name: String) -> float:
+	var record: MapRecord = _records.records.get(map_name)
+	return record.best_speed if record != null else 0.0
+
+
+func record_top_speed(map_name: String, speed: float) -> void:
+	var record: MapRecord = _records.records.get_or_add(
+		map_name, MapRecord.new())
+	record.map_name = map_name
+	if speed > record.best_speed:
+		record.best_speed = speed
+		persist_records()
+
+
 ## Records a completion. Updates the PB only when faster (§8.2); other stats
 ## accumulate regardless. Pass -1 for unknown speed/jumps.
 func save_pb(map_name: String, time: float, best_speed: float = -1.0,

@@ -126,6 +126,10 @@ timer/PB/checkpoints; PB ghosts appear after a first record per map.
   install the GodotSteam GDExtension, add `steam_appid.txt`, then fill in
   `_try_connect_steam()` / `_activate_on_steam()` / `submit_time()` — no
   call-site changes needed.
+- **Phase 7 (post-v1.0 content)**: E1 Endless Movement shipped
+  (`scenes/maps/endless.tscn`, top-speed scoring via `TopSpeed` +
+  `SaveManager.record_top_speed`). Future candidates from docs/idea.md:
+  multiplayer ghost races, map SDK/workshop, replay analytics.
 
 Notes:
 - All test suites must be reachable through `tests/test_runner.gd`. Never use ad-hoc `-s <script>` invocations for testing.

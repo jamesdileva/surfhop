@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MapMetadata" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_rqqmb"]
+
+[resource]
+script = ExtResource("1_rqqmb")
+map_id = "endless"
+display_name = "Endless Skatepark"
+author = "Velocity Engine"
+difficulty = 2
+tags = PackedStringArray("endless", "surf", "bhop", "air-strafe")
+kill_plane_y = -2000.0

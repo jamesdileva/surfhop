@@ -8,6 +8,7 @@ const AVAILABLE_MENUS := ["main", "pause", "settings", "results", "credits", "ma
 
 const VISUAL_EFFECTS := preload("res://scripts/debug/VisualEffects.gd")
 const WORLD_MATERIALS := preload("res://scripts/debug/WorldMaterials.gd")
+const TOP_SPEED := preload("res://scripts/game/TopSpeed.gd")
 const MENU_SCENES := {
 	"main": preload("res://scenes/menus/MainMenu.tscn"),
 	"pause": preload("res://scenes/menus/PauseMenu.tscn"),
@@ -51,6 +52,10 @@ func _ready() -> void:
 	var world_materials: Node = WORLD_MATERIALS.new()
 	world_materials.name = "WorldMaterials"
 	add_child(world_materials)
+	# Endless-mode top-speed tracker (dormant on normal maps).
+	var top_speed: Node = TOP_SPEED.new()
+	top_speed.name = "TopSpeed"
+	add_child(top_speed)
 	# All menus are created up front and kept hidden: ResultsScreen must exist
 	# to open itself on race_finished, and eager creation keeps show_menu()
 	# side-effect-free for hidden layers.

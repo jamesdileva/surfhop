@@ -16,12 +16,14 @@ const SPEED_UPDATE_INTERVAL := 1.0 / 30.0
 
 var _finish_label := Label.new()
 var _achievement_label := Label.new()
+var _top_speed_label := Label.new()
 
 var _latest_speed: float = 0.0
 var _speed_accum := 0.0
 var _fps_accum := 0.0
 var _finish_display_timer := 0.0
 var _achievement_display_timer := 0.0
+var _top_flash_timer := 0.0
 
 
 func _ready() -> void:
@@ -44,16 +46,27 @@ func _ready() -> void:
 	_achievement_label.visible = false
 	$Root.add_child(_achievement_label)
 
+	_top_speed_label.name = "TopSpeedLabel"
+	_top_speed_label.text = ""
+	_top_speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_top_speed_label.add_theme_font_size_override("font_size", 28)
+	_top_speed_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_top_speed_label.position = Vector2(400, 30)
+	_top_speed_label.size = Vector2(1120, 50)
+	_top_speed_label.visible = false
+	$Root.add_child(_top_speed_label)
+
 	var bus := get_node_or_null("/root/SignalBus")
 	if bus != null:
 		bus.velocity_updated.connect(_on_velocity_updated)
 		bus.race_finished.connect(_on_race_finished)
-	var steam_manager := get_node_or_null("/root/SteamManager")
-	if steam_manager != null:
-		steam_manager.achievement_unlocked.connect(_on_achievement_unlocked)
+		bus.top_speed_beaten.connect(_on_top_speed_beaten)
 	var loader := get_node_or_null("/root/LevelLoader")
 	if loader != null:
 		loader.map_loaded.connect(_on_map_loaded)
+	var steam_manager := get_node_or_null("/root/SteamManager")
+	if steam_manager != null:
+		steam_manager.achievement_unlocked.connect(_on_achievement_unlocked)
 	var ui_manager := get_node_or_null("/root/UIManager")
 	if ui_manager != null and ui_manager.has_method("register_hud"):
 		ui_manager.register_hud(self)
@@ -77,6 +90,12 @@ func _process(delta: float) -> void:
 		_achievement_display_timer -= delta
 		if _achievement_display_timer <= 0.0:
 			_achievement_label.visible = false
+	if _top_flash_timer > 0.0:
+		_top_flash_timer -= delta
+		if _top_flash_timer <= 0.0:
+			_top_speed_label.modulate = Color(1, 1, 1, 0.85)
+		else:
+			_top_speed_label.modulate = Color(0.4, 1.0, 0.6)
 
 	_speed_accum += delta
 	if _speed_accum >= SPEED_UPDATE_INTERVAL:
@@ -199,6 +218,45 @@ func get_achievement_text() -> String:
 	return _achievement_label.text
 
 
-## New map (re)loaded: PB belongs to the new map now.
+## New map (re)loaded: PB belongs to the new map now. Endless-tagged maps
+## swap the race HUD for the top-speed layout (Phase 7 E1).
 func _on_map_loaded(_map_node: Node) -> void:
 	_refresh_pb()
+	var endless := _is_endless_map()
+	_timer_label.visible = not endless
+	_pr_label.visible = not endless
+	_checkpoint_label.visible = not endless
+	_top_speed_label.visible = endless
+	if endless:
+		var tracker: Node = get_node_or_null("/root/UIManager/TopSpeed")
+		var all_time := float(tracker.all_time_top) if tracker != null else 0.0
+		_top_speed_label.text = "TOP %d u/s" % int(all_time)
+
+
+func _is_endless_map() -> bool:
+	var loader := get_node_or_null("/root/LevelLoader")
+	if loader == null or loader.current_metadata == null:
+		return false
+	return bool(loader.current_metadata.tags.has("endless"))
+
+
+func _on_top_speed_beaten(speed: float) -> void:
+	if not _is_endless_map():
+		return
+	var tracker: Node = get_node_or_null("/root/UIManager/TopSpeed")
+	var session_top := float(tracker.session_top) if tracker != null else speed
+	_top_speed_label.text = "TOP %d u/s   ·   session %d u/s" \
+		% [int(tracker.all_time_top), int(session_top)]
+	_top_flash_timer = 1.2
+
+
+func get_top_speed_text() -> String:
+	return _top_speed_label.text
+
+
+func get_top_speed_label() -> Label:
+	return _top_speed_label
+
+
+func get_timer_label() -> Label:
+	return _timer_label
