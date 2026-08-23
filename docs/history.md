@@ -237,6 +237,32 @@
 - Verified live via `cmd /c "<string>"` for all three commands: test 406 checks ✅ · start windowed + headless ✅ (audio confirmed by user) · build ✅. Facts block appended to docs/integration.md §9.
 - Deferred: packaged-exe layout (`dist/win-unpacked/`) until P6 export.
 
+## INT1 follow-up — Surfhop tester screenshots (2026-08-23)
+
+- Wired a custom Sentinel tester (`backend/app/testers/surfhop.py` in the
+  Sentinel repo): full suite → windowed smoke pass, capturing stage
+  screenshots gated on app-log markers.
+- Integration debugging findings (full write-up in docs/integration.md
+  "Lessons from live Sentinel integration"): stale persisted `stack.commands`
+  (fixed in default_smoke via live rediscovery), backend restart required
+  after tester-module edits, pool_size=2 scheduler starvation with no
+  watchdog, trailing-slash API routes, exe-path window matching blind to the
+  winget Godot install, PrintWindow blanking on GPU-composited frames.
+- Game-side fixes: smoke milestones now print LIVE per stage (+ new
+  RUN_STARTED marker); new flags `--smoke-stage-pause=<sec>` (dwell on
+  menu/load/spawn so screenshots photograph the actual stage) and
+  `--smoke-hold=<sec>` (window survives RESULT for post-pass shots). Shim
+  `start` defaults: hold=60, pause=2.5.
+- Tester-side fixes: title-based window find (`^Velocity`), gameplay shot
+  gated on RUN_STARTED +4s (mid-run motion instead of frozen spawn pose),
+  ImageGrab screen-crop fallback for blank PrintWindow frames.
+- One self-inflicted parse error during the marker refactor (`result`
+  identifier referenced after its declaration was removed) — caught by a
+  hanging headless run; fixed and suite re-verified.
+- Result: session PASSED; three verified screenshots (real main menu /
+  165 u/s mid-run / post-run hold at 56 u/s). Suite still 406 checks green.
+  Commits: surfhop eed4cde→0cadf12→4cf6b68; Sentinel edf77ac→9022c94→5434927→2bd1509.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")

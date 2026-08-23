@@ -187,3 +187,37 @@ Preflight results (2026-08-22): test ✅ 406 checks · start ✅ windowed +
 headless · build ✅ · packaged-exe layout ⏳ deferred to release export
 (target `dist/win-unpacked/`). DOM feature-testers are N/A — no CDP/DOM in
 Godot; the smoke mode replaces click-through assertions.
+
+### Lessons from live Sentinel integration (2026-08-23)
+
+Findings from wiring the custom "Velocity smoke" tester end-to-end; kept here
+because they generalize to any Godot project in Sentinel:
+
+- **Stale persisted commands**: a project row caches `stack.commands` from
+  extraction time; later `package.json` edits do NOT propagate (build/open
+  self-heal via live rediscovery, testers don't). Custom testers must re-read
+  the shim per run (surfhop.py does), or restart the backend after manifest
+  edits.
+- **Restart after code changes**: uvicorn loads tester modules at import time;
+  editing a tester requires killing the 8420 listener and relaunching before
+  API-triggered runs pick it up.
+- **Scheduler starvation**: job pool is `ThreadPoolExecutor(pool_size=2)` with
+  no watchdog — one wedged subprocess blocks all future jobs until restart.
+  Stale buildlog rows stuck at "running" survive restarts (cosmetic only).
+- **API route gotcha**: `/api/v1/projects` without a trailing slash silently
+  falls through to the SPA catch-all and returns HTML. Prefer direct SQLite
+  reads over PowerShell JSON parsing for verification.
+- **Window capture on Godot**: exe-path window matching can't see the engine
+  (winget installs under a versioned package dir); match by title (`^Velocity`)
+  instead.
+- **PrintWindow blanking**: GPU-composited 3D content intermittently captures
+  black via PrintWindow; surfhop.py falls back to an ImageGrab screen crop of
+  the window rect when frames come back blank.
+- **Screenshot timing needs engine cooperation**: milestones printed only at
+  run end, so every log gate fired ~30s late and shots photographed the wrong
+  stage (menu shot caught mid-map gameplay). Fix shipped in-game: markers now
+  print LIVE per stage plus a `RUN_STARTED` marker; `--smoke-stage-pause=<s>`
+  dwells on menu/load/spawn so capture photographs the actual stage;
+  `--smoke-hold=<s>` keeps the window alive after RESULT for post-pass shots.
+- Verified end state: session PASSED with three correctly-labeled screenshots
+  (real main menu / mid-run motion at speed / post-run hold frame).

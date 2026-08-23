@@ -90,6 +90,8 @@ tools\godot.cmd --path .
 
 # Self-driving Sentinel smoke pass (menu -> map -> gameplay -> exit 0/1)
 tools\godot.cmd --path . -- --smoke [--smoke-map=<id>] [--smoke-run-seconds=N]
+#   --smoke-hold=<sec>       keep window alive after RESULT (screenshot budget)
+#   --smoke-stage-pause=<sec> dwell on menu/load/spawn stages (capture timing)
 ```
 
 Equivalent npm invocations work for Sentinel: `npm run test` / `start` /
