@@ -1,10 +1,10 @@
-class_name Game
+﻿class_name Game
 extends Node3D
 
 ## Boot / session scene (Phase 6 P1): the project's main_scene. Shows the main
 ## menu on launch; when a map is selected it wires the in-game systems
 ## (HUD, timer, ghost recording/playback), loads the map and spawns the
-## player — the same assembly DevMain performs for dev bootstrap scenes.
+## player â€” the same assembly DevMain performs for dev bootstrap scenes.
 
 const PLAYER_SCENE := preload("res://scenes/player/Player.tscn")
 const HUD_SCENE := preload("res://scenes/ui/HUD.tscn")
@@ -65,6 +65,20 @@ func _smoke_beat() -> void:
 		await get_tree().create_timer(_smoke_stage_pause).timeout
 
 
+## Framebuffer-accurate stage evidence for external testers: the game
+## photographs itself at the exact right moment, immune to window-capture
+## blanking and app-log tail lag. Files land in %TEMP% as
+## velocity_smoke_<stage>.png; no-op in headless mode.
+func _smoke_capture(stage: String) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	var img := get_viewport().get_texture().get_image()
+	var temp_dir := OS.get_environment("TEMP")
+	if temp_dir != "" and img != null:
+		img.save_png(temp_dir.path_join("velocity_smoke_%s.png" % stage))
+
+
 func _run_smoke() -> void:
 	await get_tree().process_frame
 	var ui_manager: Node = get_node("/root/UIManager")
@@ -76,6 +90,7 @@ func _run_smoke() -> void:
 			and ui_manager.get_node_or_null("MainMenu").visible):
 		return _smoke_finish(false, "main menu did not appear")
 	await _smoke_beat()
+	await _smoke_capture("menu")
 
 	# Stage 1b: map select screen (the real Play flow).
 	ui_manager.show_menu("map_select")
@@ -85,6 +100,7 @@ func _run_smoke() -> void:
 			and ui_manager.get_node_or_null("MapSelect").visible):
 		return _smoke_finish(false, "map select did not appear")
 	await _smoke_beat()
+	await _smoke_capture("map_select")
 
 	# Stage 1c: settings overlay (opened on top, as a real user would).
 	ui_manager.show_menu("settings")
@@ -94,6 +110,7 @@ func _run_smoke() -> void:
 			and ui_manager.get_node_or_null("SettingsMenu").visible):
 		return _smoke_finish(false, "settings did not appear")
 	await _smoke_beat()
+	await _smoke_capture("settings")
 
 	# Stage 2: resolve the requested map.
 	var loader: Node = get_node("/root/LevelLoader")
@@ -128,8 +145,14 @@ func _run_smoke() -> void:
 	Input.action_press("move_forward")
 	Input.action_press("jump")  # auto-bhop keeps a hopping pace
 	var play_deadline := Time.get_ticks_msec() + int(_smoke_run_seconds * 1000.0)
+	var run_started_ms := Time.get_ticks_msec()
+	var gameplay_captured := false
 	while Time.get_ticks_msec() < play_deadline:
 		await get_tree().physics_frame
+		if not gameplay_captured \
+				and Time.get_ticks_msec() - run_started_ms >= 4000:
+			gameplay_captured = true
+			_smoke_capture("gameplay")
 	Input.action_release("move_forward")
 	Input.action_release("jump")
 	var moved := player.global_position.distance_to(start_pos)
