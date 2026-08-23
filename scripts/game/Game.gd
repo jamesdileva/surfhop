@@ -104,6 +104,7 @@ func _run_smoke() -> void:
 	await _smoke_beat()
 
 	# Stage 4: simulate gameplay; movement proves the simulation runs end to end.
+	_smoke_record("RUN_STARTED", true)
 	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
 	var start_pos := player.global_position
 	Input.action_press("move_forward")
@@ -120,7 +121,11 @@ func _run_smoke() -> void:
 
 
 func _smoke_record(stage: String, ok: bool) -> void:
-	_smoke_milestones.append("%s=%s" % [stage, "OK" if ok else "FAIL"])
+	var line := "%s=%s" % [stage, "OK" if ok else "FAIL"]
+	_smoke_milestones.append(line)
+	# Live-print so external testers can gate screenshots on real moments
+	# instead of discovering every marker only at finish.
+	print("[smoke] " + line)
 
 
 func _smoke_stage(stage: String, ok: bool) -> bool:
@@ -129,10 +134,7 @@ func _smoke_stage(stage: String, ok: bool) -> bool:
 
 
 func _smoke_finish(success: bool, detail: String) -> void:
-	var result := "OK" if success else "FAIL"
-	print("[smoke] RESULT=%s %s" % [result, detail])
-	for milestone: String in _smoke_milestones:
-		print("[smoke] " + milestone)
+	print("[smoke] RESULT=%s %s" % ["OK" if success else "FAIL", detail])
 	var temp_dir := OS.get_environment("TEMP")
 	if temp_dir != "":
 		var file := FileAccess.open(
@@ -140,7 +142,7 @@ func _smoke_finish(success: bool, detail: String) -> void:
 		if file != null:
 			for milestone: String in _smoke_milestones:
 				file.store_line(milestone)
-			file.store_line("RESULT=%s %s" % [result, detail])
+			file.store_line("RESULT=%s %s" % ["OK" if success else "FAIL", detail])
 			file.close()
 	if _smoke_hold_seconds > 0.0:
 		await get_tree().create_timer(_smoke_hold_seconds).timeout
