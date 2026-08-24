@@ -5,6 +5,23 @@ Feature-level history. Session-by-session engineering notes live in
 
 ---
 
+## Phase 6 — Playtest Polish (P2 round 1)
+
+- Music now keeps playing during runs (was: stopped at the start line).
+- Pause menu fix: Esc no longer swallows itself (menu opened and closed in
+  the same frame); Esc works after alt-tab, and the mouse re-captures
+  automatically on window focus-in during a run.
+- SFX: surf loop and land thud drastically softened (they read as static);
+  hard-landing volume boost capped.
+- Beginner map reworked into a flatter flow course: 38° entries into 30°
+  kickers with 60u launch gaps (~100u drops per section vs 400-500 before),
+  fixing the kill-plane bug that respawned players mid-ramp (default
+  -1000 sliced through the descending course; now -600). Kill-plane
+  regression sweep added for every map.
+- Music stations: MP3 support + station picker in Settings → Audio.
+
+---
+
 ## Phase 5 — Polish & Release (Sprints 24–29)
 
 ### Sprint 28 — Steam integration (local mode)

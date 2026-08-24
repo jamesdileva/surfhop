@@ -289,6 +289,35 @@
   Commits: surfhop e1eb89a, 4290c51, cbe8146, a51f0cb(docs);
   Sentinel 41e7ac6, 9bdee10.
 
+## P2 round 1 — playtest fixes (2026-08-23)
+
+First human playtest feedback (beginner map), four bugs + one design change:
+
+- **Invisible pause menu**: Esc opened pause and closed it in the SAME frame
+  — PlayerCamera._input didn't mark the event handled, so UIManager's
+  ui_cancel close handler ate it. Fix: set_input_as_handled + Esc works
+  without mouse capture + auto-recapture on APPLICATION_FOCUS_IN.
+- **Beginner ramp resets**: kill_plane_y defaulted to -1000 while the course
+  descended to -1400 — the plane sliced through ramp 3. Now -600, plus a
+  GUT sweep (_test_kill_planes) asserting every map's kill plane sits >100u
+  below its lowest box corner. Only beginner was broken.
+- **Static on ramps**: surf_loop placeholder is literally filtered noise
+  (gain 1.6, pitch-scaled with speed). Regenerated at gain 0.35 with a
+  deeper lowpass, player rides -8dB; land thud 2.2 → 0.8 gain, impact
+  boost capped +6 → +3dB.
+- **Music during runs**: removed race_started → stop_music (design change:
+  background enjoyment over race silence).
+- **Beginner flow rework** (user sketch: `____ \_ ____ \_ ____`): generator
+  now supports ascending kickers (`_ramp(..., ascending)` — the kicker bug
+  where a kicker rotated as a descender was caught by the traversal test's
+  position trace). Course: 4 floors, ~100u drops, 38° entries → 30°
+  kickers → 60u gaps. Known quirk (documented in test): a ground-sliding
+  player leaves the kicker lip with ~zero vy — the capsule catches the lip
+  edge and Godot projects against it; airborne (bhop) players launch
+  normally, and the flat hop still clears the gap.
+- Suite: 417 checks green (kill-plane sweep added 11). Smoke RESULT=OK.
+  User's 7 pixabay MP3s committed. Commit 87b1418.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
