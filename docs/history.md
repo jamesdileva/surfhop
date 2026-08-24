@@ -318,6 +318,34 @@ First human playtest feedback (beginner map), four bugs + one design change:
 - Suite: 417 checks green (kill-plane sweep added 11). Smoke RESULT=OK.
   User's 7 pixabay MP3s committed. Commit 87b1418.
 
+## P2 round 2 — surf feel + ramp audit (2026-08-23)
+
+Second playtest round: colors blend, surf feel off, air strafe too tight.
+
+- **Surf feel root cause**: round 1's shallow ramps demoted beginner to
+  GROUND state (friction 6.0 vs surf 0.25) — the "not sliding gracefully".
+  Two rework attempts (38/30 flow ramps; 55/47 short curves) then exposed
+  **catch physics**: a player leaving a floor edge re-intersects a ramp
+  plane at a distance that grows with speed squared (~280u at 320 u/s,
+  ~670u at 500 u/s), so short or shallow ramps shed players into the next
+  floor's wall. Original 46-degree/380-deep geometry catches at every
+  speed — RESTORED, with the kill-plane fix kept (-1600). Lesson: surf
+  catchability demands long ramps; verticality is the price of surf.
+- **Ramp tinting**: ramps now carry the map accent color as their shader
+  BASE (VisualEffects pulls WorldMaterials.tint_for_metadata) — no more
+  white-on-white against floors.
+- **air_accel 10 → 14** (snappier strafe gain; user hit 500 u/s but it was
+  a grind).
+- **Endless Skatepark ramp audit** (user-reported map): SurfRamp1 was 40°
+  (below surf threshold — sticky) → 47°; SurfRamp3 sat at exactly 45.0°
+  (classification boundary, falls to ground side) → 48°; both re-anchored.
+  SurfRamp2 (60° banked) and UpRamps (16/28° kickers) fine.
+- **Full map ramp audit**: tutorial 48° ok; intermediate 50/55/60 (60 is a
+  bottom-edge catch at 320 u/s — borderline, difficulty 3); advanced
+  50-70° and precision 63° narrow are steep by design; all kill planes
+  verified safe by the sweep.
+- Suite 417 green, smoke RESULT=OK. Commit 4377db4.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
