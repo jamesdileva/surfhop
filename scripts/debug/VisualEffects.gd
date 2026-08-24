@@ -168,14 +168,31 @@ func _on_node_added(node: Node) -> void:
 ## tree yet when node_added fires for the parent.
 func _apply_ramp_shader(body: StaticBody3D) -> void:
 	var meshes: Array[GeometryInstance3D] = []
+	# Playtest P2: ramps carry the map's accent color as their BASE so they
+	# read against the white floors at a glance (previously both were white
+	# until the glow kicked in).
+	var tint := _map_accent_tint()
 	for child in body.find_children("*", "MeshInstance3D", true, false):
 		var mesh := child as MeshInstance3D
 		var mat := ShaderMaterial.new()
 		mat.shader = SURF_RAMP_SHADER
 		mesh.material_override = mat
 		mesh.set_instance_shader_parameter("glow", 0.0)
+		mesh.set_instance_shader_parameter("base_color", tint.darkened(0.45))
+		mesh.set_instance_shader_parameter("glow_color", tint)
 		meshes.append(mesh)
 	_ramp_meshes[body] = meshes
+
+
+## Map accent color (metadata tint or difficulty palette), resolved through
+## WorldMaterials so the palette lives in exactly one place.
+func _map_accent_tint() -> Color:
+	var world_materials := get_node_or_null("/root/UIManager/WorldMaterials")
+	var loader := get_node_or_null("/root/LevelLoader")
+	var metadata: MapMetadata = loader.current_metadata if loader != null else null
+	if world_materials != null and world_materials.has_method("tint_for_metadata"):
+		return world_materials.tint_for_metadata(metadata)
+	return Color(0.15, 0.85, 1.0)
 
 
 ## Resolves the ramp mesh under a surf contact point: raycast backwards along

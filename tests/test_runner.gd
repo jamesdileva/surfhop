@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 ## Canonical headless test entry point. All test suites are reachable through
 ## this script: godot --headless --path . --script res://tests/test_runner.gd
@@ -353,7 +353,7 @@ func _test_player_basic_movement() -> void:
 
 
 func _spawn_test_player() -> Array:
-	# Returns [world: Node3D, player: Player] — flat floor with top at y = 0.
+	# Returns [world: Node3D, player: Player] â€” flat floor with top at y = 0.
 	var world := Node3D.new()
 	world.name = "MovementTestWorld"
 	root.add_child(world)
@@ -814,7 +814,7 @@ func _run_scripted_sequence() -> Dictionary:
 
 func _test_fixed_tick_determinism() -> void:
 	# Same inputs over the same fixed ticks must produce bit-identical results
-	# regardless of render pacing (doc §18.3 test_fixed_tick_determinism).
+	# regardless of render pacing (doc Â§18.3 test_fixed_tick_determinism).
 	var run_a := await _run_scripted_sequence()
 	var run_b := await _run_scripted_sequence()
 	_check(run_a["pos"] == run_b["pos"],
@@ -1198,7 +1198,7 @@ func _test_hud() -> void:
 	var ui: Node = root.get_node("UIManager")
 	gm.restart()
 
-	# --- Speed tiers (§13.3) ---
+	# --- Speed tiers (Â§13.3) ---
 	_check(HUDController.tier_color(100.0) == Color(0.55, 0.55, 0.55), "tier: gray below 200")
 	_check(HUDController.tier_color(300.0) == Color.WHITE, "tier: white 200-400")
 	_check(HUDController.tier_color(500.0) == Color(1.0, 0.9, 0.25), "tier: yellow 400-600")
@@ -1602,26 +1602,22 @@ func _test_beginner_map() -> void:
 		"standard config applied (%s)" % (cfg.resource_path if cfg else "null"))
 	_check(gm.total_checkpoints == 3,
 		"exactly 3 checkpoints registered on load (got %d)" % gm.total_checkpoints)
-	_check(map.get_node_or_null("SurfRamp1a") != null
-		and map.get_node_or_null("SurfRamp1b") != null
-		and map.get_node_or_null("SurfRamp2a") != null
-		and map.get_node_or_null("SurfRamp2b") != null
-		and map.get_node_or_null("SurfRamp3a") != null
-		and map.get_node_or_null("SurfRamp3b") != null,
-		"six curved-ramp segments present (3 junctions x entry+kicker)")
-	_check(gm.kill_plane_y == -600.0,
+	_check(map.get_node_or_null("SurfRamp1") != null
+		and map.get_node_or_null("SurfRamp2") != null
+		and map.get_node_or_null("SurfRamp3") != null,
+		"three surf ramps present")
+	_check(gm.kill_plane_y == -1600.0,
 		"beginner kill plane applied below lowest surface (got %s)" % gm.kill_plane_y)
-	var r1a: float = rad_to_deg(absf(map.get_node("SurfRamp1a").rotation.x))
-	var r1b: float = rad_to_deg(absf(map.get_node("SurfRamp1b").rotation.x))
-	var r3a: float = rad_to_deg(absf(map.get_node("SurfRamp3a").rotation.x))
-	var r3b: float = rad_to_deg(absf(map.get_node("SurfRamp3b").rotation.x))
-	_check(r1a > 30.0 and r1a < 45.0 and r3a > 30.0 and r3a < 45.0,
-		"entry slopes are flow angles, not surf walls (%.1f / %.1f)" % [r1a, r3a])
-	_check(r1b > 20.0 and r1b < 40.0 and r3b > 20.0 and r3b < 40.0,
-		"kickers are launch angles below walkable limit (%.1f / %.1f)" % [r1b, r3b])
+	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
+	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
+	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
+	_check(r1 > 42.0 and r1 < 52.0 and r2 > 42.0 and r2 < 52.0
+		and r3 > 42.0 and r3 < 52.0,
+		"ramps sit in the catchable surf band, 42-52 degrees (%.1f / %.1f / %.1f)"
+			% [r1, r2, r3])
 
 	# --- Traversal smoke test ---
-	gm.kill_plane_y = -600.0
+	gm.kill_plane_y = -3000.0  # traversal checks; kill plane asserted above
 	player.position = Vector3(0.0, 20.0, -40.0)
 	await _wait_ticks(6)
 
@@ -1634,44 +1630,35 @@ func _test_beginner_map() -> void:
 			break
 	_check(running, "start trigger begins the run")
 
-	# Ride the curved ramp: drop onto the MIDDLE of the entry slope (dropping
-	# at the top seam launches players ballistically over it — same as Source
-	# ramp physics), get carried down, through the kicker, launched across the
-	# gap, and land on the next floor. Flow ramps are ground slopes (< 45),
-	# not surf walls.
-	player.position = Vector3(0.0, -50.0, -2660.0)
-	player.velocity = Vector3(0.0, -40.0, -320.0)
-	var launched := false
-	var crossed := false
-	var was_on_kicker := false
-	var ramp_trace := ""
-	for i in 240:
-		await physics_frame
-		ramp_trace += "%d:%d@(%.0f,%.0f,%.0f) " % [i, player.movement_controller.state,
-			player.position.x, player.position.y, player.position.z]
-		if player.movement_controller.state == MovementState.GROUND \
-				and player.position.z < -2724.0 and player.position.z > -2819.0:
-			was_on_kicker = true
-		# A ground-sliding player leaves the lip with a flat hop: the capsule
-		# catches the kicker edge and Godot projects vy against it. Airborne
-		# (bhop) players keep their upward launch. Either way they must leave
-		# the ground past the kicker.
-		if was_on_kicker and player.movement_controller.state == MovementState.AIR:
-			launched = true
-		if player.position.z < -2879.0 and player.position.y > -200.0:
-			crossed = true
-			break
-	_check(launched, "player leaves the ground off the kicker [%s]" % ramp_trace)
-	_check(crossed, "gap crossed onto FloorB [%s]" % ramp_trace)
+	# Ride each ramp: teleport onto mid-ramp, expect SURF state each time.
+	# Drop steeply onto each ramp (a shallow fall with forward speed can
+	# parallel the slope without contacting).
+	for ramp_info: Array in [
+		["SurfRamp1", Vector3(0.0, -178.0, -2560.0)],
+		["SurfRamp2", Vector3(0.0, -608.0, -4825.0)],
+		["SurfRamp3", Vector3(0.0, -1083.0, -6930.0)],
+	]:
+		player.position = ramp_info[1]
+		player.velocity = Vector3(0.0, -120.0, -30.0)
+		var surfing := false
+		var ramp_trace := ""
+		for i in 30:
+			await physics_frame
+			ramp_trace += "%d:%d@(%.0f,%.0f,%.0f) " % [i, player.movement_controller.state,
+				player.position.x, player.position.y, player.position.z]
+			if player.movement_controller.state == MovementState.SURF:
+				surfing = true
+				break
+		_check(surfing, "%s produces SURF state [%s]" % [ramp_info[0], ramp_trace])
 
 	# Pass checkpoints via their volumes while running through the course.
-	player.position = Vector3(0.0, -48.0, -3700.0)
+	player.position = Vector3(0.0, -360.0, -3600.0)
 	await _wait_ticks(4)
 	_check(gm.active_checkpoint_id >= 0, "checkpoint registers during traversal")
 	var splits_before: int = gm.checkpoint_splits.size()
 
 	# Cross the finish.
-	player.position = Vector3(0.0, -254.0, -6405.0)
+	player.position = Vector3(0.0, -1314.0, -8555.0)
 	var finished := false
 	for i in 30:
 		await physics_frame

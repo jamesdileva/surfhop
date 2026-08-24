@@ -87,7 +87,7 @@ shape = SubResource("BoxShape3D_i00gq")
 mesh = SubResource("BoxMesh_y17hr")
 
 [node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=619899288]
-transform = Transform3D(1, 0, 0, 0, 0.64278764, 0.76604444, 0, -0.76604444, 0.64278764, 0, -95, 1200)
+transform = Transform3D(1, 0, 0, 0, 0.68199836, 0.7313537, 0, -0.7313537, 0.68199836, 0, -193, 1200)
 
 [node name="@CollisionShape3D@61" type="CollisionShape3D" parent="SurfRamp1" unique_id=1307124762]
 shape = SubResource("BoxShape3D_eh0hk")
@@ -105,7 +105,7 @@ shape = SubResource("BoxShape3D_tq8a5")
 mesh = SubResource("BoxMesh_xkq7w")
 
 [node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=931866904]
-transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0, 1, -1900, -75, -400)
+transform = Transform3D(0.66913061, 0.74314448, 0, -0.74314448, 0.66913061, 0, 0, 0, 1, -1900, -75, -400)
 
 [node name="@CollisionShape3D@65" type="CollisionShape3D" parent="SurfRamp3" unique_id=111942496]
 shape = SubResource("BoxShape3D_m1lj0")

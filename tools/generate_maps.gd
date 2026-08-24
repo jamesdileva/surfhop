@@ -206,34 +206,35 @@ func build_beginner() -> void:
 	meta.movement_config_path = "res://resources/movement/default.tres"
 	# Playtest P2 fix: the old default (-1000) sliced through the descending
 	# course (lowest surface -460); anything past ramp two insta-reset.
-	meta.kill_plane_y = -600.0
+	meta.kill_plane_y = -950.0
 	map.set_meta("map_metadata", meta)
 
-	# Playtest P2 layout rework: flatter flow course. Sections descend ~100u
-	# each (was 400-500) via curved ramps — a 38-degree entry slope into a
-	# 30-degree kicker that converts speed into a launch across a 60u gap:
-	#   ____ \_  ____ \_  ____ \_  ____
-	# Entry ramps sit 8u below the floor tops (the old +10 poke-through seam
-	# tripped landings). 38/30 < 45 keeps everything walkable ground, so
-	# momentum carries; the kicker redirects it skyward. Gap is deliberately
-	# short: move_and_slide sheds most vertical velocity at the kicker lip,
-	# so launches are flatter than the kicker angle suggests.
+	# Playtest P2 round 2: original surf geometry RESTORED. Round 1's shallow
+	# "flow" ramps and a steeper short variant both failed catch physics — a
+	# player leaving a floor edge falls on an arc that only re-intersects a
+	# ramp plane far downstream (catch distance grows with speed squared:
+	# ~280u at 320 u/s, ~670u at 500 u/s), so surf ramps must be LONG. The
+	# 46-degree/380-deep originals catch at every speed; their only real bug
+	# was the kill plane slicing through ramp 3, fixed via -1600 below.
+	# Ramp tops poke 10u above the floor edge — an intentional lip that
+	# cleanly trips bhopers onto the ramp face.
+	meta.kill_plane_y = -1600.0
+	map.set_meta("map_metadata", meta)
+
 	_static_body("FloorA", Vector3(800.0, 100.0, 2600.0), Vector3(0.0, -50.0, -1250.0))
-	_ramp("SurfRamp1a", Vector3(0.0, -8.0, -2570.0), Vector3(0.0, -128.0, -2724.0), 800.0)
-	_ramp("SurfRamp1b", Vector3(0.0, -128.0, -2724.0), Vector3(0.0, -73.0, -2819.0), 800.0, true)
-	_static_body("FloorB", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -148.0, -3679.0))
-	_ramp("SurfRamp2a", Vector3(0.0, -106.0, -2889.0), Vector3(0.0, -226.0, -3043.0), 800.0)
-	_ramp("SurfRamp2b", Vector3(0.0, -226.0, -3043.0), Vector3(0.0, -171.0, -3138.0), 800.0, true)
-	_static_body("FloorC", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -246.0, -3998.0))
-	_ramp("SurfRamp3a", Vector3(0.0, -204.0, -4808.0), Vector3(0.0, -324.0, -4962.0), 800.0)
-	_ramp("SurfRamp3b", Vector3(0.0, -324.0, -4962.0), Vector3(0.0, -269.0, -5057.0), 800.0, true)
-	_static_body("FloorD", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -344.0, -5917.0))
+	_static_body("FloorB", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -450.0, -3750.0))
+	_static_body("FloorC", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -900.0, -5850.0))
+	_static_body("FloorD", Vector3(800.0, 100.0, 2100.0), Vector3(0.0, -1400.0, -7900.0))
+
+	_ramp("SurfRamp1", Vector3(0.0, 10.0, -2380.0), Vector3(0.0, -390.0, -2760.0), 800.0)
+	_ramp("SurfRamp2", Vector3(0.0, -390.0, -4620.0), Vector3(0.0, -840.0, -5030.0), 800.0)
+	_ramp("SurfRamp3", Vector3(0.0, -840.0, -6720.0), Vector3(0.0, -1340.0, -7140.0), 800.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
-	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -254.0, -6400.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1314.0, -8550.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1200.0))
-	_checkpoint("Checkpoint2", Vector3(0.0, -58.0, -3700.0))
-	_checkpoint("Checkpoint3", Vector3(0.0, -156.0, -5900.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -360.0, -3600.0))
+	_checkpoint("Checkpoint3", Vector3(0.0, -810.0, -5800.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
 
 	_lighting()
@@ -360,7 +361,7 @@ func build_challenge_oc() -> void:
 	meta.difficulty = 3
 	meta.tags = PackedStringArray(["bhop", "obstacles"])
 	meta.movement_config_path = "res://resources/movement/default.tres"
-	meta.kill_plane_y = -600.0
+	meta.kill_plane_y = -950.0
 	map.set_meta("map_metadata", meta)
 
 	_static_body("FloorA", Vector3(500.0, 100.0, 3100.0), Vector3(0.0, -50.0, -1500.0)) # y=0 z 50..-3050
@@ -459,7 +460,7 @@ func build_metadata_and_presets() -> void:
 
 	for m: Array in [
 		["tutorial", "Tutorial", 1, ["bhop", "surf", "air-strafe", "tutorial"], "res://resources/movement/casual.tres"],
-		["beginner", "Beginner", 2, ["bhop", "flow"], "res://resources/movement/default.tres", -600.0],
+		["beginner", "Beginner", 2, ["bhop", "surf"], "res://resources/movement/default.tres", -1600.0],
 		["intermediate", "Intermediate", 3, ["bhop", "surf", "air-strafe"], "res://resources/movement/default.tres"],
 		["advanced", "Advanced", 4, ["bhop", "surf", "air-strafe", "high-speed"], "res://resources/movement/default.tres"],
 		["challenge_oc", "Obstacle Course", 3, ["bhop", "obstacles"], "res://resources/movement/default.tres", -600.0],

@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_jd0r3"]
 
-[node name="dev_tutorial" type="Node3D" unique_id=771567649]
+[node name="dev_tutorial" type="Node3D" unique_id=2058020739]
 script = ExtResource("1_jd0r3")

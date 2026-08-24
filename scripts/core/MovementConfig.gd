@@ -12,7 +12,7 @@ extends Resource
 @export var friction_override_factor: float = 0.1  # Friction multiplier on buffered bhop landing (§2.2)
 
 # Air movement
-@export var air_accel: float = 10.0
+@export var air_accel: float = 14.0  # playtest P2: raised from 10 for snappier strafe gain
 @export var air_speed_cap: float = 30.0
 @export var air_cap_multiplier: float = 1.0
 

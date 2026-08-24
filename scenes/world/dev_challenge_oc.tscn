@@ -2,6 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_fj6va"]
 
-[node name="dev_challenge_oc" type="Node3D" unique_id=1509768784]
+[node name="dev_challenge_oc" type="Node3D" unique_id=1228140218]
 script = ExtResource("1_fj6va")
 default_map = "res://scenes/maps/challenge_oc.tscn"
