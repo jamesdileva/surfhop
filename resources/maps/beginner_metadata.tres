@@ -8,4 +8,5 @@ map_id = "beginner"
 display_name = "Beginner"
 author = "Velocity Engine"
 difficulty = 2
-tags = PackedStringArray("bhop", "surf")
+tags = PackedStringArray("bhop", "flow")
+kill_plane_y = -600.0

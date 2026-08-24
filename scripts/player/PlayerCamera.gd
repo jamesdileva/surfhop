@@ -52,8 +52,13 @@ func _input(event: InputEvent) -> void:
 		if parent_body is Node3D:
 			parent_body.rotation.y = deg_to_rad(_yaw_deg)
 		rotation.x = deg_to_rad(_pitch_deg)
-	elif event.is_action_pressed("ui_cancel") and mouse_captured:
+	elif event.is_action_pressed("ui_cancel"):
 		# Esc opens the pause menu (tree pauses; settings reachable from it).
+		# Works regardless of mouse capture (alt-tab releases the mouse, and
+		# Esc must still pause). Marking the event handled stops it from ALSO
+		# reaching UIManager's ui_cancel close handler, which would instantly
+		# re-close the menu we just opened (the invisible-pause-menu bug).
+		get_viewport().set_input_as_handled()
 		var ui_manager := get_node_or_null("/root/UIManager")
 		if ui_manager != null:
 			ui_manager.toggle_pause()
@@ -70,3 +75,9 @@ func _input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and mouse_captured:
 		set_mouse_captured(false)
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and not mouse_captured:
+		# Alt-tab back into an active run: re-capture automatically instead
+		# of requiring a blind click first.
+		var ui := get_node_or_null("/root/UIManager")
+		if ui != null and ui.session_active and ui.current_menu == "":
+			set_mouse_captured(true)

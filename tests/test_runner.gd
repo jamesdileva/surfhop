@@ -53,6 +53,7 @@ func _run_all_tests() -> void:
 	await _test_intermediate_map()
 	await _test_advanced_map()
 	await _test_challenge_maps()
+	await _test_kill_planes()
 	await _test_steam()
 	await _test_main_menu_flow()
 	await _test_visual_materials()
@@ -1601,16 +1602,26 @@ func _test_beginner_map() -> void:
 		"standard config applied (%s)" % (cfg.resource_path if cfg else "null"))
 	_check(gm.total_checkpoints == 3,
 		"exactly 3 checkpoints registered on load (got %d)" % gm.total_checkpoints)
-	_check(map.get_node_or_null("SurfRamp1") != null and map.get_node_or_null("SurfRamp2") != null
-		and map.get_node_or_null("SurfRamp3") != null, "three surf ramps present")
-	var r1_angle: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
-	var r2_angle: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
-	var r3_angle: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
-	_check(r1_angle < r2_angle and r2_angle < r3_angle,
-		"ramps increase in angle (%.1f < %.1f < %.1f)" % [r1_angle, r2_angle, r3_angle])
+	_check(map.get_node_or_null("SurfRamp1a") != null
+		and map.get_node_or_null("SurfRamp1b") != null
+		and map.get_node_or_null("SurfRamp2a") != null
+		and map.get_node_or_null("SurfRamp2b") != null
+		and map.get_node_or_null("SurfRamp3a") != null
+		and map.get_node_or_null("SurfRamp3b") != null,
+		"six curved-ramp segments present (3 junctions x entry+kicker)")
+	_check(gm.kill_plane_y == -600.0,
+		"beginner kill plane applied below lowest surface (got %s)" % gm.kill_plane_y)
+	var r1a: float = rad_to_deg(absf(map.get_node("SurfRamp1a").rotation.x))
+	var r1b: float = rad_to_deg(absf(map.get_node("SurfRamp1b").rotation.x))
+	var r3a: float = rad_to_deg(absf(map.get_node("SurfRamp3a").rotation.x))
+	var r3b: float = rad_to_deg(absf(map.get_node("SurfRamp3b").rotation.x))
+	_check(r1a > 30.0 and r1a < 45.0 and r3a > 30.0 and r3a < 45.0,
+		"entry slopes are flow angles, not surf walls (%.1f / %.1f)" % [r1a, r3a])
+	_check(r1b > 20.0 and r1b < 40.0 and r3b > 20.0 and r3b < 40.0,
+		"kickers are launch angles below walkable limit (%.1f / %.1f)" % [r1b, r3b])
 
 	# --- Traversal smoke test ---
-	gm.kill_plane_y = -3000.0
+	gm.kill_plane_y = -600.0
 	player.position = Vector3(0.0, 20.0, -40.0)
 	await _wait_ticks(6)
 
@@ -1623,35 +1634,44 @@ func _test_beginner_map() -> void:
 			break
 	_check(running, "start trigger begins the run")
 
-	# Ride each ramp: teleport onto mid-ramp, expect SURF state each time.
-	# Drop steeply onto each ramp (raycast-verified surface points); a shallow
-	# fall with forward speed can parallel the slope without contacting.
-	for ramp_info: Array in [
-		["SurfRamp1", Vector3(0.0, -178.0, -2560.0)],
-		["SurfRamp2", Vector3(0.0, -608.0, -4825.0)],
-		["SurfRamp3", Vector3(0.0, -1083.0, -6930.0)],
-	]:
-		player.position = ramp_info[1]
-		player.velocity = Vector3(0.0, -120.0, -30.0)
-		var surfing := false
-		var ramp_trace := ""
-		for i in 30:
-			await physics_frame
-			ramp_trace += "%d:%d@(%d,%d,%d) " % [i, player.movement_controller.state,
-				player.position.x, player.position.y, player.position.z]
-			if player.movement_controller.state == MovementState.SURF:
-				surfing = true
-				break
-		_check(surfing, "%s produces SURF state [%s]" % [ramp_info[0], ramp_trace])
+	# Ride the curved ramp: drop onto the MIDDLE of the entry slope (dropping
+	# at the top seam launches players ballistically over it — same as Source
+	# ramp physics), get carried down, through the kicker, launched across the
+	# gap, and land on the next floor. Flow ramps are ground slopes (< 45),
+	# not surf walls.
+	player.position = Vector3(0.0, -50.0, -2660.0)
+	player.velocity = Vector3(0.0, -40.0, -320.0)
+	var launched := false
+	var crossed := false
+	var was_on_kicker := false
+	var ramp_trace := ""
+	for i in 240:
+		await physics_frame
+		ramp_trace += "%d:%d@(%.0f,%.0f,%.0f) " % [i, player.movement_controller.state,
+			player.position.x, player.position.y, player.position.z]
+		if player.movement_controller.state == MovementState.GROUND \
+				and player.position.z < -2724.0 and player.position.z > -2819.0:
+			was_on_kicker = true
+		# A ground-sliding player leaves the lip with a flat hop: the capsule
+		# catches the kicker edge and Godot projects vy against it. Airborne
+		# (bhop) players keep their upward launch. Either way they must leave
+		# the ground past the kicker.
+		if was_on_kicker and player.movement_controller.state == MovementState.AIR:
+			launched = true
+		if player.position.z < -2879.0 and player.position.y > -200.0:
+			crossed = true
+			break
+	_check(launched, "player leaves the ground off the kicker [%s]" % ramp_trace)
+	_check(crossed, "gap crossed onto FloorB [%s]" % ramp_trace)
 
 	# Pass checkpoints via their volumes while running through the course.
-	player.position = Vector3(0.0, -360.0, -3600.0)
+	player.position = Vector3(0.0, -48.0, -3700.0)
 	await _wait_ticks(4)
 	_check(gm.active_checkpoint_id >= 0, "checkpoint registers during traversal")
 	var splits_before: int = gm.checkpoint_splits.size()
 
 	# Cross the finish.
-	player.position = Vector3(0.0, -1314.0, -8555.0)
+	player.position = Vector3(0.0, -254.0, -6405.0)
 	var finished := false
 	for i in 30:
 		await physics_frame
@@ -2047,12 +2067,13 @@ func _test_audio() -> void:
 	await physics_frame
 	_check(not am._surfing and not am._surf_player.playing, "surf loop stops on surf exit")
 
-	# Music stops when race starts; finish jingle; resumes after delay.
+	# Music keeps playing during runs (P2 playtest decision); finish jingle
+	# plays over it and the resume timer no-ops while music is running.
 	am.play_music()
 	_check(am._music_player.playing, "music playing after play_music")
 	root.get_node("SignalBus").race_started.emit({"time": 0.0})
 	await physics_frame
-	_check(not am._music_player.playing, "music stops when race starts")
+	_check(am._music_player.playing, "music keeps playing when race starts")
 	var finish_before: int = int(am.play_counts.get("finish", 0))
 	root.get_node("SignalBus").race_finished.emit({"time": 1.0, "is_pb": false})
 	await physics_frame
@@ -2060,7 +2081,7 @@ func _test_audio() -> void:
 		"race_finished triggers finish jingle")
 	am._music_resume_timer = 0.05
 	await _wait_ticks(12)
-	_check(am._music_player.playing, "music resumes after finish jingle")
+	_check(am._music_player.playing, "music still running after finish jingle")
 
 	world.queue_free()
 	await process_frame
@@ -2337,6 +2358,51 @@ func _test_optimization() -> void:
 
 	world.queue_free()
 	await process_frame
+
+
+## Regression sweep for the beginner kill-plane bug (P2 playtest): every
+## map's kill_plane_y must sit well below its lowest collision surface, or
+## playable geometry triggers respawn loops. Instances scenes without adding
+## them to the tree (map roots sit at the origin, so local == world).
+func _test_kill_planes() -> void:
+	var loader: Node = root.get_node("LevelLoader")
+	var found: Array[Dictionary] = loader.discover_maps()
+	_check(found.size() >= 7,
+		"kill-plane sweep covers all maps (got %d)" % found.size())
+	for e: Dictionary in found:
+		var meta: MapMetadata = e["metadata"]
+		var scene: PackedScene = load(e["path"])
+		if scene == null:
+			_check(false, "%s: scene loads for kill-plane sweep" % meta.map_id)
+			continue
+		var map := scene.instantiate()
+		var corners: Array = [INF]
+		_accumulate_lowest_y(map, Transform3D.IDENTITY, corners)
+		var lowest: float = corners[0]
+		_check(meta.kill_plane_y < lowest - 100.0,
+			"%s: kill plane %.0f sits %.0fu below lowest surface %.0f"
+				% [meta.map_id, meta.kill_plane_y, lowest - meta.kill_plane_y, lowest])
+		map.free()
+	await process_frame
+
+
+func _accumulate_lowest_y(node: Node, parent_xform: Transform3D,
+		lowest: Array) -> void:
+	var xform := parent_xform * (node as Node3D).transform \
+		if node is Node3D else parent_xform
+	if node is CollisionShape3D:
+		var shape_node := node as CollisionShape3D
+		if shape_node.shape is BoxShape3D:
+			var box := shape_node.shape as BoxShape3D
+			var half: Vector3 = box.size / 2.0
+			for cx: float in [-1.0, 1.0]:
+				for cy: float in [-1.0, 1.0]:
+					for cz: float in [-1.0, 1.0]:
+						var corner := xform * (Vector3(cx, cy, cz) * half)
+						lowest[0] = minf(lowest[0], corner.y)
+			return
+	for child in node.get_children():
+		_accumulate_lowest_y(child, xform, lowest)
 
 
 func _test_steam() -> void:

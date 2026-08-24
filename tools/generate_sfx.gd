@@ -66,17 +66,18 @@ func _initialize() -> void:
 		s[i] = sin(t * freq * TAU) * exp(-t * 14.0)
 	_write_wav("res://assets/audio/sfx/jump.wav", s)
 
-	# land: low-passed noise thud, sharp decay
+	# land: low-passed noise thud, sharp decay (soft: hard landings stack with
+	# the impact-volume boost up to +3 dB and must not clip)
 	n = int(0.15 * RATE)
 	s.resize(n)
 	var noise := PackedFloat32Array()
 	noise.resize(n)
 	for i in n:
 		noise[i] = randf_range(-1.0, 1.0)
-	noise = _lowpass(noise, 0.12)
+	noise = _lowpass(noise, 0.10)
 	for i in n:
 		var t := float(i) / RATE
-		s[i] = noise[i] * 2.2 * exp(-t * 22.0)
+		s[i] = noise[i] * 0.8 * exp(-t * 30.0)
 	_write_wav("res://assets/audio/sfx/land.wav", s)
 
 	# footsteps: two short filtered clicks
@@ -92,19 +93,21 @@ func _initialize() -> void:
 			s[i] = noise[i] * 1.8 * exp(-t * 40.0)
 		_write_wav("res://assets/audio/sfx/footstep_%s.wav" % ["a" if variant == 0 else "b"], s)
 
-	# surf_loop: loopable airy noise with slow amplitude swell
+	# surf_loop: loopable airy noise with slow amplitude swell. Drastically
+	# softened (playtest P2): the raw filtered noise read as static — deeper
+	# low-pass, much lower gain, gentle swell.
 	n = int(1.2 * RATE)
 	s.resize(n)
 	noise.resize(n)
 	for i in n:
 		noise[i] = randf_range(-1.0, 1.0)
-	noise = _lowpass(noise, 0.08)
+	noise = _lowpass(noise, 0.04)
 	var fade_n := int(0.05 * RATE)
 	for i in n:
 		var t := float(i) / n  # 0..1 across the loop
-		var swell := 0.7 + 0.3 * sin(t * TAU)
+		var swell := 0.55 + 0.15 * sin(t * TAU)
 		var edge := minf(float(i) / fade_n, minf(float(n - i) / fade_n, 1.0))
-		s[i] = noise[i] * 1.6 * swell * edge
+		s[i] = noise[i] * 0.35 * swell * edge
 	_write_wav("res://assets/audio/sfx/surf_loop.wav", s)
 
 	# finish: three-note chime arpeggio

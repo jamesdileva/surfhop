@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 ## Regenerates all game maps + movement presets + dev bootstrap scenes.
 ## Run headlessly:
@@ -38,7 +38,8 @@ func _static_body(body_name: String, size: Vector3, pos: Vector3) -> StaticBody3
 	return body
 
 
-func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float) -> StaticBody3D:
+func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
+		ascending := false) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = ramp_name
 	var shape := CollisionShape3D.new()
@@ -57,7 +58,10 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float) -> StaticB
 	ramp_visual.material_override = _floor_material()
 	body.add_child(ramp_visual)
 	var angle := rad_to_deg(atan(abs(span.y) / abs(span.z)))
-	body.rotation.x = -deg_to_rad(angle)
+	# Descending ramps tilt one way, ascending kickers the other â€” a kicker
+	# rotated as a descender becomes a steep drop that throws players into
+	# the void (caught by the beginner traversal test).
+	body.rotation.x = deg_to_rad(angle) if ascending else -deg_to_rad(angle)
 	body.position = (e1 + e2) / 2.0 - Vector3(0.0, 14.0 / cos(deg_to_rad(angle)), 0.0)
 	if map != null:
 		map.set_meta("%s_e1" % ramp_name, e1)
@@ -198,24 +202,38 @@ func build_beginner() -> void:
 	meta.display_name = "Beginner"
 	meta.author = "Velocity Engine"
 	meta.difficulty = 2
-	meta.tags = PackedStringArray(["bhop", "surf"])
+	meta.tags = PackedStringArray(["bhop", "flow"])
 	meta.movement_config_path = "res://resources/movement/default.tres"
+	# Playtest P2 fix: the old default (-1000) sliced through the descending
+	# course (lowest surface -460); anything past ramp two insta-reset.
+	meta.kill_plane_y = -600.0
 	map.set_meta("map_metadata", meta)
 
+	# Playtest P2 layout rework: flatter flow course. Sections descend ~100u
+	# each (was 400-500) via curved ramps — a 38-degree entry slope into a
+	# 30-degree kicker that converts speed into a launch across a 60u gap:
+	#   ____ \_  ____ \_  ____ \_  ____
+	# Entry ramps sit 8u below the floor tops (the old +10 poke-through seam
+	# tripped landings). 38/30 < 45 keeps everything walkable ground, so
+	# momentum carries; the kicker redirects it skyward. Gap is deliberately
+	# short: move_and_slide sheds most vertical velocity at the kicker lip,
+	# so launches are flatter than the kicker angle suggests.
 	_static_body("FloorA", Vector3(800.0, 100.0, 2600.0), Vector3(0.0, -50.0, -1250.0))
-	_static_body("FloorB", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -450.0, -3750.0))
-	_static_body("FloorC", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -900.0, -5850.0))
-	_static_body("FloorD", Vector3(800.0, 100.0, 2100.0), Vector3(0.0, -1400.0, -7900.0))
-
-	_ramp("SurfRamp1", Vector3(0.0, 10.0, -2380.0), Vector3(0.0, -390.0, -2760.0), 800.0)
-	_ramp("SurfRamp2", Vector3(0.0, -390.0, -4620.0), Vector3(0.0, -840.0, -5030.0), 800.0)
-	_ramp("SurfRamp3", Vector3(0.0, -840.0, -6720.0), Vector3(0.0, -1340.0, -7140.0), 800.0)
+	_ramp("SurfRamp1a", Vector3(0.0, -8.0, -2570.0), Vector3(0.0, -128.0, -2724.0), 800.0)
+	_ramp("SurfRamp1b", Vector3(0.0, -128.0, -2724.0), Vector3(0.0, -73.0, -2819.0), 800.0, true)
+	_static_body("FloorB", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -148.0, -3679.0))
+	_ramp("SurfRamp2a", Vector3(0.0, -106.0, -2889.0), Vector3(0.0, -226.0, -3043.0), 800.0)
+	_ramp("SurfRamp2b", Vector3(0.0, -226.0, -3043.0), Vector3(0.0, -171.0, -3138.0), 800.0, true)
+	_static_body("FloorC", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -246.0, -3998.0))
+	_ramp("SurfRamp3a", Vector3(0.0, -204.0, -4808.0), Vector3(0.0, -324.0, -4962.0), 800.0)
+	_ramp("SurfRamp3b", Vector3(0.0, -324.0, -4962.0), Vector3(0.0, -269.0, -5057.0), 800.0, true)
+	_static_body("FloorD", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -344.0, -5917.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
-	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1314.0, -8550.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -254.0, -6400.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1200.0))
-	_checkpoint("Checkpoint2", Vector3(0.0, -360.0, -3600.0))
-	_checkpoint("Checkpoint3", Vector3(0.0, -810.0, -5800.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -58.0, -3700.0))
+	_checkpoint("Checkpoint3", Vector3(0.0, -156.0, -5900.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
 
 	_lighting()
@@ -405,7 +423,7 @@ func build_challenge_precision() -> void:
 	_finish_map("challenge_precision")
 
 
-## Challenge 3: one continuous flat line — pure bhop-chain and air-strafe test.
+## Challenge 3: one continuous flat line â€” pure bhop-chain and air-strafe test.
 func build_challenge_speedrun() -> void:
 	map = Node3D.new()
 	map.name = "SpeedRunMap"
@@ -441,7 +459,7 @@ func build_metadata_and_presets() -> void:
 
 	for m: Array in [
 		["tutorial", "Tutorial", 1, ["bhop", "surf", "air-strafe", "tutorial"], "res://resources/movement/casual.tres"],
-		["beginner", "Beginner", 2, ["bhop", "surf"], "res://resources/movement/default.tres"],
+		["beginner", "Beginner", 2, ["bhop", "flow"], "res://resources/movement/default.tres", -600.0],
 		["intermediate", "Intermediate", 3, ["bhop", "surf", "air-strafe"], "res://resources/movement/default.tres"],
 		["advanced", "Advanced", 4, ["bhop", "surf", "air-strafe", "high-speed"], "res://resources/movement/default.tres"],
 		["challenge_oc", "Obstacle Course", 3, ["bhop", "obstacles"], "res://resources/movement/default.tres", -600.0],

@@ -47,6 +47,7 @@ func _ready() -> void:
 	_surf_player.name = "SurfLoopPlayer"
 	_surf_player.stream = _streams.get("surf_loop")
 	_surf_player.bus = "SFX"
+	_surf_player.volume_db = -8.0  # placeholder loop is noise; keep it subtle
 	add_child(_surf_player)
 
 	var save_manager := get_node_or_null("/root/SaveManager")
@@ -70,7 +71,9 @@ func _ready() -> void:
 		bus.surf_exited.connect(func() -> void:
 			_surfing = false
 			_surf_player.stop())
-		bus.race_started.connect(func(_data: Dictionary) -> void: stop_music())
+		# Music keeps playing during runs (playtest P2 decision): background
+		# enjoyment beats the old silence-during-race design. The finish blip
+		# still plays; play_music() below no-ops while music is running.
 		bus.race_finished.connect(func(_payload: Dictionary) -> void:
 			play_sfx("finish")
 			_music_resume_timer = MUSIC_RESUME_DELAY)
@@ -144,7 +147,7 @@ func play_sfx(sfx_name: String, volume_offset_db := 0.0, pitch := 1.0) -> void:
 
 func _on_player_landed(payload: Dictionary) -> void:
 	var fall_speed: float = absf(payload.get("fall_speed", 0.0))
-	var impact_db := clampf((fall_speed - 300.0) / 100.0 * 2.0, -6.0, 6.0)
+	var impact_db := clampf((fall_speed - 300.0) / 100.0 * 2.0, -6.0, 3.0)
 	play_sfx("land", impact_db)
 
 
