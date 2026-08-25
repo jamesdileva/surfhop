@@ -13,7 +13,7 @@ extends Resource
 
 # Air movement
 @export var air_accel: float = 14.0  # playtest P2: raised from 10 for snappier strafe gain
-@export var air_speed_cap: float = 30.0
+@export var air_speed_cap: float = 45.0  # playtest P2: raised from 30 - the real gain knob (air_accel is cap-limited past ~10)
 @export var air_cap_multiplier: float = 1.0
 
 # Jumping

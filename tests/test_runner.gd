@@ -1819,11 +1819,15 @@ func _test_intermediate_map() -> void:
 			break
 	_check(surfing, "final 60-degree ramp produces SURF state")
 
-	# Kill plane: falling into a gap respawns at the last checkpoint.
+	# Kill plane: falling into a gap respawns at the last checkpoint. The
+	# respawn point floats above its floor and the player keeps moving
+	# (input held, air accel rebuilds velocity), so sample with drift
+	# tolerance instead of an exact-position race.
 	player.position = Vector3(0.0, -2700.0, -6850.0)
 	await _wait_ticks(4)
-	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
-		"kill plane respawn works on intermediate course")
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 50.0,
+		"kill plane respawn works on intermediate course (player=%s respawn=%s)"
+			% [player.position, gm.respawn_transform.origin])
 
 	# Finish the run.
 	player.position = Vector3(0.0, -1760.0, -16905.0)
