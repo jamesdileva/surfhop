@@ -346,6 +346,26 @@ Second playtest round: colors blend, surf feel off, air strafe too tight.
   verified safe by the sweep.
 - Suite 417 green, smoke RESULT=OK. Commit 4377db4.
 
+## P2 round 3+4 — V-channels + persistence fixes (2026-08-23)
+
+- **Beginner V-channels shipped and validated by playtest** ("way more like
+  what we want"). Round 3: `_surf_channel()` — two opposing 56° banked
+  walls (512:384 CS ratio) + flat lip; walls can't be hopped over; 600u
+  junctions, 250u drops, kill plane -960. Round 4: walls 350→500 tall for
+  longer carves.
+- **Settings clobbered by test runs**: the settings-menu test saved
+  fullscreen=true into the REAL settings.cfg on every suite run. Test
+  runner now snapshots user://save before the run and restores at exit.
+- **Music loops**: AudioStreamMP3.loop + finished-signal restart fallback
+  (tracks were one-shot).
+- **Surf momentum**: surf_friction 0.25 → 0.05 (CS surf is frictionless;
+  slides were dying in ~2s). Remaining feel lever: wall-entry projection
+  losses are inherent — approach low on the face, carve up.
+- air_accel stays 14 — verified cap-limited by air_speed_cap; raises are
+  no-ops. The channels are the speed source (frictionless faces gain speed
+  linearly with time per HL physics).
+- Suite 416 green, smoke RESULT=OK. Commits e055f77, caaf9c2.
+
 ---
 
 ## Deferred / Backlog (see also AGENTS.md "Deferred Polish Items")
