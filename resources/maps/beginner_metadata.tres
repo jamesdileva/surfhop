@@ -9,4 +9,4 @@ display_name = "Beginner"
 author = "Velocity Engine"
 difficulty = 2
 tags = PackedStringArray("bhop", "surf")
-kill_plane_y = -1600.0
+kill_plane_y = -960.0

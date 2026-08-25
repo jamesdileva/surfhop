@@ -2,6 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_5djyg"]
 
-[node name="dev_challenge_precision" type="Node3D" unique_id=1448110676]
+[node name="dev_challenge_precision" type="Node3D" unique_id=456403678]
 script = ExtResource("1_5djyg")
 default_map = "res://scenes/maps/challenge_precision.tscn"

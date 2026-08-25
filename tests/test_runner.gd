@@ -1602,22 +1602,23 @@ func _test_beginner_map() -> void:
 		"standard config applied (%s)" % (cfg.resource_path if cfg else "null"))
 	_check(gm.total_checkpoints == 3,
 		"exactly 3 checkpoints registered on load (got %d)" % gm.total_checkpoints)
-	_check(map.get_node_or_null("SurfRamp1") != null
-		and map.get_node_or_null("SurfRamp2") != null
-		and map.get_node_or_null("SurfRamp3") != null,
-		"three surf ramps present")
-	_check(gm.kill_plane_y == -1600.0,
+	_check(map.get_node_or_null("SurfRamp1L") != null
+		and map.get_node_or_null("SurfRamp1R") != null
+		and map.get_node_or_null("SurfRamp2L") != null
+		and map.get_node_or_null("SurfRamp2R") != null
+		and map.get_node_or_null("SurfRamp3L") != null
+		and map.get_node_or_null("SurfRamp3R") != null,
+		"six channel walls present (3 junctions x left+right)")
+	_check(gm.kill_plane_y == -960.0,
 		"beginner kill plane applied below lowest surface (got %s)" % gm.kill_plane_y)
-	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
-	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
-	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
-	_check(r1 > 42.0 and r1 < 52.0 and r2 > 42.0 and r2 < 52.0
-		and r3 > 42.0 and r3 < 52.0,
-		"ramps sit in the catchable surf band, 42-52 degrees (%.1f / %.1f / %.1f)"
-			% [r1, r2, r3])
+	var w1: float = rad_to_deg(absf(map.get_node("SurfRamp1L").rotation.z))
+	var w3: float = rad_to_deg(absf(map.get_node("SurfRamp3R").rotation.z))
+	_check(w1 > 30.0 and w1 < 40.0 and w3 > 30.0 and w3 < 40.0,
+		"channel walls tilted 34 from vertical = 56-degree surf faces (%.1f / %.1f)"
+			% [w1, w3])
 
 	# --- Traversal smoke test ---
-	gm.kill_plane_y = -3000.0  # traversal checks; kill plane asserted above
+	gm.kill_plane_y = -960.0
 	player.position = Vector3(0.0, 20.0, -40.0)
 	await _wait_ticks(6)
 
@@ -1630,35 +1631,35 @@ func _test_beginner_map() -> void:
 			break
 	_check(running, "start trigger begins the run")
 
-	# Ride each ramp: teleport onto mid-ramp, expect SURF state each time.
-	# Drop steeply onto each ramp (a shallow fall with forward speed can
-	# parallel the slope without contacting).
-	for ramp_info: Array in [
-		["SurfRamp1", Vector3(0.0, -178.0, -2560.0)],
-		["SurfRamp2", Vector3(0.0, -608.0, -4825.0)],
-		["SurfRamp3", Vector3(0.0, -1083.0, -6930.0)],
-	]:
-		player.position = ramp_info[1]
-		player.velocity = Vector3(0.0, -120.0, -30.0)
-		var surfing := false
-		var ramp_trace := ""
-		for i in 30:
-			await physics_frame
-			ramp_trace += "%d:%d@(%.0f,%.0f,%.0f) " % [i, player.movement_controller.state,
-				player.position.x, player.position.y, player.position.z]
-			if player.movement_controller.state == MovementState.SURF:
-				surfing = true
-				break
-		_check(surfing, "%s produces SURF state [%s]" % [ramp_info[0], ramp_trace])
+	# Carve the V-channel: drop next to the RIGHT wall's face mid-channel
+	# (x=0 takes the flat lip path - also valid). The 56-degree face is a
+	# wall contact -> SURF, frictionless; slide/carve down and exit onto
+	# FloorB. Walls cannot be hopped over.
+	player.position = Vector3(140.0, -100.0, -2860.0)
+	player.velocity = Vector3(0.0, -80.0, -320.0)
+	var surfing := false
+	var crossed := false
+	var ramp_trace := ""
+	for i in 240:
+		await physics_frame
+		ramp_trace += "%d:%d@(%.0f,%.0f,%.0f) " % [i, player.movement_controller.state,
+			player.position.x, player.position.y, player.position.z]
+		if player.movement_controller.state == MovementState.SURF:
+			surfing = true
+		if surfing and player.position.z < -3210.0 and player.position.y > -450.0:
+			crossed = true
+			break
+	_check(surfing, "channel wall produces SURF state [%s]" % ramp_trace)
+	_check(crossed, "channel exited onto FloorB [%s]" % ramp_trace)
 
 	# Pass checkpoints via their volumes while running through the course.
-	player.position = Vector3(0.0, -360.0, -3600.0)
+	player.position = Vector3(0.0, -200.0, -3960.0)
 	await _wait_ticks(4)
 	_check(gm.active_checkpoint_id >= 0, "checkpoint registers during traversal")
 	var splits_before: int = gm.checkpoint_splits.size()
 
 	# Cross the finish.
-	player.position = Vector3(0.0, -1314.0, -8555.0)
+	player.position = Vector3(0.0, -710.0, -8705.0)
 	var finished := false
 	for i in 30:
 		await physics_frame

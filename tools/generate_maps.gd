@@ -70,6 +70,45 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
 	return body
 
 
+## CS-style V-channel junction (playtest P2 round 3): two opposing 56-degree
+## banked surf walls meeting a flat bottom lip. Players fall in and carve
+## face to face - walls cannot be hopped over like the old top-ridable
+## slopes (catch distance grows with speed squared, so fast players flew
+## right over them). Face proportions follow the classic 512:384 CS ramp.
+## base_y is the channel floor level (= the next platform's top).
+func _surf_channel(prefix: String, center_z: float, length: float,
+		base_y: float) -> void:
+	var rad := deg_to_rad(34.0)  # wall tilt from vertical; face = 56 from horizontal
+	var slope := 175.0           # half the face length (box local Y half-extent)
+	var lip_half := 60.0
+	_static_body(prefix + "Lip", Vector3(120.0, 40.0, length),
+		Vector3(0.0, base_y - 20.0, center_z))
+	for side: int in [-1, 1]:
+		var wall := StaticBody3D.new()
+		wall.name = prefix + ("R" if side > 0 else "L")
+		var shape := CollisionShape3D.new()
+		shape.name = "CollisionShape3D"
+		var box := BoxShape3D.new()
+		box.size = Vector3(40.0, 350.0, length)
+		shape.shape = box
+		wall.add_child(shape)
+		var visual := MeshInstance3D.new()
+		visual.name = "Visual"
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(40.0, 350.0, length)
+		visual.mesh = mesh
+		visual.material_override = _floor_material()
+		wall.add_child(visual)
+		# Ridable face is the wall's inner big face (normal tilts up toward
+		# the channel center at 56 degrees from horizontal).
+		wall.rotation.z = -side * rad
+		wall.position = Vector3(
+			side * (lip_half + slope * sin(rad) + 20.0 * cos(rad)),
+			base_y + slope * cos(rad) - 20.0 * sin(rad),
+			center_z)
+		map.add_child(wall)
+
+
 func _trigger(trigger_name: String, scene_path: String, pos: Vector3) -> void:
 	var area: Area3D = (load(scene_path) as PackedScene).instantiate()
 	area.name = trigger_name
@@ -209,32 +248,29 @@ func build_beginner() -> void:
 	meta.kill_plane_y = -950.0
 	map.set_meta("map_metadata", meta)
 
-	# Playtest P2 round 2: original surf geometry RESTORED. Round 1's shallow
-	# "flow" ramps and a steeper short variant both failed catch physics — a
-	# player leaving a floor edge falls on an arc that only re-intersects a
-	# ramp plane far downstream (catch distance grows with speed squared:
-	# ~280u at 320 u/s, ~670u at 500 u/s), so surf ramps must be LONG. The
-	# 46-degree/380-deep originals catch at every speed; their only real bug
-	# was the kill plane slicing through ramp 3, fixed via -1600 below.
-	# Ramp tops poke 10u above the floor edge — an intentional lip that
-	# cleanly trips bhopers onto the ramp face.
-	meta.kill_plane_y = -1600.0
+	# Playtest P2 round 3 layout: V-channel surf junctions (CS-style). The
+	# round-2 restoration proved the original top-ridable slopes unfixable at
+	# speed — catch distance grows with speed squared, so fast players bhopped
+	# clean over them. Channels are walls: impossible to hop over, you fall in
+	# and carve face to face (the classic surf rhythm), exiting with the speed
+	# the frictionless faces build. Junctions are 600 deep (spacing = the
+	# channel itself) with 250u drops.
+	meta.kill_plane_y = -960.0
 	map.set_meta("map_metadata", meta)
 
 	_static_body("FloorA", Vector3(800.0, 100.0, 2600.0), Vector3(0.0, -50.0, -1250.0))
-	_static_body("FloorB", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -450.0, -3750.0))
-	_static_body("FloorC", Vector3(800.0, 100.0, 1900.0), Vector3(0.0, -900.0, -5850.0))
-	_static_body("FloorD", Vector3(800.0, 100.0, 2100.0), Vector3(0.0, -1400.0, -7900.0))
-
-	_ramp("SurfRamp1", Vector3(0.0, 10.0, -2380.0), Vector3(0.0, -390.0, -2760.0), 800.0)
-	_ramp("SurfRamp2", Vector3(0.0, -390.0, -4620.0), Vector3(0.0, -840.0, -5030.0), 800.0)
-	_ramp("SurfRamp3", Vector3(0.0, -840.0, -6720.0), Vector3(0.0, -1340.0, -7140.0), 800.0)
+	_surf_channel("SurfRamp1", -2860.0, 600.0, -250.0)
+	_static_body("FloorB", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -300.0, -3960.0))
+	_surf_channel("SurfRamp2", -5170.0, 600.0, -500.0)
+	_static_body("FloorC", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -550.0, -6220.0))
+	_surf_channel("SurfRamp3", -7330.0, 600.0, -750.0)
+	_static_body("FloorD", Vector3(800.0, 100.0, 1600.0), Vector3(0.0, -800.0, -8430.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
-	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1314.0, -8550.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -710.0, -8700.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1200.0))
-	_checkpoint("Checkpoint2", Vector3(0.0, -360.0, -3600.0))
-	_checkpoint("Checkpoint3", Vector3(0.0, -810.0, -5800.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -210.0, -3960.0))
+	_checkpoint("Checkpoint3", Vector3(0.0, -460.0, -6220.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
 
 	_lighting()
@@ -460,7 +496,7 @@ func build_metadata_and_presets() -> void:
 
 	for m: Array in [
 		["tutorial", "Tutorial", 1, ["bhop", "surf", "air-strafe", "tutorial"], "res://resources/movement/casual.tres"],
-		["beginner", "Beginner", 2, ["bhop", "surf"], "res://resources/movement/default.tres", -1600.0],
+		["beginner", "Beginner", 2, ["bhop", "surf"], "res://resources/movement/default.tres", -960.0],
 		["intermediate", "Intermediate", 3, ["bhop", "surf", "air-strafe"], "res://resources/movement/default.tres"],
 		["advanced", "Advanced", 4, ["bhop", "surf", "air-strafe", "high-speed"], "res://resources/movement/default.tres"],
 		["challenge_oc", "Obstacle Course", 3, ["bhop", "obstacles"], "res://resources/movement/default.tres", -600.0],
