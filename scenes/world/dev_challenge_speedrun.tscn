@@ -2,6 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_sbgok"]
 
-[node name="dev_challenge_speedrun" type="Node3D" unique_id=1021123288]
+[node name="dev_challenge_speedrun" type="Node3D" unique_id=1324430487]
 script = ExtResource("1_sbgok")
 default_map = "res://scenes/maps/challenge_speedrun.tscn"

@@ -36,16 +36,16 @@ background_mode = 2
 sky = SubResource("Sky_gs4lf")
 ambient_light_source = 3
 
-[node name="SpeedRunMap" type="Node3D" unique_id=877011164]
+[node name="SpeedRunMap" type="Node3D" unique_id=875331552]
 metadata/map_metadata = SubResource("Resource_5xwfw")
 
-[node name="Runway" type="StaticBody3D" parent="." unique_id=572444039]
+[node name="Runway" type="StaticBody3D" parent="." unique_id=181165779]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -3225)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Runway" unique_id=11053976]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Runway" unique_id=1972267531]
 shape = SubResource("BoxShape3D_i2si1")
 
-[node name="Visual" type="MeshInstance3D" parent="Runway" unique_id=311496008]
+[node name="Visual" type="MeshInstance3D" parent="Runway" unique_id=2060383852]
 material_override = SubResource("StandardMaterial3D_oxvu7")
 mesh = SubResource("BoxMesh_3p1f8")
 
@@ -55,13 +55,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -80)
 [node name="FinishTrigger" type="Area3D" parent="." unique_id=1013883136 groups=["finish_trigger"] instance=ExtResource("3_nbfnw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -6200)
 
-[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1035755592]
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1137869634]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1280953508]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=745205837]
 environment = SubResource("Environment_xk4wi")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1773819886]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=846787074]
 transform = Transform3D(0.8480481, 0.41758206, -0.32625088, 0, 0.6156615, 0.7880107, 0.52991927, -0.668271, 0.5221106, 0, 0, 0)
 light_energy = 1.3
 shadow_enabled = true
