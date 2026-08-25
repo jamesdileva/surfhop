@@ -1247,6 +1247,33 @@ The polish phase adds audio, visual effects, settings, optimization, Steam integ
 
 **Dependencies:** All previous sprints
 
+#### Packaging runbook (added during P2 playtest, pre-implementation notes)
+
+Findings from the P2 planning pass — the spec above assumes `--export-release`
+just works; these steps make execution mechanical. Defer until playtest
+polish settles (user decision, 2026-08-23): no exe complexity mid-playtest.
+
+1. **Install export templates (one-time, ~1GB):** the winget Godot install is
+   editor-only — `--export-release` fails without templates. Download the
+   `4.7.2-stable` templates `.tpz` from Godot's GitHub releases and extract to
+   `%APPDATA%\Godot\export_templates\4.7.2.stable\`.
+2. **Create `export_presets.cfg`** (add to Files Created above): Windows
+   Desktop preset, x86_64. The "Windows Desktop" preset name in the acceptance
+   criteria refers to this file.
+3. **Output path:** export to `dist/win-unpacked/Velocity.exe`, NOT
+   `exports/` — Sentinel's packaged-exe detection only recognizes
+   `dist/win-unpacked/*.exe` (integration.md deferred ⏳ item), so this also
+   un-defers that check. Zip `dist/win-unpacked/` as
+   `exports/Velocity-1.0-win64.zip` for distribution.
+4. **Shim `package` script:** `npm run package` →
+   `tools\godot.cmd --headless --path . --export-release "Windows Desktop" dist/win-unpacked/Velocity.exe`
+   (the wrapper stays the single exe resolver). Update AGENTS.md commands.
+5. **Verification additions:** the exported exe accepts `--smoke` user args —
+   run it and require `[smoke] RESULT=OK`; then the clean-machine test below.
+6. **Decisions to settle at execution** (non-blockers): single self-contained
+   exe vs `exe + .pck` folder; default Godot icon vs custom `icon.png`;
+   version stamp timing (project.godot + doc alignment happen here per spec).
+
 ---
 
 ## Phase 6: Pre-Release (Sprints P1-P6) — added Sprint 29, supersedes original ordering
@@ -1270,7 +1297,10 @@ deferred item BEFORE the version bump so the release build is cut once.
   `docs/performance_profile.md` (<1.5ms physics profiler pass, 144+ FPS,
   10-minute memory soak).
 - **P6 — v1.0 release:** the original Sprint 30 spec, executed here. Align doc
-  versions with the game version, export, clean-machine test, tag.
+  versions with the game version, export, clean-machine test, tag. Execute the
+  packaging runbook appended to Sprint 30 (templates install, export_presets.cfg,
+  `dist/win-unpacked/` output, shim `package` script) — added from the P2
+  planning pass, 2026-08-23.
 
 Steam activation follows P6 (buy AppID, install GodotSteam, fill the three
 `SteamManager` seams).
