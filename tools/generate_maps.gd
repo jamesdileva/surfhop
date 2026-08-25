@@ -79,7 +79,7 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
 func _surf_channel(prefix: String, center_z: float, length: float,
 		base_y: float) -> void:
 	var rad := deg_to_rad(34.0)  # wall tilt from vertical; face = 56 from horizontal
-	var slope := 175.0           # half the face length (box local Y half-extent)
+	var slope := 250.0           # half the face length (box local Y half-extent)
 	var lip_half := 60.0
 	_static_body(prefix + "Lip", Vector3(120.0, 40.0, length),
 		Vector3(0.0, base_y - 20.0, center_z))
@@ -89,13 +89,13 @@ func _surf_channel(prefix: String, center_z: float, length: float,
 		var shape := CollisionShape3D.new()
 		shape.name = "CollisionShape3D"
 		var box := BoxShape3D.new()
-		box.size = Vector3(40.0, 350.0, length)
+		box.size = Vector3(40.0, 500.0, length)
 		shape.shape = box
 		wall.add_child(shape)
 		var visual := MeshInstance3D.new()
 		visual.name = "Visual"
 		var mesh := BoxMesh.new()
-		mesh.size = Vector3(40.0, 350.0, length)
+		mesh.size = Vector3(40.0, 500.0, length)
 		visual.mesh = mesh
 		visual.material_override = _floor_material()
 		wall.add_child(visual)
@@ -554,3 +554,4 @@ func _initialize() -> void:
 	build_dev_scenes()
 	print("ALL MAPS REGENERATED")
 	quit()
+

@@ -171,11 +171,21 @@ func play_music(track := "") -> void:
 				break
 	if stream == null:
 		stream = load(MUSIC_FALLBACK)
+	# Playtest P2: tracks must loop. MP3 loops natively; the finished signal
+	# is a belt-and-braces restart for formats that ignore the flag (WAV).
+	if stream is AudioStreamMP3:
+		(stream as AudioStreamMP3).loop = true
+	if not _music_player.finished.is_connected(_restart_music):
+		_music_player.finished.connect(_restart_music)
 	if _music_player.stream == stream and _music_player.playing:
 		return
 	_music_player.stream = stream
 	_music_player.play()
 	play_counts["music"] = int(play_counts.get("music", 0)) + 1
+
+
+func _restart_music() -> void:
+	_music_player.play()
 
 
 func stop_music() -> void:

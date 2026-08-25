@@ -31,7 +31,7 @@ extends Resource
 @export var surf_angle_min_deg: float = 45.0
 @export var surf_speed_multiplier: float = 1.0
 @export var surf_preservation: float = 0.95
-@export var surf_friction: float = 0.25       # Ramp friction, far lower than ground (§4.3)
+@export var surf_friction: float = 0.05       # Ramp friction; near-zero per CS surf (playtest P2: 0.25 bled too much speed)
 @export var surf_min_speed: float = 20.0      # Anti-stuck threshold (§4.6)
 @export var surf_push: float = 300.0         # Outward accel (u/s^2) when below surf_min_speed
 @export var surf_exit_boost: float = 1.0      # Down-fling scale on ramp exit (§5.3)

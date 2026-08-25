@@ -120,76 +120,76 @@ background_mode = 2
 sky = SubResource("Sky_46knc")
 ambient_light_source = 3
 
-[node name="ObstacleCourseMap" type="Node3D" unique_id=1741457400]
+[node name="ObstacleCourseMap" type="Node3D" unique_id=216420665]
 metadata/map_metadata = SubResource("Resource_171sa")
 
-[node name="FloorA" type="StaticBody3D" parent="." unique_id=395131277]
+[node name="FloorA" type="StaticBody3D" parent="." unique_id=1991041855]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -1500)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorA" unique_id=1870814874]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorA" unique_id=1809137434]
 shape = SubResource("BoxShape3D_yay2r")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorA" unique_id=1721499548]
+[node name="Visual" type="MeshInstance3D" parent="FloorA" unique_id=489733352]
 material_override = SubResource("StandardMaterial3D_t1b3k")
 mesh = SubResource("BoxMesh_jsi35")
 
-[node name="FloorBridge" type="StaticBody3D" parent="." unique_id=52854675]
+[node name="FloorBridge" type="StaticBody3D" parent="." unique_id=1843846970]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -3575)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBridge" unique_id=727599992]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorBridge" unique_id=1899149910]
 shape = SubResource("BoxShape3D_0uo83")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorBridge" unique_id=1922112758]
+[node name="Visual" type="MeshInstance3D" parent="FloorBridge" unique_id=406484602]
 material_override = SubResource("StandardMaterial3D_hug4n")
 mesh = SubResource("BoxMesh_wprt6")
 
-[node name="FloorC" type="StaticBody3D" parent="." unique_id=1101979918]
+[node name="FloorC" type="StaticBody3D" parent="." unique_id=19545452]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -4850)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorC" unique_id=439859712]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorC" unique_id=310310310]
 shape = SubResource("BoxShape3D_0vksx")
 
-[node name="Visual" type="MeshInstance3D" parent="FloorC" unique_id=1159126197]
+[node name="Visual" type="MeshInstance3D" parent="FloorC" unique_id=1039008116]
 material_override = SubResource("StandardMaterial3D_ntns8")
 mesh = SubResource("BoxMesh_hgukc")
 
-[node name="PillarA-150" type="StaticBody3D" parent="." unique_id=1557399949]
+[node name="PillarA-150" type="StaticBody3D" parent="." unique_id=1486220985]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -150, 150, -800)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA-150" unique_id=772225270]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA-150" unique_id=1731439723]
 shape = SubResource("BoxShape3D_0xkjf")
 
-[node name="Visual" type="MeshInstance3D" parent="PillarA-150" unique_id=1308671381]
+[node name="Visual" type="MeshInstance3D" parent="PillarA-150" unique_id=944780479]
 material_override = SubResource("StandardMaterial3D_x72mt")
 mesh = SubResource("BoxMesh_v331l")
 
-[node name="PillarA0" type="StaticBody3D" parent="." unique_id=1413363378]
+[node name="PillarA0" type="StaticBody3D" parent="." unique_id=55729355]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 150, -800)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA0" unique_id=1364265570]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA0" unique_id=358952383]
 shape = SubResource("BoxShape3D_6evag")
 
-[node name="Visual" type="MeshInstance3D" parent="PillarA0" unique_id=1898393145]
+[node name="Visual" type="MeshInstance3D" parent="PillarA0" unique_id=392186249]
 material_override = SubResource("StandardMaterial3D_2y0f6")
 mesh = SubResource("BoxMesh_jxxbs")
 
-[node name="PillarA150" type="StaticBody3D" parent="." unique_id=1087124566]
+[node name="PillarA150" type="StaticBody3D" parent="." unique_id=1148764681]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 150, 150, -800)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA150" unique_id=78032492]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PillarA150" unique_id=629874990]
 shape = SubResource("BoxShape3D_a6t52")
 
-[node name="Visual" type="MeshInstance3D" parent="PillarA150" unique_id=1672847368]
+[node name="Visual" type="MeshInstance3D" parent="PillarA150" unique_id=700840200]
 material_override = SubResource("StandardMaterial3D_bf5du")
 mesh = SubResource("BoxMesh_5ta0f")
 
-[node name="LowWall" type="StaticBody3D" parent="." unique_id=625048720]
+[node name="LowWall" type="StaticBody3D" parent="." unique_id=901049064]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -1400)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="LowWall" unique_id=1946466683]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LowWall" unique_id=1136621289]
 shape = SubResource("BoxShape3D_yvw4g")
 
-[node name="Visual" type="MeshInstance3D" parent="LowWall" unique_id=1322195961]
+[node name="Visual" type="MeshInstance3D" parent="LowWall" unique_id=982817394]
 material_override = SubResource("StandardMaterial3D_g1b6c")
 mesh = SubResource("BoxMesh_jrr0t")
 
@@ -200,44 +200,44 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -80)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -1700)
 script = ExtResource("4_aea8l")
 
-[node name="MovingWall1" type="AnimatableBody3D" parent="." unique_id=2137336035]
+[node name="MovingWall1" type="AnimatableBody3D" parent="." unique_id=649848647]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 100, -2100)
 script = ExtResource("5_n1nki")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MovingWall1" unique_id=940328039]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MovingWall1" unique_id=2143095885]
 shape = SubResource("BoxShape3D_yls1i")
 
-[node name="Visual" type="MeshInstance3D" parent="MovingWall1" unique_id=443508686]
+[node name="Visual" type="MeshInstance3D" parent="MovingWall1" unique_id=913805080]
 material_override = SubResource("StandardMaterial3D_uros0")
 mesh = SubResource("BoxMesh_s1w4h")
 
-[node name="MovingWall2" type="AnimatableBody3D" parent="." unique_id=2024954676]
+[node name="MovingWall2" type="AnimatableBody3D" parent="." unique_id=94114747]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 100, -2500)
 script = ExtResource("5_n1nki")
 move_axis = Vector3(-1, 0, 0)
 period_seconds = 5.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MovingWall2" unique_id=2112791267]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MovingWall2" unique_id=2021947568]
 shape = SubResource("BoxShape3D_a63vu")
 
-[node name="Visual" type="MeshInstance3D" parent="MovingWall2" unique_id=23634869]
+[node name="Visual" type="MeshInstance3D" parent="MovingWall2" unique_id=1710729659]
 material_override = SubResource("StandardMaterial3D_0pa0q")
 mesh = SubResource("BoxMesh_brw50")
 
 [node name="FinishTrigger" type="Area3D" parent="." unique_id=1013883136 groups=["finish_trigger"] instance=ExtResource("6_k3py5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -4500)
 
-[node name="Checkpoint2" type="Area3D" parent="." unique_id=858595825 groups=["checkpoint"] instance=ExtResource("3_5tkfi")]
+[node name="Checkpoint2" type="Area3D" parent="." unique_id=871479318 groups=["checkpoint"] instance=ExtResource("3_5tkfi")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40, -3600)
 script = ExtResource("4_aea8l")
 
-[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1265750107]
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=2060664713]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1405021011]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=927749812]
 environment = SubResource("Environment_y4wtl")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1827773924]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=667906277]
 transform = Transform3D(0.8480481, 0.41758206, -0.32625088, 0, 0.6156615, 0.7880107, 0.52991927, -0.668271, 0.5221106, 0, 0, 0)
 light_energy = 1.3
 shadow_enabled = true

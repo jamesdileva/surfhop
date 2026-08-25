@@ -66,38 +66,38 @@ background_mode = 2
 sky = SubResource("Sky_ov6hw")
 ambient_light_source = 3
 
-[node name="TutorialMap" type="Node3D" unique_id=1729931186]
+[node name="TutorialMap" type="Node3D" unique_id=404652690]
 metadata/map_metadata = SubResource("Resource_m62tc")
 metadata/SurfRamp_e1 = Vector3(0, 31, -1429)
 metadata/SurfRamp_e2 = Vector3(0, -405, -1822)
 
-[node name="CourseFloor" type="StaticBody3D" parent="." unique_id=281871997]
+[node name="CourseFloor" type="StaticBody3D" parent="." unique_id=578402968]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -800)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CourseFloor" unique_id=1498559728]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CourseFloor" unique_id=1479387975]
 shape = SubResource("BoxShape3D_vvy6s")
 
-[node name="Visual" type="MeshInstance3D" parent="CourseFloor" unique_id=1880616538]
+[node name="Visual" type="MeshInstance3D" parent="CourseFloor" unique_id=1626857780]
 material_override = SubResource("StandardMaterial3D_j5r57")
 mesh = SubResource("BoxMesh_0752k")
 
-[node name="LowerFloor" type="StaticBody3D" parent="." unique_id=1653032186]
+[node name="LowerFloor" type="StaticBody3D" parent="." unique_id=322217149]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -464, -2100)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="LowerFloor" unique_id=2082691693]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LowerFloor" unique_id=1407968650]
 shape = SubResource("BoxShape3D_q6yd5")
 
-[node name="Visual" type="MeshInstance3D" parent="LowerFloor" unique_id=1966996377]
+[node name="Visual" type="MeshInstance3D" parent="LowerFloor" unique_id=1230205325]
 material_override = SubResource("StandardMaterial3D_w3yyd")
 mesh = SubResource("BoxMesh_rbpbn")
 
-[node name="SurfRamp" type="StaticBody3D" parent="." unique_id=1688914866]
+[node name="SurfRamp" type="StaticBody3D" parent="." unique_id=1087686023]
 transform = Transform3D(1, 0, 0, 0, 0.66952926, 0.7427857, 0, -0.7427857, 0.66952926, 0, -207.91022, -1625.5)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp" unique_id=706249193]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfRamp" unique_id=513440202]
 shape = SubResource("BoxShape3D_hp4bx")
 
-[node name="Visual" type="MeshInstance3D" parent="SurfRamp" unique_id=1658997388]
+[node name="Visual" type="MeshInstance3D" parent="SurfRamp" unique_id=1243563619]
 material_override = SubResource("StandardMaterial3D_2wg8v")
 mesh = SubResource("BoxMesh_5wtir")
 
@@ -107,20 +107,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, -80)
 [node name="FinishTrigger" type="Area3D" parent="." unique_id=1013883136 groups=["finish_trigger"] instance=ExtResource("3_jvqc6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -364, -2250)
 
-[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1155937951]
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1204535257]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, -40)
 
-[node name="BhopSign" type="Area3D" parent="." unique_id=1750420642]
+[node name="BhopSign" type="Area3D" parent="." unique_id=963476988]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -300)
 script = ExtResource("4_ybytg")
 sign_text = "BUNNY HOP
 Jump again the instant you land
 to keep your speed!"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BhopSign" unique_id=192162189]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BhopSign" unique_id=243886247]
 shape = SubResource("SphereShape3D_5kl0j")
 
-[node name="SignLabel" type="Label3D" parent="BhopSign" unique_id=1565403978]
+[node name="SignLabel" type="Label3D" parent="BhopSign" unique_id=1877934477]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
 pixel_size = 0.4
 billboard = 1
@@ -128,17 +128,17 @@ no_depth_test = true
 modulate = Color(1, 0.95, 0.6, 1)
 font_size = 48
 
-[node name="StrafeSign" type="Area3D" parent="." unique_id=305720271]
+[node name="StrafeSign" type="Area3D" parent="." unique_id=1086798422]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -950)
 script = ExtResource("4_ybytg")
 sign_text = "AIR STRAFE
 While airborne hold W + A
 and turn your mouse left."
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StrafeSign" unique_id=525900010]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StrafeSign" unique_id=521449329]
 shape = SubResource("SphereShape3D_uoqrq")
 
-[node name="SignLabel" type="Label3D" parent="StrafeSign" unique_id=1153186341]
+[node name="SignLabel" type="Label3D" parent="StrafeSign" unique_id=1389345868]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
 pixel_size = 0.4
 billboard = 1
@@ -146,17 +146,17 @@ no_depth_test = true
 modulate = Color(1, 0.95, 0.6, 1)
 font_size = 48
 
-[node name="SurfSign" type="Area3D" parent="." unique_id=2041605135]
+[node name="SurfSign" type="Area3D" parent="." unique_id=766137663]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 180, 40, -1350)
 script = ExtResource("4_ybytg")
 sign_text = "SURF
 Hold A or D against the ramp
 and steer with your mouse."
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfSign" unique_id=1835694917]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SurfSign" unique_id=1219221465]
 shape = SubResource("SphereShape3D_7fbcs")
 
-[node name="SignLabel" type="Label3D" parent="SurfSign" unique_id=803939788]
+[node name="SignLabel" type="Label3D" parent="SurfSign" unique_id=93230207]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
 pixel_size = 0.4
 billboard = 1
@@ -164,10 +164,10 @@ no_depth_test = true
 modulate = Color(1, 0.95, 0.6, 1)
 font_size = 48
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=483911733]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1710904403]
 environment = SubResource("Environment_x3o8d")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=571294578]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=124635315]
 transform = Transform3D(0.8480481, 0.41758206, -0.32625088, 0, 0.6156615, 0.7880107, 0.52991927, -0.668271, 0.5221106, 0, 0, 0)
 light_energy = 1.3
 shadow_enabled = true

@@ -7,6 +7,12 @@
 var _failures: Array[String] = []
 var _checks: int = 0
 
+# Tests mutate the REAL user save (settings menu toggles, records, ghosts).
+# Snapshot user://save before the run and restore it at exit so automated
+# runs never stomp player preferences (reported: fullscreen kept resetting).
+const SAVE_DIR := "user://save"
+const BACKUP_DIR := "user://save_backup_testrun"
+
 
 func _initialize() -> void:
 	# Defer to the first process frame: nodes added during _initialize are not
@@ -14,8 +20,51 @@ func _initialize() -> void:
 	process_frame.connect(_run_all_tests)
 
 
+func _backup_user_save() -> void:
+	DirAccess.remove_absolute(BACKUP_DIR)
+	if not DirAccess.dir_exists_absolute(SAVE_DIR):
+		return  # nothing to protect
+	DirAccess.make_dir_recursive_absolute(BACKUP_DIR)
+	for file: String in _list_save_files():
+		DirAccess.copy_absolute(SAVE_DIR + "/" + file, BACKUP_DIR + "/" + file)
+
+
+func _restore_user_save() -> void:
+	if not DirAccess.dir_exists_absolute(BACKUP_DIR):
+		return
+	for file: String in _list_save_files():
+		DirAccess.remove_absolute(SAVE_DIR + "/" + file)
+	for file: String in _list_backup_files():
+		DirAccess.copy_absolute(BACKUP_DIR + "/" + file, SAVE_DIR + "/" + file)
+		DirAccess.remove_absolute(BACKUP_DIR + "/" + file)
+	DirAccess.remove_absolute(BACKUP_DIR)
+
+
+func _list_save_files() -> Array[String]:
+	return _list_dir_files(SAVE_DIR)
+
+
+func _list_backup_files() -> Array[String]:
+	return _list_dir_files(BACKUP_DIR)
+
+
+func _list_dir_files(path: String) -> Array[String]:
+	var files: Array[String] = []
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return files
+	dir.list_dir_begin()
+	var name := dir.get_next()
+	while name != "":
+		if not dir.current_is_dir():
+			files.append(name)
+		name = dir.get_next()
+	return files
+
+
 func _run_all_tests() -> void:
 	process_frame.disconnect(_run_all_tests)
+	_backup_user_save()
 	_test_autoloads_registered()
 	_test_signal_bus_signals()
 	_test_game_manager_race_state()
@@ -61,6 +110,7 @@ func _run_all_tests() -> void:
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
+	_restore_user_save()
 	if not _failures.is_empty():
 		for failure: String in _failures:
 			printerr("FAIL: " + failure)
