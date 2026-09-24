@@ -71,98 +71,108 @@ size = Vector3(60, 240, 2400)
 [sub_resource type="BoxMesh" id="BoxMesh_1eq5t"]
 size = Vector3(60, 240, 2400)
 
-[node name="EndlessPark" type="Node3D" unique_id=1584689784]
+[node name="EndlessPark" type="Node3D" unique_id=1029372407]
 metadata/map_metadata = SubResource("Resource_2udfa")
 
-[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1485045136]
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=698295149]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 3000)
 
-[node name="Floor" type="StaticBody3D" parent="." unique_id=351524491]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=1748702899]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, 0)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@59" type="CollisionShape3D" parent="Floor" unique_id=411479385]
+[node name="@CollisionShape3D@70" type="CollisionShape3D" parent="Floor" unique_id=1829388758]
 shape = SubResource("BoxShape3D_i00gq")
 
-[node name="@MeshInstance3D@60" type="MeshInstance3D" parent="Floor" unique_id=1299373765]
+[node name="@MeshInstance3D@71" type="MeshInstance3D" parent="Floor" unique_id=388293661]
 mesh = SubResource("BoxMesh_y17hr")
 
-[node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=619899288]
-transform = Transform3D(1, 0, 0, 0, 0.68199836, 0.7313537, 0, -0.7313537, 0.68199836, 0, -193, 1200)
+[node name="SurfRamp1" type="StaticBody3D" parent="." unique_id=366472675]
+transform = Transform3D(1, 0, 0, 0, 0.64278764, 0.76604444, 0, -0.76604444, 0.64278764, 0, -95, 1200)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@61" type="CollisionShape3D" parent="SurfRamp1" unique_id=1307124762]
+[node name="@CollisionShape3D@72" type="CollisionShape3D" parent="SurfRamp1" unique_id=580051400]
 shape = SubResource("BoxShape3D_eh0hk")
 
-[node name="@MeshInstance3D@62" type="MeshInstance3D" parent="SurfRamp1" unique_id=608725115]
+[node name="@MeshInstance3D@73" type="MeshInstance3D" parent="SurfRamp1" unique_id=742140979]
 mesh = SubResource("BoxMesh_ghqpp")
 
-[node name="SurfRamp2" type="StaticBody3D" parent="." unique_id=1663606719]
+[node name="SurfRamp2" type="StaticBody3D" parent="." unique_id=318097548]
 transform = Transform3D(0.49999997, -0.86602545, 0, 0.86602545, 0.49999997, 0, 0, 0, 1, 1900, -130, -400)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@63" type="CollisionShape3D" parent="SurfRamp2" unique_id=1200874032]
+[node name="@CollisionShape3D@74" type="CollisionShape3D" parent="SurfRamp2" unique_id=1698541033]
 shape = SubResource("BoxShape3D_tq8a5")
 
-[node name="@MeshInstance3D@64" type="MeshInstance3D" parent="SurfRamp2" unique_id=364713523]
+[node name="@MeshInstance3D@75" type="MeshInstance3D" parent="SurfRamp2" unique_id=837777821]
 mesh = SubResource("BoxMesh_xkq7w")
 
-[node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=931866904]
-transform = Transform3D(0.66913061, 0.74314448, 0, -0.74314448, 0.66913061, 0, 0, 0, 1, -1900, -75, -400)
+[node name="SurfRamp3" type="StaticBody3D" parent="." unique_id=1014552739]
+transform = Transform3D(0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 0, 0, 1, -1900, -75, -400)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@65" type="CollisionShape3D" parent="SurfRamp3" unique_id=111942496]
+[node name="@CollisionShape3D@76" type="CollisionShape3D" parent="SurfRamp3" unique_id=1125635845]
 shape = SubResource("BoxShape3D_m1lj0")
 
-[node name="@MeshInstance3D@66" type="MeshInstance3D" parent="SurfRamp3" unique_id=737938260]
+[node name="@MeshInstance3D@77" type="MeshInstance3D" parent="SurfRamp3" unique_id=1705659653]
 mesh = SubResource("BoxMesh_oc0qb")
 
-[node name="PlatformA" type="StaticBody3D" parent="." unique_id=1881841580]
+[node name="PlatformA" type="StaticBody3D" parent="." unique_id=1595707993]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 180, -2600)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@67" type="CollisionShape3D" parent="PlatformA" unique_id=1776564173]
+[node name="@CollisionShape3D@78" type="CollisionShape3D" parent="PlatformA" unique_id=510434689]
 shape = SubResource("BoxShape3D_8locb")
 
-[node name="@MeshInstance3D@68" type="MeshInstance3D" parent="PlatformA" unique_id=849474495]
+[node name="@MeshInstance3D@79" type="MeshInstance3D" parent="PlatformA" unique_id=1318627189]
 mesh = SubResource("BoxMesh_sm6kb")
 
-[node name="UpRampA" type="StaticBody3D" parent="." unique_id=1858765841]
+[node name="UpRampA" type="StaticBody3D" parent="." unique_id=1428093420]
 transform = Transform3D(1, 0, 0, 0, 0.9612617, 0.27563736, 0, -0.27563736, 0.9612617, 0, 88, -1180)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@69" type="CollisionShape3D" parent="UpRampA" unique_id=1477743709]
+[node name="@CollisionShape3D@80" type="CollisionShape3D" parent="UpRampA" unique_id=307152166]
 shape = SubResource("BoxShape3D_u78wt")
 
-[node name="@MeshInstance3D@70" type="MeshInstance3D" parent="UpRampA" unique_id=1038193100]
+[node name="@MeshInstance3D@81" type="MeshInstance3D" parent="UpRampA" unique_id=1838439440]
 mesh = SubResource("BoxMesh_fggh7")
 
-[node name="PlatformB" type="StaticBody3D" parent="." unique_id=1386848946]
+[node name="PlatformB" type="StaticBody3D" parent="." unique_id=1198254102]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 320, -5300)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@71" type="CollisionShape3D" parent="PlatformB" unique_id=1024512372]
+[node name="@CollisionShape3D@82" type="CollisionShape3D" parent="PlatformB" unique_id=498958071]
 shape = SubResource("BoxShape3D_e877b")
 
-[node name="@MeshInstance3D@72" type="MeshInstance3D" parent="PlatformB" unique_id=699942372]
+[node name="@MeshInstance3D@83" type="MeshInstance3D" parent="PlatformB" unique_id=406680056]
 mesh = SubResource("BoxMesh_s0ln3")
 
-[node name="UpRampB" type="StaticBody3D" parent="." unique_id=96038848]
+[node name="UpRampB" type="StaticBody3D" parent="." unique_id=917015201]
 transform = Transform3D(1, 0, 0, 0, 0.88294756, 0.46947157, 0, -0.46947157, 0.88294756, 0, 245, -3950)
+metadata/surface_role = "floor"
 
-[node name="@CollisionShape3D@73" type="CollisionShape3D" parent="UpRampB" unique_id=1116305595]
+[node name="@CollisionShape3D@84" type="CollisionShape3D" parent="UpRampB" unique_id=649132592]
 shape = SubResource("BoxShape3D_x6p10")
 
-[node name="@MeshInstance3D@74" type="MeshInstance3D" parent="UpRampB" unique_id=797847994]
+[node name="@MeshInstance3D@85" type="MeshInstance3D" parent="UpRampB" unique_id=54236202]
 mesh = SubResource("BoxMesh_c57to")
 
-[node name="CorridorWallL" type="StaticBody3D" parent="." unique_id=1476992763]
+[node name="CorridorWallL" type="StaticBody3D" parent="." unique_id=1798531470]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -700, 110, 2000)
+metadata/surface_role = "obstacle"
 
-[node name="@CollisionShape3D@75" type="CollisionShape3D" parent="CorridorWallL" unique_id=1208143271]
+[node name="@CollisionShape3D@86" type="CollisionShape3D" parent="CorridorWallL" unique_id=502341586]
 shape = SubResource("BoxShape3D_uncjj")
 
-[node name="@MeshInstance3D@76" type="MeshInstance3D" parent="CorridorWallL" unique_id=1255031474]
+[node name="@MeshInstance3D@87" type="MeshInstance3D" parent="CorridorWallL" unique_id=925484701]
 mesh = SubResource("BoxMesh_dmklr")
 
-[node name="CorridorWallR" type="StaticBody3D" parent="." unique_id=822650396]
+[node name="CorridorWallR" type="StaticBody3D" parent="." unique_id=2104984654]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 700, 110, 2000)
+metadata/surface_role = "obstacle"
 
-[node name="@CollisionShape3D@77" type="CollisionShape3D" parent="CorridorWallR" unique_id=549488528]
+[node name="@CollisionShape3D@88" type="CollisionShape3D" parent="CorridorWallR" unique_id=876572962]
 shape = SubResource("BoxShape3D_gp0a1")
 
-[node name="@MeshInstance3D@78" type="MeshInstance3D" parent="CorridorWallR" unique_id=202303359]
+[node name="@MeshInstance3D@89" type="MeshInstance3D" parent="CorridorWallR" unique_id=1706794526]
 mesh = SubResource("BoxMesh_1eq5t")

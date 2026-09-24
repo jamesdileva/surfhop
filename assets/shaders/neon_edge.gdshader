@@ -8,6 +8,9 @@ render_mode unshaded;
 
 instance uniform vec4 tint : source_color = vec4(0.15, 0.85, 1.0, 1.0);
 instance uniform float grid_strength : hint_range(0.0, 1.0) = 0.35;
+// Two-tone role support: 0 = white floor geometry, 1 = dark obstacle base
+// (same tint rim, so walls/obstacles read against floors at a glance).
+instance uniform float dark_base : hint_range(0.0, 1.0) = 0.0;
 
 void fragment() {
 	float fresnel = pow(1.0 - abs(dot(normalize(NORMAL), normalize(VIEW))), 3.0);
@@ -17,6 +20,6 @@ void fragment() {
 	float line_dist = min(min(cell.x, cell.y), cell.z);
 	float grid = 1.0 - smoothstep(0.0, 0.03, line_dist);
 
-	ALBEDO = vec3(0.92);
+	ALBEDO = mix(vec3(0.92), vec3(0.10), dark_base);
 	EMISSION = tint.rgb * clamp(fresnel * 0.9 + grid * grid_strength, 0.0, 1.2);
 }

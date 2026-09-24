@@ -14,11 +14,13 @@ func enabled_in_state(state: int) -> bool:
 
 
 func process(input: InputState, delta: float) -> void:
-	# Jumping requires ground OR surf contact (CS2-style: hopping off a ramp
-	# preserves horizontal momentum and launches with the jump impulse).
+	# Jumping requires REAL ground only (CS2-style: ramps are ridden, never
+	# jumped from — the ramp exit launches you). Surf/wall contact must not
+	# refresh coyote: doing so lets held-jump re-fire every tick against any
+	# steep surface, turning walls into ladders and hopping riders straight
+	# off ramps instead of gliding.
 	var grounded := _controller.is_on_floor()
-	var surfing := _controller.state == MovementState.SURF
-	if grounded or surfing:
+	if grounded:
 		coyote_timer = _controller.config.coyote_time_ms / 1000.0
 	else:
 		coyote_timer = maxf(0.0, coyote_timer - delta)
@@ -32,8 +34,8 @@ func process(input: InputState, delta: float) -> void:
 
 
 func apply_jump_impulse() -> void:
-	# CS2-style ramp jump: horizontal momentum is fully preserved; only the
-	# vertical component is replaced by the jump impulse.
+	# Horizontal momentum is fully preserved; only the vertical component is
+	# replaced by the jump impulse (ground jumps only — see process()).
 	var velocity := _controller.get_velocity()
 	velocity.y = _controller.config.jump_impulse
 	_controller.set_velocity(velocity)

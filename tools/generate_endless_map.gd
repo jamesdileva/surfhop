@@ -82,9 +82,9 @@ func _generate_map() -> Node:
 
 	# --- Strafe corridor near spawn: carve speed between the walls ---
 	_add_box(root, "CorridorWallL", Vector3(-700, 110, 2000),
-		Vector3(60, 240, 2400))
+		Vector3(60, 240, 2400), Vector3.ZERO, "obstacle")
 	_add_box(root, "CorridorWallR", Vector3(700, 110, 2000),
-		Vector3(60, 240, 2400))
+		Vector3(60, 240, 2400), Vector3.ZERO, "obstacle")
 
 	# pack() only serializes nodes owned by the root — assign ownership
 	# through the whole tree first.
@@ -103,9 +103,10 @@ func _set_owner_recursive(node: Node, owner: Node) -> void:
 
 
 func _add_box(parent: Node3D, body_name: String, pos: Vector3,
-		size: Vector3, rot_deg := Vector3.ZERO) -> void:
+		size: Vector3, rot_deg := Vector3.ZERO, role := "floor") -> void:
 	var body := StaticBody3D.new()
 	body.name = body_name
+	body.set_meta("surface_role", role)
 	body.position = pos
 	body.rotation_degrees = rot_deg
 	var shape_node := CollisionShape3D.new()

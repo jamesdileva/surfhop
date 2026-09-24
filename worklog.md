@@ -1,31 +1,35 @@
-# Worklog — surf-feel + single-skybox pass (2026-09-24)
+# Worklog — wall-climb + two-tone fix (2026-09-24)
 
-Request: surfing doesn't feel like CS2; maps white-on-white; spacing review;
-thought only 1 map got the fix. Decisions: both tracks parallel, CS2-style
-ramp jump allowed, dark-neon look.
+Follow-up: jump spam climbed any wall/ramp to the top, ramps wouldn't
+glide ( holders hopped straight off), obstacle course still all-white.
+Decisions: block ramp jumps entirely (CS2), two-tone by role, LowWall 44,
+spacing otherwise untouched.
+
+## Root cause
+Last session's surf-jump allowed coyote refresh on every SURF tick, and
+auto-bhop counts held jump as intent — held Space re-fired the impulse
+forever against any steep contact. Ladders everywhere, no gliding.
 
 ## Shipped
-- Unified surf threshold on `floor_max_angle_deg` (Collision + Surf + body
-  agree; legacy `surf_angle_min_deg` alias must equal it).
-- Surf-entry preservation via `surf_preservation` (keeps ≥95% horizontal
-  speed through wall-entry; gains never clamped).
-- CS2 jump-off-surf: coyote refreshes in SURF; BunnyHop no longer
-  auto-ejects on surf touchdowns.
-- Single skybox: map-owned WorldEnvironment stripped on load (P3 dark sky
-  wins); generator no longer bakes envs; full map regen (7 maps, dev
-  scenes, casual.tres 40/40).
-- New `_test_surf_polish` GUT coverage (thresholds, boundary, preservation,
-  no-eject, env strip).
+- `Jump`: coyote refreshes on REAL floor only; surf/wall contact grants no
+  jump. Unified threshold + entry preservation kept.
+- Two-tone: generator bakes `surface_role` (floor/obstacle); neon shader
+  `dark_base` uniform; `WorldMaterials` styles obstacles dark, floors
+  white. `PrecisionRamp*` → `SurfRampP*` (glow coverage).
+- LowWall 80 → 44 tall (top y=44 clears under 56.25 apex; old height was
+  only passable via the climb exploit).
+- Endless corridor walls tagged obstacle.
+- Tests: hold-jump 40-tick glide hold, forced-SURF no-fire unit check, OC
+  roles/dark_base/LowWall-top asserts, SurfRampP rename check.
 
 ## Verify
-- `tests/test_runner.gd`: 428 checks, 0 failures, exit 0.
-- Smoke: tutorial RESULT=OK (661u/5s), beginner RESULT=OK (663u/5s).
-- Exit-cleanup "resources still in use" ERROR is pre-existing headless
-  shutdown noise (nondeterministic count), not a test failure.
+- `tests/test_runner.gd`: 444 checks, 0 failures, exit 0.
+- Smoke: tutorial RESULT=OK, challenge_oc RESULT=OK.
+- Manual step for user: eyeball `dev_challenge_oc` — pillars/walls/movers
+  should read dark against white floors (headless can't screenshot).
 
-## Deferred (needs human playtest)
-- Glow-by-angle (Precision/Up ramps neon-only), intermediate 350u gap,
-  challenge_oc 80u wall, test_map in MapSelect, endless dev scene.
-- `surf_speed_multiplier` / `surf_exit_boost` still inert by design.
+## Deferred
+- Intermediate 350u gap, `test_map` in MapSelect, endless dev scene,
+  `surf_speed_multiplier` / `surf_exit_boost` inert.
 
 Full detail: `docs/history.md` (latest section).

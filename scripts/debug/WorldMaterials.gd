@@ -66,12 +66,20 @@ func _style_map(map_node: Node) -> void:
 	var tint := tint_for_metadata(metadata)
 	_remove_map_environments(map_node)
 	for body in _surface_bodies(map_node):
+		# Two-tone roles (white-on-white fix): floors stay white, bodies the
+		# generator tagged "obstacle" (pillars, walls, movers) get the dark
+		# base so they read against floors at a glance. SurfRamp* bodies are
+		# excluded above — their glow shader already carries a dark base.
+		var dark := 0.0
+		if body.has_meta("surface_role") and String(body.get_meta("surface_role")) == "obstacle":
+			dark = 1.0
 		for mesh in body.find_children("*", "MeshInstance3D", true, false):
 			var mesh_instance := mesh as MeshInstance3D
 			var material := ShaderMaterial.new()
 			material.shader = NEON_SHADER
 			mesh_instance.material_override = material
 			mesh_instance.set_instance_shader_parameter("tint", tint)
+			mesh_instance.set_instance_shader_parameter("dark_base", dark)
 
 
 ## Single-skybox contract (white-on-white fix): the shared dark-sky

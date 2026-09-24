@@ -17,9 +17,13 @@ func _floor_material() -> StandardMaterial3D:
 
 
 
-func _static_body(body_name: String, size: Vector3, pos: Vector3) -> StaticBody3D:
+func _static_body(body_name: String, size: Vector3, pos: Vector3,
+		role := "floor") -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = body_name
+	# Two-tone role for WorldMaterials: "floor" (white neon) or "obstacle"
+	# (dark base). Read at style time via body metadata.
+	body.set_meta("surface_role", role)
 	var shape := CollisionShape3D.new()
 	shape.name = "CollisionShape3D"
 	var box := BoxShape3D.new()
@@ -351,6 +355,7 @@ func _moving_body(body_name: String, size: Vector3, pos: Vector3,
 		axis: Vector3, amplitude: float, period: float) -> AnimatableBody3D:
 	var body := AnimatableBody3D.new()
 	body.name = body_name
+	body.set_meta("surface_role", "obstacle")  # movers always read as obstacles
 	body.set_script(load("res://scripts/game/MovingPlatform.gd"))
 	body.move_axis = axis
 	body.amplitude = amplitude
@@ -393,9 +398,10 @@ func build_challenge_oc() -> void:
 
 	# Pillar slalom 1.
 	for x: float in [-150.0, 0.0, 150.0]:
-		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 150.0, -800.0))
-	# Low wall: bhop over it.
-	_static_body("LowWall", Vector3(500.0, 80.0, 40.0), Vector3(0.0, 40.0, -1400.0))
+		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 150.0, -800.0), "obstacle")
+	# Low wall: bhop over it. Top at y=44 clears under the 56.25 jump apex
+	# (the old 80-tall wall was only passable via the wall-climb exploit).
+	_static_body("LowWall", Vector3(500.0, 44.0, 40.0), Vector3(0.0, 22.0, -1400.0), "obstacle")
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1700.0))
@@ -433,9 +439,10 @@ func build_challenge_precision() -> void:
 	_static_body("Pool2", Vector3(400.0, 100.0, 800.0), Vector3(0.0, -840.0, -2460.0))      # y=-790 z -2860..-2060
 	_static_body("Pool3", Vector3(400.0, 100.0, 1100.0), Vector3(0.0, -1250.0, -3610.0))    # y=-1200 z -3160..-4060
 
-	_ramp("PrecisionRamp1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -410.0, -1044.0), 150.0)  # ~63 deg
-	_ramp("PrecisionRamp2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -810.0, -2092.0), 150.0)# ~63 deg
-	_ramp("PrecisionRamp3", Vector3(0.0, -800.0, -2800.0), Vector3(0.0, -1220.0, -3014.0), 150.0)# ~62 deg
+	# SurfRamp* prefix: glow shader + dark base (skipped by floor tinting).
+	_ramp("SurfRampP1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -410.0, -1044.0), 150.0)  # ~63 deg
+	_ramp("SurfRampP2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -810.0, -2092.0), 150.0)# ~63 deg
+	_ramp("SurfRampP3", Vector3(0.0, -800.0, -2800.0), Vector3(0.0, -1220.0, -3014.0), 150.0)# ~62 deg
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1160.0, -3800.0))

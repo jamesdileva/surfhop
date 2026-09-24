@@ -387,3 +387,30 @@ User report: ramps don't feel like CS2 surf; maps read white-on-white; spacing s
 - **B1 single skybox** (user decision: dark neon): `WorldMaterials._style_map` strips map-owned `WorldEnvironment` on load so the shared P3 dark sky always wins (neon shaders are unshaded — the bright baked sky was the washout). Map suns kept. Generator `_lighting()` no longer bakes envs; full regen run (sanctioned path, no hand-edits): all 7 maps + dev scenes + `casual.tres` (surf 42→40 to match floor 40).
 - Deferred per decision: glow coverage by angle (PrecisionRamp*/UpRamp* still neon-only), intermediate 350u flat gap + challenge_oc 80u wall (need human clears), `test_map` in MapSelect, endless dev scene.
 - Verify: suite **428 checks / 0 failures** (new `_test_surf_polish`: threshold contract, 44/46° boundary, preservation floor, no-eject guard, env strip); smoke RESULT=OK tutorial (661u/5s) + beginner (663u/5s). Exit-cleanup `resources still in use` ERROR is pre-existing headless-shutdown noise (varies run to run), not a test failure.
+
+## Wall-climb + two-tone fix (2026-09-24)
+
+User report: any wall/ramp could be ladder-climbed by jump spam, ramps
+wouldn't glide (just bhop), obstacle course still white-on-white.
+
+- **Root cause (own goal from last session):** allowing coyote refresh in
+  SURF + auto-bhop hold meant held-jump re-fired every tick against any
+  steep contact — walls became ladders, ramp riders hopped straight off.
+- **CS2 rule restored (user decision: no ramp jumps):** `Jump` refreshes
+  coyote on REAL floor only; surf/wall contact grants nothing, so holding
+  jump mid-surf is a no-op and glides are uninterrupted. Ride the ramp —
+  the exit launches you. A1/A2 (unified threshold, entry preservation) kept.
+- **Two-tone roles (user decision):** floors, pillars, walls and movers all
+  shared one identical material. Generator now bakes `surface_role`
+  (floor/obstacle) body metadata; `neon_edge.gdshader` gained a `dark_base`
+  instance uniform; `WorldMaterials` styles obstacles dark with the same
+  tint rim. `PrecisionRamp*` renamed `SurfRampP*` so precision ramps get the
+  dark-base surf glow (white floors / dark obstacles / glowing ramps).
+- **LowWall 80 → 44** (top y=44 < 56.25 apex): the climb exploit had masked
+  that the old wall was impossible. Intermediate 350u gap untouched (needs
+  human clears, user decision).
+- Endless corridor walls tagged obstacle via the same helper change.
+- Verify: suite **444 / 0** (new: hold-jump glide hold, forced-SURF no-fire,
+  OC roles/dark_base, LowWall top, SurfRampP rename); smokes OK tutorial +
+  challenge_oc. Visual two-tone needs a human eyeball on `dev_challenge_oc`
+  (headless captures are no-ops).

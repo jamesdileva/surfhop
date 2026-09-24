@@ -85,6 +85,7 @@ func _run_all_tests() -> void:
 	await _test_air_strafing()
 	await _test_surfing()
 	await _test_surf_polish()
+	await _test_surf_glide_holds()
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
@@ -103,6 +104,7 @@ func _run_all_tests() -> void:
 	await _test_intermediate_map()
 	await _test_advanced_map()
 	await _test_challenge_maps()
+	await _test_challenge_oc_roles()
 	await _test_kill_planes()
 	await _test_steam()
 	await _test_main_menu_flow()
@@ -810,6 +812,19 @@ func _test_surf_polish() -> void:
 	_check(bhop.jump_buffer_timer > 0.0,
 		"buffer survives a surf touchdown for the manual jump")
 
+	# CS2 rule: surf contact grants no jump. Direct Jump.process with a
+	# forced SURF state and a fresh press must change nothing.
+	var jump: Jump = player.movement_controller.get_module(Jump)
+	player.movement_controller.state = MovementState.SURF
+	var surf_press := InputState.new()
+	surf_press.jump_just_pressed = true
+	var v_pre_jump: Vector3 = player.velocity
+	jump.process(surf_press, 0.01)
+	_check(player.velocity == v_pre_jump,
+		"pressing jump while surfing does not fire (velocity untouched)")
+	_check(jump.coyote_timer == 0.0,
+		"surf contact does not refresh coyote time")
+
 	# Single-skybox contract: map-owned WorldEnvironment nodes are stripped
 	# on load so the shared dark sky always wins.
 	var ui: Node = root.get_node("UIManager")
@@ -824,6 +839,39 @@ func _test_surf_polish() -> void:
 		_check(map_env.is_queued_for_deletion(),
 			"map-owned WorldEnvironment stripped on load")
 		dummy.queue_free()
+
+	world.queue_free()
+	await process_frame
+
+
+func _test_surf_glide_holds() -> void:
+	# Holding jump through a real surf ride must not eject: the rider keeps
+	# gliding (wall-climb / hop-off regression test for the coyote bug).
+	var world := Node3D.new()
+	root.add_child(world)
+	var ramp := _make_ramp(world, 50.0)
+	var player: Player = _spawn_test_player_at(world, Vector3(-150.0, 250.0, 0.0))
+	var saw_surf := false
+	for i in 300:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			saw_surf = true
+			break
+	_check(saw_surf, "glide test: rider entered SURF")
+	if not saw_surf:
+		world.queue_free()
+		await process_frame
+		return
+	Input.action_press("jump")
+	var held_surf := true
+	for i in 40:
+		await physics_frame
+		if player.movement_controller.state != MovementState.SURF:
+			held_surf = false
+			break
+	Input.action_release("jump")
+	_check(held_surf, "holding jump for 40 ticks does not break the surf glide")
+	_check(_h_speed(player) > 10.0, "rider keeps sliding speed while holding jump")
 
 	world.queue_free()
 	await process_frame
@@ -2093,6 +2141,12 @@ func _test_challenge_maps() -> void:
 			"%s has %d checkpoints (got %d)" % [map_id,
 				expectations[map_id]["checkpoints"], gm.total_checkpoints])
 
+		if map_id == "challenge_precision":
+			_check(loader.current_map.get_node_or_null("SurfRampP1") != null,
+				"precision ramp uses SurfRamp* glow prefix")
+			_check(loader.current_map.get_node_or_null("PrecisionRamp1") == null,
+				"old PrecisionRamp* name retired")
+
 		if map_id == "challenge_oc":
 			var mover: Node3D = loader.current_map.get_node_or_null("MovingWall1")
 			_check(mover != null, "moving wall present on obstacle course")
@@ -2130,6 +2184,73 @@ func _test_challenge_maps() -> void:
 		player_root.queue_free()
 		ts.queue_free()
 		await process_frame
+
+
+func _test_challenge_oc_roles() -> void:
+	# Two-tone + jumpability regression for the obstacle course: obstacles
+	# carry role metadata and style dark, floors stay white, precision ramps
+	# use the SurfRamp* glow prefix, and the LowWall clears under jump apex.
+	var loader: Node = root.get_node("LevelLoader")
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "challenge_oc":
+			entry = e
+			break
+	_check(not entry.is_empty(), "challenge_oc discovered for role check")
+	if entry.is_empty():
+		return
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "challenge_oc loads for role check")
+	if not loaded:
+		return
+	await _wait_ticks(3)
+	var map_node: Node = loader.current_map
+
+	var wall: Node3D = map_node.get_node_or_null("LowWall")
+	_check(wall != null, "LowWall present")
+	if wall != null:
+		_check(String(wall.get_meta("surface_role")) == "obstacle",
+			"LowWall tagged as obstacle")
+		var shape: CollisionShape3D = wall.get_node("CollisionShape3D")
+		var top: float = wall.position.y + (shape.shape as BoxShape3D).size.y / 2.0
+		_check(top <= 50.0, "LowWall top clears under jump apex (top=%.1f)" % top)
+
+	var floor_a: Node3D = map_node.get_node_or_null("FloorA")
+	_check(floor_a != null and String(floor_a.get_meta("surface_role")) == "floor",
+		"FloorA tagged as floor")
+	var mover: Node3D = map_node.get_node_or_null("MovingWall1")
+	_check(mover != null and String(mover.get_meta("surface_role")) == "obstacle",
+		"MovingWall1 tagged as obstacle")
+
+	var wall_mesh: MeshInstance3D = null
+	var floor_mesh: MeshInstance3D = null
+	for body in map_node.get_children():
+		if body is StaticBody3D:
+			for mesh in body.find_children("*", "MeshInstance3D", true, false):
+				if body.name == "LowWall":
+					wall_mesh = mesh as MeshInstance3D
+				elif body.name == "FloorA" and floor_mesh == null:
+					floor_mesh = mesh as MeshInstance3D
+	if wall_mesh != null:
+		_check(float(wall_mesh.get_instance_shader_parameter("dark_base")) == 1.0,
+			"obstacle mesh styled with dark base")
+	else:
+		_check(false, "LowWall mesh found for style check")
+	if floor_mesh != null:
+		_check(float(floor_mesh.get_instance_shader_parameter("dark_base")) == 0.0,
+			"floor mesh styled white")
+	else:
+		_check(false, "FloorA mesh found for style check")
+
+	loader.unload_current()
+	await process_frame
 
 
 func _test_audio() -> void:
