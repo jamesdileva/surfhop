@@ -115,6 +115,38 @@ func _surf_channel(prefix: String, center_z: float, length: float,
 		map.add_child(wall)
 
 
+## Standalone banked surf wall (obstacle course had no surfable geometry:
+## flat tops and vertical faces don't glide). Same 56-degree face math as
+## the channel walls, but a single face placed beside the main line so the
+## bhop route stays pure — riders veer toward it, carve along it, exit with
+## speed. face_x is where the ridable face plane sits at base level; side
+## picks which side the wall body stands on (+1: body at +x, face toward -x).
+func _surf_wall(wall_name: String, face_x: float, center_z: float,
+		length: float, side: int, base_y: float, slope := 120.0) -> void:
+	var rad := deg_to_rad(34.0)  # wall tilt from vertical; face = 56 from horizontal
+	var wall := StaticBody3D.new()
+	wall.name = wall_name
+	var shape := CollisionShape3D.new()
+	shape.name = "CollisionShape3D"
+	var box := BoxShape3D.new()
+	box.size = Vector3(40.0, slope * 2.0, length)
+	shape.shape = box
+	wall.add_child(shape)
+	var visual := MeshInstance3D.new()
+	visual.name = "Visual"
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(40.0, slope * 2.0, length)
+	visual.mesh = mesh
+	visual.material_override = _floor_material()
+	wall.add_child(visual)
+	wall.rotation.z = -side * rad
+	wall.position = Vector3(
+		face_x + side * (slope * sin(rad) + 20.0 * cos(rad)),
+		base_y + slope * cos(rad) - 20.0 * sin(rad),
+		center_z)
+	map.add_child(wall)
+
+
 func _trigger(trigger_name: String, scene_path: String, pos: Vector3) -> void:
 	var area: Area3D = (load(scene_path) as PackedScene).instantiate()
 	area.name = trigger_name
@@ -396,6 +428,11 @@ func build_challenge_oc() -> void:
 	_static_body("FloorBridge", Vector3(150.0, 100.0, 1050.0), Vector3(0.0, -50.0, -3575.0)) # y=0 z -4100..-3050 (narrow!)
 	_static_body("FloorC", Vector3(500.0, 100.0, 1500.0), Vector3(0.0, -50.0, -4850.0))  # y=0 z -4100..-5600
 
+	# Banked surf wall on FloorC's right side (face at x=90, z -4550..-5050):
+	# the map's only surfable geometry. Beside the main line so the bhop
+	# route stays pure — veer right and press D into the face to carve.
+	_surf_wall("SurfRampB1", 90.0, -4800.0, 500.0, 1, 0.0)
+
 	# Pillar slalom 1.
 	for x: float in [-150.0, 0.0, 150.0]:
 		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 150.0, -800.0), "obstacle")
@@ -412,7 +449,7 @@ func build_challenge_oc() -> void:
 	_moving_body("MovingWall2", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 100.0, -2500.0),
 		Vector3.LEFT, 200.0, 5.0)
 
-	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -4500.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -5450.0))
 	_checkpoint("Checkpoint2", Vector3(0.0, 40.0, -3600.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
 

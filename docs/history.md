@@ -414,3 +414,27 @@ wouldn't glide (just bhop), obstacle course still white-on-white.
   OC roles/dark_base, LowWall top, SurfRampP rename); smokes OK tutorial +
   challenge_oc. Visual two-tone needs a human eyeball on `dev_challenge_oc`
   (headless captures are no-ops).
+
+## Surf-glow base + OC surf wall (2026-09-24)
+
+User report: beginner surf felt good but still white-on-white; obstacle
+course colors better, yet its "ramp" never surfed (just hopped).
+
+- **Beginner root cause (real bug):** `surf_ramp.gdshader` declared
+  `base_color`/`glow_color` as plain `uniform` while VisualEffects sets them
+  per-instance — Godot silently ignored the values, so every ramp rendered
+  the near-white defaults and only flashed (default cyan) on contact. Both
+  are `instance uniform` now, with a comment guard; beginner walls show
+  their dark-green base + green glow as P2 intended.
+- **Glow sweep:** VisualEffects also re-tags SurfRamp* bodies on
+  `map_loaded`, covering any node_added ordering race (autoload setup vs
+  map load). Idempotent via the `_ramp_meshes` registry.
+- **OC had no surfable geometry** (flat tops + vertical faces don't glide —
+  the "ramp" was never a ramp). Added an optional banked surf wall
+  (`SurfRampB1`, proven 56-degree channel-face math, face x=90, z -4550..
+  -5050 on FloorC's right side): main bhop line untouched, veer right +
+  press D to carve. Finish moved -4500 → -5450 so the surf section stays
+  meaningful (generic challenge test reads finish pos dynamically).
+- Verify: suite **448 / 0** (new: wall exists/tilt, live SURF ride with 79u
+  wall carve); smokes OK beginner + challenge_oc. User to confirm beginner
+  walls read dark green in `dev_beginner`.

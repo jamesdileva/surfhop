@@ -2229,6 +2229,13 @@ func _test_challenge_oc_roles() -> void:
 	_check(mover != null and String(mover.get_meta("surface_role")) == "obstacle",
 		"MovingWall1 tagged as obstacle")
 
+	var bank: Node3D = map_node.get_node_or_null("SurfRampB1")
+	_check(bank != null, "banked surf wall present on obstacle course")
+	if bank != null:
+		var tilt: float = rad_to_deg(absf(bank.rotation.z))
+		_check(tilt > 30.0 and tilt < 40.0,
+			"surf wall banked 34 from vertical = 56-degree face (%.1f)" % tilt)
+
 	var wall_mesh: MeshInstance3D = null
 	var floor_mesh: MeshInstance3D = null
 	for body in map_node.get_children():
@@ -2248,6 +2255,30 @@ func _test_challenge_oc_roles() -> void:
 			"floor mesh styled white")
 	else:
 		_check(false, "FloorA mesh found for style check")
+
+	# Ride the banked wall: drop onto its face, carve along it.
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var rider: Player = _spawn_test_player_at(player_root, Vector3(128.0, 120.0, -4700.0))
+	rider.velocity = Vector3(0.0, -80.0, -320.0)
+	var surfing := false
+	for i in 200:
+		await physics_frame
+		if rider.movement_controller.state == MovementState.SURF:
+			surfing = true
+			break
+	_check(surfing, "banked wall produces SURF state")
+	if surfing:
+		var z_at_entry: float = rider.position.z
+		var furthest: float = z_at_entry
+		for i in 150:
+			await physics_frame
+			furthest = minf(furthest, rider.position.z)
+			if rider.movement_controller.state != MovementState.SURF and rider.is_on_floor():
+				break
+		_check(furthest < z_at_entry - 60.0,
+			"rider carves along the wall (z %.0f -> %.0f)" % [z_at_entry, furthest])
+	player_root.queue_free()
 
 	loader.unload_current()
 	await process_frame

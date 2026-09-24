@@ -73,6 +73,12 @@ func _late_setup() -> void:
 	# Surf-ramp glow: tag every SurfRamp* body's meshes with the shift shader
 	# as they enter the tree (covers LevelLoader loads and dev scenes alike).
 	get_tree().node_added.connect(_on_node_added)
+	# Belt-and-suspenders sweep: if a map's ramps entered the tree before
+	# this setup ran (autoload ordering), node_added already fired and the
+	# walls would keep raw white materials. map_loaded re-tags the stragglers.
+	var loader := get_node_or_null("/root/LevelLoader")
+	if loader != null and loader.has_signal("map_loaded"):
+		loader.map_loaded.connect(_on_map_loaded)
 
 
 func _process(delta: float) -> void:
@@ -162,6 +168,15 @@ func _update_glow(delta: float) -> void:
 func _on_node_added(node: Node) -> void:
 	if node is StaticBody3D and String(node.name).begins_with(RAMP_NAME_PREFIX):
 		_apply_ramp_shader.call_deferred(node)
+
+
+## Retags any SurfRamp* body the node_added path missed (see _late_setup).
+func _on_map_loaded(map_node: Node) -> void:
+	for child in map_node.get_children():
+		if child is StaticBody3D \
+				and String(child.name).begins_with(RAMP_NAME_PREFIX) \
+				and not _ramp_meshes.has(child):
+			_apply_ramp_shader(child)
 
 
 ## Deferred because children of a freshly entering body may not all be in the
