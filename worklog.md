@@ -1,31 +1,26 @@
-# Worklog — surf-glow base + OC surf wall (2026-09-24)
+# Worklog — adversarial surf audit → audit.md (2026-09-24)
 
-Follow-up: beginner surf felt good but still white-on-white; OC colors
-better, yet its "ramp" never surfed. No decision questions this round —
-both causes were code bugs / missing geometry.
+Request: skeptic audit for bugs + ramp spacing/angles against the CS2
+rollercoaster standard, written as audit.md. Plan-mode investigation
+first (3 parallel audits), then build.
 
-## Root causes
-- Beginner: `surf_ramp.gdshader` declared `base_color`/`glow_color` as
-  plain `uniform` while VisualEffects sets them per-instance — silently
-  ignored, so every ramp rendered near-white defaults. Real bug, likely
-  THE white-on-white on surf maps.
-- OC: the map has no surfable geometry at all (flat tops + vertical
-  faces). The "ramp" was never a ramp — nothing to fix in physics.
+## What the audits found
+- Geometry: 3 map blockers (precision P3 unrideable, P1/P2 buried exits,
+  endless SR3 on the 45° boundary), 4 flat gaps needing 467–507 u/s, low
+  exits everywhere but advanced R1, steep peelers, OC hop-entry.
+- CS2: threshold/scale/gravity heritage-correct; flow rules violated.
+- Code: endless regen mirrors the park (sign mismatch — do not regen),
+  unreachable platforms, stale cross-map respawn latch, hold-vs-press
+  bhop friction gap, 1-tick lag, ruler-only seams, test_map shipping.
+- History: 2 claims fail verification (wall height 400≠500; endless 48°
+  never landed).
 
 ## Shipped
-- Shader: both colors `instance uniform` + comment guard. Beginner walls
-  now dark-green base + green glow.
-- VisualEffects: `map_loaded` re-tag sweep for SurfRamp* (ordering-race
-  insurance, idempotent).
-- OC: optional banked surf wall `SurfRampB1` (proven 56° face math, right
-  side of FloorC, main bhop line untouched); finish -4500 → -5450 so the
-  surf section counts.
-- Tests: wall exists/tilt, live SURF ride + wall carve; suite 448/0.
+- `audit.md`: findings + concrete remedies, blockers-first backlog,
+  CS2 reference sheet with sources, 5 unimplemented coverage checks,
+  do-not warnings. No code changed.
 
-## Verify
-- `tests/test_runner.gd`: 448 checks, 0 failures, exit 0.
-- Smoke: beginner + challenge_oc RESULT=OK.
-- Manual step for user: confirm dark-green walls in `dev_beginner`, and
-  try the OC wall (veer right on FloorC, press D into the face).
+## Next (decided)
+Blockers first; endless repaired; test_map hidden from MapSelect.
 
-Full detail: `docs/history.md` (latest section).
+Full detail: `audit.md`, `docs/history.md` (latest section).

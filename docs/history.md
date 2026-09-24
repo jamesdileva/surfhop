@@ -438,3 +438,30 @@ course colors better, yet its "ramp" never surfed (just hopped).
 - Verify: suite **448 / 0** (new: wall exists/tilt, live SURF ride with 79u
   wall carve); smokes OK beginner + challenge_oc. User to confirm beginner
   walls read dark green in `dev_beginner`.
+
+## Adversarial surf audit → audit.md (2026-09-24)
+
+User request: skeptic audit of bugs + ramp spacing/angles, rollercoaster
+standard (CS2 reference), written as `audit.md`.
+
+- Three parallel audits: per-ramp geometry physics (endpoints/transforms,
+  not comments — comments lied 3×), CS2 surf design research (benchmark
+  maps, numbers, linking rules, sources), skeptic code audit (history
+  claims treated as unproven).
+- Headline results: 7 blockers (precision P3 unrideable exit, P1/P2 buried
+  exits, endless SR3 on the 45° boundary, endless generator/scene sign
+  mismatch — regen would mirror the park, unreachable endless platforms,
+  cross-map stale respawn latch, test_map shipping in MapSelect), 10
+  majors (4 flat gaps needing 467–507 u/s, low exits, steep peel, hold-vs-
+  press bhop friction gap, 1-tick lag + GROUND-beats-SURF, W-into-ramp
+  waste, ruler-only seams, OC hop-entry + overhang, beginner bypass at
+  speed, non-rollercoaster inter/advanced), 8 minors.
+- CS2 verdict: threshold/scale/gravity/bands heritage-correct; flow rules
+  violated (flat transit, low exits, inert exit boost, early-saturating
+  HUD tiers). Only advanced R1 is a perfect ramp.
+- History cross-check: 2 claims fail (channel walls are 400u not "500";
+  endless 48° fix never landed — tutorial got it, endless didn't).
+- Decisions for what follows: audit.md carries fixes (not findings-only),
+  blockers-first order, endless repaired, test_map hidden.
+- Verify: no code changed in this slice; spot-verified the endless facing
+  math + SR3 boundary against the tree before publishing.
