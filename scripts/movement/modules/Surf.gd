@@ -10,8 +10,10 @@ extends MovementModule
 var _last_ramp_normal: Vector3 = Vector3.ZERO
 var _surf_active := false
 
-# Hot-path cache (Sprint 27): cos(surf_angle_min_deg) recomputed only when
+# Hot-path cache (Sprint 27): cos(floor_max_angle_deg) recomputed only when
 # the config instance changes; output is bit-identical to per-call evaluation.
+# Single-source threshold (surf-feel fix): floor_max_angle_deg is authoritative
+# (matches Collision.steep_normal and the body's move_and_slide limit).
 var _cached_config: MovementConfig = null
 var _surf_cos_min := 0.0
 
@@ -21,11 +23,13 @@ func enabled_in_state(state: int) -> bool:
 
 
 ## A surface is a surf ramp when its angle from horizontal exceeds the
-## configured minimum (§4.2): normal.dot(UP) < cos(surf_angle_min_deg).
+## configured walkable limit (§4.2): normal.dot(UP) < cos(floor_max_angle_deg).
+## floor_max_angle_deg is the single source of truth (engine agreement); the
+## legacy surf_angle_min_deg must be kept equal to it (see MovementConfig).
 func is_surf_normal(normal: Vector3) -> bool:
 	if _cached_config != _controller.config:
 		_cached_config = _controller.config
-		_surf_cos_min = cos(deg_to_rad(_controller.config.surf_angle_min_deg))
+		_surf_cos_min = cos(deg_to_rad(_controller.config.floor_max_angle_deg))
 	return normal.dot(Vector3.UP) < _surf_cos_min
 
 
@@ -33,7 +37,8 @@ func process(input: InputState, delta: float) -> void:
 	var normal := _controller.get_surface_normal()
 	if normal == Vector3.ZERO:
 		return
-	if not _surf_active:
+	var entering := not _surf_active
+	if entering:
 		_surf_active = true
 		var bus := _controller.get_node_or_null("/root/SignalBus")
 		if bus != null:
@@ -43,7 +48,16 @@ func process(input: InputState, delta: float) -> void:
 			})
 	# Gravity has already run this tick (module order), so velocity is never
 	# zero on a ramp - the projection below converts it into downhill slide.
-	var velocity := process_surf(_controller.get_velocity(), normal, delta)
+	var velocity_in := _controller.get_velocity()
+	var velocity := process_surf(velocity_in, normal, delta)
+	if entering:
+		# Landing-tick preservation (Gameplay Systems §5.2): the engine's
+		# move_and_slide wall-slide plus this projection can each clip energy
+		# on the entry tick. Floor the horizontal speed at
+		# surf_preservation of the pre-projection value so a surf entry
+		# keeps momentum CS-style. Gravity conversion that GAINS speed is
+		# never clamped (only the loss floor applies).
+		velocity = _preserve_entry_speed(velocity_in, velocity)
 	velocity = anti_stuck(velocity, normal, delta)
 	_controller.set_velocity(velocity)
 	_last_ramp_normal = normal
@@ -60,6 +74,23 @@ func process_surf(velocity_in: Vector3, normal: Vector3, delta: float) -> Vector
 		velocity_out.x *= 1.0 - drop / h_speed
 		velocity_out.z *= 1.0 - drop / h_speed
 
+	return velocity_out
+
+
+## Entry-tick loss floor: rescale horizontal velocity so surf entries keep at
+## least surf_preservation of the pre-projection horizontal speed.
+func _preserve_entry_speed(velocity_in: Vector3, velocity_out: Vector3) -> Vector3:
+	var h_in := Vector2(velocity_in.x, velocity_in.z).length()
+	if h_in < 0.001:
+		return velocity_out
+	var h_out := Vector2(velocity_out.x, velocity_out.z).length()
+	if h_out < 0.001:
+		return velocity_out
+	var floor_speed := h_in * _controller.config.surf_preservation
+	if h_out < floor_speed:
+		var scale := floor_speed / h_out
+		velocity_out.x *= scale
+		velocity_out.z *= scale
 	return velocity_out
 
 

@@ -25,9 +25,13 @@ func slope_angle() -> float:
 ## Returns the first post-slide contact normal steeper than the walkable
 ## limit (a surf ramp / wall), or ZERO when no such contact exists.
 ## Ceilings (normals pointing downward) are ignored.
+## Single-source threshold (surf-feel fix): the body's walkable limit
+## (floor_max_angle_deg) is authoritative, so classification always agrees
+## with the physics engine. surf_angle_min_deg is kept for compat and must
+## equal floor_max_angle_deg (see MovementConfig).
 func steep_normal() -> Vector3:
 	var body := _controller.get_body()
-	var limit: float = cos(deg_to_rad(_controller.config.surf_angle_min_deg))
+	var limit: float = cos(deg_to_rad(_controller.config.floor_max_angle_deg))
 	for i in body.get_slide_collision_count():
 		var n := body.get_slide_collision(i).get_normal()
 		if n.dot(Vector3.UP) >= 0.0 and n.dot(Vector3.UP) < limit:

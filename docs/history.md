@@ -376,3 +376,14 @@ Second playtest round: colors blend, surf feel off, air strafe too tight.
 - Main menu / results screen flow (dev bootstrap scenes are the current entry point).
 
 *(Entries above reconstructed verbatim from git history `e84efb9..c28e155`; going forward, append a new section after each sprint push.)*
+
+## Surf-feel + single-skybox pass (2026-09-24)
+
+User report: ramps don't feel like CS2 surf; maps read white-on-white; spacing suspect; only 1 map thought fixed.
+
+- **A1 unified surf threshold**: `Collision.steep_normal()` and `Surf.is_surf_normal()` both classified on `surf_angle_min_deg` while the body used `floor_max_angle_deg` — exact-45° fell to GROUND and casual's 42/40 band stuck with friction 6.0. All three now use `floor_max_angle_deg` (single source; `surf_angle_min_deg` kept as legacy alias that must equal it). `MovementConfig` documents the contract.
+- **A2 entry preservation**: wired the dead `surf_preservation` (0.95) — surf-entry tick floors horizontal-speed loss at 95% of pre-projection value (docs 02 §5.2 promise, never built). Gains from gravity conversion never clamped. `surf_speed_multiplier`/`surf_exit_boost` still inert (exit boost ~2 u/s placebo) — left for the tuning pass, flagged not silently fixed.
+- **A3 CS2 jump-off-surf** (user decision: allow): `Jump` refreshes coyote while `state == SURF` (impulse keeps xz, sets y — was already horizontal-preserving, it was just unreachable); `BunnyHop.on_land` ignores surf-wall touchdowns so buffered/hold jump no longer auto-ejects. Fixed the false "No bunny-hop off surf ramps" comment.
+- **B1 single skybox** (user decision: dark neon): `WorldMaterials._style_map` strips map-owned `WorldEnvironment` on load so the shared P3 dark sky always wins (neon shaders are unshaded — the bright baked sky was the washout). Map suns kept. Generator `_lighting()` no longer bakes envs; full regen run (sanctioned path, no hand-edits): all 7 maps + dev scenes + `casual.tres` (surf 42→40 to match floor 40).
+- Deferred per decision: glow coverage by angle (PrecisionRamp*/UpRamp* still neon-only), intermediate 350u flat gap + challenge_oc 80u wall (need human clears), `test_map` in MapSelect, endless dev scene.
+- Verify: suite **428 checks / 0 failures** (new `_test_surf_polish`: threshold contract, 44/46° boundary, preservation floor, no-eject guard, env strip); smoke RESULT=OK tutorial (661u/5s) + beginner (663u/5s). Exit-cleanup `resources still in use` ERROR is pre-existing headless-shutdown noise (varies run to run), not a test failure.

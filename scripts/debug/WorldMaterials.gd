@@ -64,6 +64,7 @@ func _style_map(map_node: Node) -> void:
 	var loader := get_node_or_null("/root/LevelLoader")
 	var metadata: MapMetadata = loader.current_metadata if loader != null else null
 	var tint := tint_for_metadata(metadata)
+	_remove_map_environments(map_node)
 	for body in _surface_bodies(map_node):
 		for mesh in body.find_children("*", "MeshInstance3D", true, false):
 			var mesh_instance := mesh as MeshInstance3D
@@ -71,6 +72,18 @@ func _style_map(map_node: Node) -> void:
 			material.shader = NEON_SHADER
 			mesh_instance.material_override = material
 			mesh_instance.set_instance_shader_parameter("tint", tint)
+
+
+## Single-skybox contract (white-on-white fix): the shared dark-sky
+## WorldEnvironment owned by UIManager is authoritative. Generated maps baked
+## their own bright-daylight WorldEnvironment; with two active environments
+## the map's wins and washes out the neon treatment. Remove map-owned ones on
+## load so the P3 dark sky always displays. Map suns are kept (unshaded
+## neon/glow shaders ignore them; they still shade the player/ghost).
+func _remove_map_environments(map_node: Node) -> void:
+	for child in map_node.get_children():
+		if child is WorldEnvironment:
+			child.queue_free()
 
 
 ## Every collision body that renders level geometry. SurfRamp* is excluded:

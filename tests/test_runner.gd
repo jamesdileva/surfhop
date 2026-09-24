@@ -84,6 +84,7 @@ func _run_all_tests() -> void:
 	await _test_bunny_hop_buffer()
 	await _test_air_strafing()
 	await _test_surfing()
+	await _test_surf_polish()
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
@@ -753,6 +754,76 @@ func _test_surfing() -> void:
 			sliding = true
 			break
 	_check(sliding, "stationary player on ramp starts sliding (anti-stuck)")
+
+	world.queue_free()
+	await process_frame
+
+
+func _test_surf_polish() -> void:
+	# Threshold contract: floor_max_angle_deg is the single source of truth;
+	# surf_angle_min_deg must equal it in every shipped preset.
+	var default_cfg := MovementConfig.new()
+	_check(default_cfg.floor_max_angle_deg == default_cfg.surf_angle_min_deg,
+		"default preset thresholds agree (floor=%.1f surf=%.1f)"
+			% [default_cfg.floor_max_angle_deg, default_cfg.surf_angle_min_deg])
+	var casual_cfg: MovementConfig = load("res://resources/movement/casual.tres")
+	_check(casual_cfg != null and casual_cfg.floor_max_angle_deg == casual_cfg.surf_angle_min_deg,
+		"casual preset thresholds agree (floor=%.1f surf=%.1f)"
+			% [casual_cfg.floor_max_angle_deg, casual_cfg.surf_angle_min_deg])
+
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(2)
+	_check(not player.is_on_floor(), "surf-polish test: player airborne for guard checks")
+
+	var surf: Surf = player.movement_controller.get_module(Surf)
+	var n44 := Vector3(0.0, cos(deg_to_rad(44.0)), sin(deg_to_rad(44.0))).normalized()
+	var n46 := Vector3(0.0, cos(deg_to_rad(46.0)), sin(deg_to_rad(46.0))).normalized()
+	_check(not surf.is_surf_normal(n44), "44-degree slope is walkable, not surf")
+	_check(surf.is_surf_normal(n46), "46-degree slope is surf")
+
+	# Entry preservation floors loss at surf_preservation (0.95): 400 -> 300
+	# must rescale to 380; genuine gains are never clamped.
+	var kept := surf._preserve_entry_speed(
+		Vector3(400.0, -200.0, 0.0), Vector3(300.0, -150.0, 0.0))
+	_check(absf(Vector2(kept.x, kept.z).length() - 380.0) < 0.5,
+		"surf entry keeps 95%% of horizontal speed (got %.1f)"
+			% Vector2(kept.x, kept.z).length())
+	var gained := surf._preserve_entry_speed(
+		Vector3(400.0, -200.0, 0.0), Vector3(0.0, -150.0, 500.0))
+	_check(absf(Vector2(gained.x, gained.z).length() - 500.0) < 0.5,
+		"surf entry never clamps gravity gains (got %.1f)"
+			% Vector2(gained.x, gained.z).length())
+
+	# No auto-eject on surf touchdowns: BunnyHop.on_land must ignore
+	# non-floor contact (buffer stays armed, velocity untouched).
+	var bhop: BunnyHop = player.movement_controller.get_module(BunnyHop)
+	var arm := InputState.new()
+	arm.jump_just_pressed = true
+	bhop.process(arm, 0.01)
+	_check(bhop.jump_buffer_timer > 0.0, "buffer armed for no-eject check")
+	var v_before: Vector3 = player.velocity
+	bhop.on_land(v_before, 100.0)
+	_check(player.velocity == v_before,
+		"surf touchdown does not auto-fire the buffered jump")
+	_check(bhop.jump_buffer_timer > 0.0,
+		"buffer survives a surf touchdown for the manual jump")
+
+	# Single-skybox contract: map-owned WorldEnvironment nodes are stripped
+	# on load so the shared dark sky always wins.
+	var ui: Node = root.get_node("UIManager")
+	var materials: Node = ui.get_node_or_null("WorldMaterials")
+	_check(materials != null, "WorldMaterials present for env-strip check")
+	if materials != null:
+		var dummy := Node3D.new()
+		var map_env := WorldEnvironment.new()
+		map_env.environment = Environment.new()
+		dummy.add_child(map_env)
+		materials._remove_map_environments(dummy)
+		_check(map_env.is_queued_for_deletion(),
+			"map-owned WorldEnvironment stripped on load")
+		dummy.queue_free()
 
 	world.queue_free()
 	await process_frame

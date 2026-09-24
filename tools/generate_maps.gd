@@ -156,26 +156,11 @@ func _sign(sign_name: String, text: String, pos: Vector3) -> void:
 	map.add_child(sign_node)
 
 
-## Lighting + environment for every map (missing lights rendered the world
-## as a uniform gray in earlier builds).
+## Lighting for every map (missing lights rendered the world as a uniform
+## gray in earlier builds). Single-skybox contract: NO WorldEnvironment is
+## baked — WorldMaterials owns the shared dark-sky env at runtime and strips
+## any map-owned one on load. Only the sun ships with the map.
 func _lighting() -> void:
-	var we := WorldEnvironment.new()
-	we.name = "WorldEnvironment"
-	var env := Environment.new()
-	env.background_mode = Environment.BG_SKY
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.24, 0.44, 0.76)
-	sky_material.sky_horizon_color = Color(0.68, 0.79, 0.9)
-	sky_material.ground_bottom_color = Color(0.14, 0.16, 0.2)
-	sky_material.ground_horizon_color = Color(0.6, 0.66, 0.72)
-	var sky := Sky.new()
-	sky.sky_material = sky_material
-	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 1.0
-	we.environment = env
-	map.add_child(we)
-
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sun"
 	sun.rotation_degrees = Vector3(-52.0, -32.0, 0.0)
@@ -492,7 +477,8 @@ func build_metadata_and_presets() -> void:
 	var casual := MovementConfig.new()
 	casual.jump_buffer_ms = 80.0
 	casual.coyote_time_ms = 100.0
-	casual.surf_angle_min_deg = 42.0
+	# Threshold contract: both equal (floor_max is authoritative at runtime).
+	casual.surf_angle_min_deg = 40.0
 	casual.floor_max_angle_deg = 40.0  # 45-degree ramps count as surf walls on tutorial
 	print("casual.tres: ", error_string(ResourceSaver.save(casual, "res://resources/movement/casual.tres")))
 

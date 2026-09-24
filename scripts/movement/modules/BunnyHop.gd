@@ -23,11 +23,12 @@ func process(input: InputState, delta: float) -> void:
 
 ## Called by the controller's generic post-move dispatch when a landing
 ## transition is detected (§2.5 flow). fall_speed is the vertical speed the
-## player arrived with.
+## player arrived with. Only REAL floor landings auto-fire: surf-wall
+## touchdowns must keep sliding (CS2-style; jumping off a ramp is manual).
 func on_land(velocity: Vector3, fall_speed: float) -> void:
 	var bus := _controller.get_tree().root.get_node_or_null("SignalBus")
 
-	if jump_buffer_timer > 0.0:
+	if jump_buffer_timer > 0.0 and _controller.is_on_floor():
 		_controller.friction_override = _controller.config.friction_override_factor
 		_controller.apply_jump_impulse()
 		jump_buffer_timer = 0.0

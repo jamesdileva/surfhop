@@ -28,6 +28,9 @@ extends Resource
 @export var max_fall_speed: float = 1000.0
 
 # Surfing
+# Threshold contract (surf-feel fix): floor_max_angle_deg is the single
+# source of truth — the body, Collision.steep_normal and Surf.is_surf_normal
+# all classify against it. Keep surf_angle_min_deg equal to it (legacy alias).
 @export var surf_angle_min_deg: float = 45.0
 @export var surf_speed_multiplier: float = 1.0
 @export var surf_preservation: float = 0.95
