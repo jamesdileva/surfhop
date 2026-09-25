@@ -503,3 +503,18 @@ One fix at a time per user; `audit.md` updated with ✅ per landed fix.
   do the same.
 - `audit.md`: B4/B5 ✅ fixed.
 - Verify: suite **477 / 0**; smoke challenge_precision RESULT=OK.
+
+## Audit backlog items B6+B7 — respawn latch + MapSelect filter (2026-09-24)
+
+Two tinies in one slice per user; `audit.md` ✅ per fix.
+
+- **B6:** new `GameManager.reset_spawn()`, called from
+  `LevelLoader._finalize_load` on every map load. Race-free (finalize +
+  emit + spawn positioning are atomic in one frame). Removed the suite's
+  manual `_spawn_captured = false` workaround — the fix stands alone.
+- **B7:** `MapSelect.HIDDEN_TAGS = ["dev", "test"]` filter in
+  `refresh_all()`; loader still discovers fixtures, menu hides them.
+- Tests: `_test_spawn_latch_reset` (reset-on-load, recapture,
+  pre-checkpoint death on the new map) + `test_mapButton` absence in the
+  main-menu flow test.
+- Verify: suite **484 / 0**; smoke beginner RESULT=OK.

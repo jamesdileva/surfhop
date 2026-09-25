@@ -24,6 +24,16 @@ var _paused_at_usec: int = 0
 var _spawn_captured: bool = false
 
 
+## Clears the spawn latch so the next physics frame recaptures the player
+## transform on the newly loaded map (audit B6). Called by LevelLoader on
+## every map load: without it, dying on a fresh map before any checkpoint
+## respawns at the previous map's coordinates (likely mid-void).
+## Race-free: finalize + map_loaded emit + spawn positioning run atomically
+## in one frame, so recapture always sees the repositioned player.
+func reset_spawn() -> void:
+	_spawn_captured = false
+
+
 func _ready() -> void:
 	var bus := _bus()
 	if bus != null:

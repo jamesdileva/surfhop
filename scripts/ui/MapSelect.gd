@@ -6,6 +6,11 @@ extends CanvasLayer
 
 const DIFFICULTY_LABELS := ["", "★", "★★", "★★★", "★★★★", "★★★★★"]
 
+## Maps carrying these metadata tags never list (audit B7): dev fixtures
+## like test_map ship an empty void, not a course. The loader still
+## discovers them — only the menu hides them.
+const HIDDEN_TAGS := ["dev", "test"]
+
 @onready var _ui_manager: Node = get_node("/root/UIManager")
 @onready var _level_loader: Node = get_node("/root/LevelLoader")
 
@@ -70,12 +75,21 @@ func refresh_all() -> void:
 	for child in _rows_container.get_children():
 		child.queue_free()
 	for entry: Dictionary in _level_loader.discover_maps():
+		if _is_hidden(entry["metadata"]):
+			continue
 		_rows_container.add_child(_make_row(entry))
 	if _rows_container.get_child_count() == 0:
 		var empty := Label.new()
 		empty.name = "EmptyLabel"
 		empty.text = "No maps found."
 		_rows_container.add_child(empty)
+
+
+func _is_hidden(meta: MapMetadata) -> bool:
+	for tag: String in HIDDEN_TAGS:
+		if meta.tags.has(tag):
+			return true
+	return false
 
 
 func _make_row(entry: Dictionary) -> Button:

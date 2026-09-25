@@ -86,23 +86,20 @@ demanding (controlled entry speed) — precision of entry IS this map's
 skill. Locked by exit-daylight + honest-angle asserts and a live P1 ride
 test (SURF, no slab clipping, ends in Pool1).
 
-### B6. Stale respawn latch teleports fresh-map deaths to the old map
-`GameManager._spawn_captured` latches the first player transform ever and
-is never reset (`GameManager.gd:24,37-39`); `LevelLoader._finalize_load`
-resets race/checkpoint/kill state but not the latch (`:85-104`). Map A →
-checkpoint → quit → map B → die before any checkpoint ⇒ respawn at map-A
-coordinates, likely mid-void ⇒ death loop. The suite works around it
-(`test_runner.gd:1185`, *"autoload state leaks between suites; recapture"*)
-instead of fixing it. **Remedy:** reset the latch in `_finalize_load`
-(or on `Game.start_map`); convert the test workaround into a regression
-test (die on fresh map ⇒ respawn inside new map bounds).
+### B6. Stale respawn latch teleported fresh-map deaths to the old map — FIXED ✅
+`GameManager._spawn_captured` latched the first player transform ever and
+was never reset. **Fixed:** new `GameManager.reset_spawn()`, called from
+`LevelLoader._finalize_load` on every map load — race-free (finalize +
+emit + spawn positioning are atomic in one frame, so recapture always sees
+the repositioned player). The suite's manual workaround line is removed;
+`_test_spawn_latch_reset` covers reset-on-load, recapture, and
+pre-checkpoint death landing on the new map.
 
-### B7. `test_map` fixture ships as playable (instant void fall)
-`MapSelect` lists every `discover_maps()` entry unfiltered
-(`MapSelect.gd:72-73,81-91`); `test_map.tscn` has a Floor with no
-collision/mesh and a `PlayerSpawn` marker nobody reads (`Game`/`DevMain`
-want `RespawnPoint`, fall back to `(0,60,0)` over void). **Remedy:**
-filter `dev`/`test` tags out of MapSelect (decision: hide it).
+### B7. `test_map` fixture shipped as playable — FIXED ✅
+`MapSelect` listed every discovered map unfiltered (instant void fall on
+select). **Fixed:** `HIDDEN_TAGS = ["dev", "test"]` filter in
+`refresh_all()` — the loader still discovers fixtures, only the menu hides
+them. Asserted in the main-menu flow test.
 
 ---
 
@@ -352,9 +349,11 @@ suite.
 2. ~~B4+B5: precision exits — extend/unbury P1–P3, daylight asserts.~~
    DONE this session — exits daylight above pools (P1 37u, P2 ~15u, P3
    22u; P3 re-angled 63→60°), honest angle comments, live P1 ride test.
-3. B6: respawn latch reset on map load + regression test (replacing the
-   suite workaround).
-4. B7: MapSelect tag filter (hide `dev`/`test`).
+3. ~~B6: respawn latch reset on map load + regression test (replacing the
+   suite workaround).~~ DONE this session — `reset_spawn()` in finalize,
+   workaround line removed, `_test_spawn_latch_reset` green.
+4. ~~B7: MapSelect tag filter (hide `dev`/`test`).~~ DONE this session —
+   `HIDDEN_TAGS`, loader still discovers, menu hides; asserted.
 5. M1: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.

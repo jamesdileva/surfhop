@@ -92,6 +92,7 @@ func _run_all_tests() -> void:
 	await _test_timer_system()
 	await _test_checkpoints()
 	await _test_map_loading()
+	await _test_spawn_latch_reset()
 	await _test_hud()
 	await _test_save_system()
 	await _test_ghost_recording()
@@ -1183,7 +1184,6 @@ func _test_checkpoints() -> void:
 	gm.total_checkpoints = 0
 	gm.active_checkpoint_id = -1
 	gm.kill_plane_y = -300.0
-	gm._spawn_captured = false  # autoload state leaks between suites; recapture
 
 	var ui: Node = root.get_node("UIManager")
 
@@ -1360,6 +1360,62 @@ func _test_map_loading() -> void:
 	# Cleanup: leave no map loaded for other suites.
 	loader.unload_current()
 	player_root.queue_free()
+	await process_frame
+
+
+func _test_spawn_latch_reset() -> void:
+	# Audit B6: dying on a fresh map before any checkpoint must respawn on
+	# the NEW map, never at the previous map's coordinates. Replaces the old
+	# manual `_spawn_captured = false` suite workaround.
+	var gm: Node = root.get_node("GameManager")
+	var loader: Node = root.get_node("LevelLoader")
+	for p in get_nodes_in_group("player"):
+		p.queue_free()
+	await process_frame
+	gm.restart()
+
+	# Simulate "previous map": latch captured at faraway coordinates.
+	gm._spawn_captured = true
+	gm.respawn_transform = Transform3D(Basis.IDENTITY, Vector3(1111.0, 2222.0, 3333.0))
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "test_map":
+			entry = e
+			break
+	_check(not entry.is_empty(), "test_map available for latch test")
+	if entry.is_empty():
+		return
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "latch-test map loads")
+	_check(gm._spawn_captured == false, "map load resets the spawn latch")
+
+	# Fresh spawn recaptures on the new map; pre-checkpoint death lands
+	# there instead of the stale coordinates.
+	var holder := Node3D.new()
+	root.add_child(holder)
+	var player: Player = _spawn_test_player_at(holder, Vector3(0.0, 40.0, 3000.0))
+	await _wait_ticks(3)
+	_check(gm._spawn_captured, "fresh player recaptures spawn")
+	_check(gm.respawn_transform.origin.distance_to(Vector3(0.0, 40.0, 3000.0)) < 60.0,
+		"respawn captured on the new map (at %s)" % gm.respawn_transform.origin)
+	gm.kill_plane_y = 99999.0
+	await _wait_ticks(3)
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
+		"pre-checkpoint death respawns on the new map, not the old one")
+
+	player.queue_free()
+	holder.queue_free()
+	loader.unload_current()
+	gm.restart()
+	gm.kill_plane_y = -1000.0
 	await process_frame
 
 
@@ -2815,6 +2871,8 @@ func _test_main_menu_flow() -> void:
 	var rows: Node = select.get_node("Root/Panel/Column/Scroll/Rows")
 	_check(rows.get_child_count() >= 1,
 		"map select lists discovered maps (%d)" % rows.get_child_count())
+	_check(rows.get_node_or_null("test_mapButton") == null,
+		"dev/test maps hidden from map select (audit B7)")
 
 	# --- Launch a map through the flow ---
 	ui.launch_map("res://scenes/maps/test_map.tscn")

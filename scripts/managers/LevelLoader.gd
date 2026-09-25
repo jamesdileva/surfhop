@@ -93,6 +93,7 @@ func _finalize_load(map: Node) -> void:
 		# Reset run state BEFORE mounting: checkpoint _ready handlers register
 		# during add_child and must start from a clean slate.
 		game_manager.restart()
+		game_manager.reset_spawn()  # audit B6: recapture spawn on the new map
 		game_manager.total_checkpoints = 0
 		game_manager.active_checkpoint_id = -1
 		game_manager.checkpoint_splits.clear()
