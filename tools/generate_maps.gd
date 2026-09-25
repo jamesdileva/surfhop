@@ -477,9 +477,19 @@ func build_challenge_precision() -> void:
 	_static_body("Pool3", Vector3(400.0, 100.0, 1100.0), Vector3(0.0, -1250.0, -3610.0))    # y=-1200 z -3160..-4060
 
 	# SurfRamp* prefix: glow shader + dark base (skipped by floor tinting).
-	_ramp("SurfRampP1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -410.0, -1044.0), 150.0)  # ~63 deg
-	_ramp("SurfRampP2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -810.0, -2092.0), 150.0)# ~63 deg
-	_ramp("SurfRampP3", Vector3(0.0, -800.0, -2800.0), Vector3(0.0, -1220.0, -3014.0), 150.0)# ~62 deg
+	# Exits daylight ABOVE their pools (audit B4/B5): the old lines ended
+	# buried inside the pool slabs, so riding to the bottom meant clipping
+	# into solid. Faces now end 15-40u above pool tops; riders launch off
+	# the end and drop into the pool. Entries stay demanding (controlled
+	# entry speed) — precision of entry IS this map's skill; exits into
+	# solid never is.
+	_ramp("SurfRampP1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -350.0, -1002.0), 150.0)  # ~55 deg
+	_ramp("SurfRampP2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -760.0, -2064.0), 150.0)  # ~60 deg
+	# P3 re-angled 63 -> 60: at 63° no exit point can daylight over Pool3
+	# (the line crosses pool-top level past the pool edge). 60° keeps the
+	# steepest-in-map intent; difficulty now comes from placement (entry
+	# over the void gap, 150-wide face).
+	_ramp("SurfRampP3", Vector3(0.0, -790.0, -2840.0), Vector3(0.0, -1160.0, -3054.0), 150.0)  # ~60 deg
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1160.0, -3800.0))

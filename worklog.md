@@ -1,25 +1,25 @@
-# Worklog — audit backlog item 1: endless repair (2026-09-24)
+# Worklog — audit backlog item 2: precision exits (2026-09-24)
 
-One fix at a time; audit.md carries ✅ per landed fix.
+One fix at a time; audit.md carries ✅ per landed fix (B4/B5).
 
 ## Shipped
-- SR3 re-anchored 45° → 50° (same facing family; boundary class closed).
-- UpRampA/B rebuilt as grade-meeting walkable inclines (8.5°/7.2°);
-  platforms reachable with zero jumping.
-- `_test_endless_repair`: generator-vs-baked basis lock (5 slabs) +
-  reachability asserts. Regen of endless only.
-- audit.md: B2/B3 ✅ fixed; B1 withdrawn (see correction).
+- P1/P2 shortened along-line (55°/60° unchanged), exits daylight 37u /
+  ~15u above pools; launch-off-the-end drops into pools.
+- P3 re-angled 63° → 60° (63° cannot daylight over Pool3 — line crosses
+  pool-top past the edge), entry (0,−790,−2840), exit +22u over Pool3.
+  Honest angle comments (were all "~63°").
+- Entries intentionally demanding (slow catches, fast safely bypasses);
+  exits never into solid.
+- Tests: per-ramp daylight + angle asserts, live P1 ride (SURF,
+  no-clip, ends in Pool1).
 
-## Correction (read before touching endless rotations)
-Audit B1 (generator/scene sign mismatch) was false: tscn Transform3D
-stores basis ROWS, so every hand-read normal was transposed. Proof:
-regen round-trip reproduces SR1/SR2 byte-identically; the only mirroring
-observed came from acting on the misread (caught by probe test, same
-session revert). Rotation literals are standard-math; verify via basis
-diagnostics, never file eyeballing.
+## Notes
+- Full-map regen churns node unique_ids everywhere: reverted all id-only
+  diffs, shipped only challenge_precision. Do the same on future regens.
+- audit.md: B4/B5 ✅ fixed (old finding bodies removed, tables updated).
 
 ## Verify
-- `tests/test_runner.gd`: 468 checks, 0 failures, exit 0.
-- Smoke endless RESULT=OK (675u in 5s).
+- `tests/test_runner.gd`: 477 checks, 0 failures, exit 0.
+- Smoke challenge_precision RESULT=OK.
 
-Next: backlog item 2 (precision exits P1–P3) when user calls it.
+Next: backlog item 3 (B6 respawn latch) when user calls it.

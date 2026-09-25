@@ -2147,6 +2147,22 @@ func _test_challenge_maps() -> void:
 				"precision ramp uses SurfRamp* glow prefix")
 			_check(loader.current_map.get_node_or_null("PrecisionRamp1") == null,
 				"old PrecisionRamp* name retired")
+			# Audit B4/B5: exits must daylight ABOVE their pools (never buried
+			# inside slabs), at honest angles. Pools: P1 top -400 edge -1000;
+			# P2 top -790 edge -2060; P3 top -1200 edge -3060. e2 may sit up
+			# to 20u short of the pool edge (exit throw carries over).
+			for ramp_info in [
+				["SurfRampP1", -400.0, -1000.0, 54.0, 56.0],
+				["SurfRampP2", -790.0, -2060.0, 59.0, 61.0],
+				["SurfRampP3", -1200.0, -3060.0, 59.0, 61.0],
+			]:
+				var e1: Vector3 = loader.current_map.get_meta("%s_e1" % ramp_info[0])
+				var e2: Vector3 = loader.current_map.get_meta("%s_e2" % ramp_info[0])
+				var ang := rad_to_deg(atan(absf(e2.y - e1.y) / absf(e2.z - e1.z)))
+				_check(ang >= ramp_info[3] and ang <= ramp_info[4],
+					"%s honest angle (%.1f deg)" % [ramp_info[0], ang])
+				_check(e2.y >= ramp_info[1] and e2.z <= ramp_info[2] + 20.0,
+					"%s exit daylights over its pool (e2=%s)" % [ramp_info[0], e2])
 
 		if map_id == "challenge_oc":
 			var mover: Node3D = loader.current_map.get_node_or_null("MovingWall1")
@@ -2180,6 +2196,31 @@ func _test_challenge_maps() -> void:
 				finished = true
 				break
 		_check(finished, "%s finish completes the run" % map_id)
+
+		if map_id == "challenge_precision":
+			# Live P1 ride: controlled entry (teleport to the floor edge
+			# airborne at catch speed), carve to the daylit exit, land in
+			# Pool1. Fails on buried exits: riding into the slab keeps SURF
+			# below pool-top level over the pool footprint.
+			player.velocity = Vector3.ZERO
+			player.position = Vector3(0.0, 5.0, -795.0)
+			player.velocity = Vector3(0.0, -10.0, -140.0)
+			var psurf := false
+			var buried := false
+			for i in 200:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF:
+					psurf = true
+					if player.position.y < -405.0 \
+							and player.position.z < -1000.0 \
+							and player.position.z > -1900.0:
+						buried = true
+			_check(psurf, "P1 face produces SURF on controlled entry")
+			_check(not buried, "P1 ride never clips inside the pool slab")
+			_check(player.position.y > -415.0 \
+					and player.position.z < -990.0 \
+					and player.position.z > -1900.0,
+				"P1 ride ends in Pool1 (at %s)" % player.position)
 
 		loader.unload_current()
 		player_root.queue_free()

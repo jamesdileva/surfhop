@@ -485,3 +485,21 @@ One fix at a time per user; `audit.md` updated with ✅ per landed fix.
   check, never file-eyeballed normals (temp basis-diagnostic script used,
   deleted after).
 - Verify: suite **468 / 0**; smoke endless RESULT=OK (675u/5s).
+
+## Audit backlog item 2 — precision exits (2026-09-24)
+
+- P1/P2 shortened along-line (angles unchanged 55°/60°) to daylight 37u /
+  ~15u above their pools; riders launch off the end, drop in.
+- P3 re-angled 63° → 60° with a new entry (0,−790,−2840): at 63° no exit
+  point can daylight over Pool3 (line crosses pool-top level past the
+  edge). Exit daylights 22u above Pool3. Honest angle comments.
+- Entries stay demanding (controlled entry speed; fast entries safely
+  bypass to the pools) — precision of entry is this map's skill; exits
+  into solid never are.
+- Tests: exit-daylight + honest-angle asserts per ramp, live P1 ride
+  (SURF on controlled entry, no slab clipping, ends in Pool1).
+- Regen note: full regen churns node unique_ids on every map — reverted
+  all id-only diffs, kept only challenge_precision. Future regens should
+  do the same.
+- `audit.md`: B4/B5 ✅ fixed.
+- Verify: suite **477 / 0**; smoke challenge_precision RESULT=OK.

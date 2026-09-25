@@ -70,18 +70,21 @@ strict-`<` classifiers (floor side) while glow-tagged surf by name.
 **Fixed:** re-anchored to 50°, same facing family, asserted 49–51° in
 `_test_endless_repair`.
 
-### B4. Precision P3 ride-to-exit is impossible as built
-P3 (`(0,−800,−2800)→(0,−1220,−3014)`, actual 63.0°, 150 wide) ends 46u
-SHORT of Pool3 and 42u BELOW it with downward velocity; its entry face is
-buried 32u below Pool2's top (≈150u below the rider's feet at the pool
-edge). **Remedy:** extend the ramp 60u, raise the exit 45u, unbury the
-entry; or downgrade P3 to an aerial-transfer bonus with telegraphing.
+### B4. Precision P3 ride-to-exit was impossible — FIXED ✅
+P3 ended 46u short of Pool3 and 42u below it; entry buried. **Fixed:**
+P3 re-angled 63°→60° (at 63° no exit can daylight over Pool3 — the line
+crosses pool-top level past the pool edge), entries (0,−790,−2840), exits
+(0,−1160,−3054) daylit 22u above Pool3 top. Difficulty now from placement
+(void-gap entry, 150-wide face), not burial.
 
-### B5. Precision P1/P2 exits are buried inside pool slabs
-P1 exit face 23u inside Pool1 (44u inside footprint); P2 face 38u inside
-Pool2. Ride-to-bottom clips into solid; only early side-exit aerials work.
-**Remedy:** shorten pools or extend ramps so exits daylight ≥ 20u past
-slab edges; assert daylight in tests.
+### B5. Precision P1/P2 exits were buried inside pool slabs — FIXED ✅
+P1 exit face was 23u inside Pool1, P2 38u inside Pool2 — ride-to-bottom
+clipped into solid. **Fixed:** both shortened along-line to daylight
+(P1 exit 37u above Pool1 top, P2 ~15u above Pool2 top); riders launch off
+the end and drop into the pool. Angles unchanged (55°/60°). Entries stay
+demanding (controlled entry speed) — precision of entry IS this map's
+skill. Locked by exit-daylight + honest-angle asserts and a live P1 ride
+test (SURF, no slab clipping, ends in Pool1).
 
 ### B6. Stale respawn latch teleports fresh-map deaths to the old map
 `GameManager._spawn_captured` latches the first player transform ever and
@@ -250,14 +253,14 @@ FloorE edge, exact @320 stick, forgiving above. C→D 700u/1290drop barely
 jumpable @320 (7u margin — pixel-perfect; easy @500). Flats B→C, D→E
 380u → 507 u/s.
 
-### precision (45°, kill −1800, margin 600) — comments lie
-| Ramp | Claimed | Actual | Len/box, width |
-|---|---|---|---|
-| P1 | ~63° | 55.0° (420/294) ❌ | 513 (554) / 150 |
-| P2 | ~63° | 60.0° (420/242) | 485 (524) / 150 |
-| P3 | ~62° | 63.0° (420/214) | 471 (509) / 150 |
-Widths 150u < CS 256 standard (expert by design, keep + telegraph).
-Bypassable by jumps @320 (200u/400drop → 462u), so surfs read optional.
+### precision (45°, kill −1800, margin 600) — comments lied, since fixed ✅
+| Ramp | Was (claimed/actual) | Now |
+|---|---|---|
+| P1 | "~63°" / 55.0°, exit buried 23u | 55.0°, exit daylights 37u above Pool1 |
+| P2 | "~63°" / 60.0°, exit buried 38u | 60.0°, exit daylights ~15u above Pool2 |
+| P3 | "~62°" / 63.0°, exit 46u short + 42u low | 60.0°, entry (0,−790,−2840), exit daylights 22u above Pool3 |
+Widths stay 150u < CS 256 standard (expert by design, now telegraphed by
+fair exits rather than burial).
 
 ### challenge_oc (45°, kill −950, margin 950)
 SurfRampB1: 56° face (+11°), 500(Z)×240 slope, face x=90, z −4550..−5050;
@@ -346,8 +349,9 @@ suite.
 1. ~~B3+B1+B2: endless repair~~ DONE this session — SR3 re-anchored to
    50°, inclines rebuilt grade-meeting (8.5°/7.2°), generator-vs-baked +
    reachability tests green; B1 withdrawn (no drift — row/column misread).
-2. B4+B5: precision exits — extend/unbury P1–P3, daylight asserts.
-   Correct the three angle comments.
+2. ~~B4+B5: precision exits — extend/unbury P1–P3, daylight asserts.~~
+   DONE this session — exits daylight above pools (P1 37u, P2 ~15u, P3
+   22u; P3 re-angled 63→60°), honest angle comments, live P1 ride test.
 3. B6: respawn latch reset on map load + regression test (replacing the
    suite workaround).
 4. B7: MapSelect tag filter (hide `dev`/`test`).
