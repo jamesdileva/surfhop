@@ -31,46 +31,44 @@ than ~68°). Tick 100 Hz. Scale 1u = 1 Quake unit.
 | precision | ✗ exits buried in slabs, P3 unrideable as built, faces < CS width |
 | challenge_oc | ~ bhop/timing pure + one new optional surf wall (this audit) |
 | challenge_speedrun | ✓ by design (no surf) |
-| endless | ✗ park geometry disagrees with its generator; platforms decorative |
+| endless | ~ inclines connected, SR3 at 50° (B1 withdrawn, B2/B3 ✅) |
 
-Counts: **7 blockers, 10 majors, 8 minors.** Two `docs/history.md`
-claims fail verification (§7).
+Counts: **7 blockers reported, of which B1 withdrawn (no bug), B2+B3 fixed
+this session;** 10 majors, 8 minors. Two `docs/history.md` claims fail
+verification (§7).
 
 ---
 
 ## 1. Blockers (map element unusable, or data-loss class bug)
 
-### B1. Endless generator vs baked scene disagree on every ramp facing — regen mirrors the park
-`tools/generate_endless_map.gd:63-68` emits rotations `(-50,0,0)`,
-`(0,0,60)`, `(0,0,-45)`, `(-16,0,0)`, `(-28,0,0)`. The baked scene holds
-the exact negations: SurfRamp1 basis y-column `(0,0.643,+0.766)` =
-R_x(+50°) (`scenes/maps/endless.tscn:91`) vs generator R_x(−50°);
-SurfRamp2 normal `(0.866,0.5,0)` = R_z(−60°) (`:101`) vs `+60°`; SurfRamp3
-`(−0.707,0.707,0)` = R_z(+45°) (`:111`) vs `−45°`; same negation on
-UpRampA (`:131`, +16° vs −16°) and UpRampB (`:152`, +28° vs −28°).
-The shipped `.tscn` was baked by different code than today's generator.
-**Remedy:** decide the canonical facing (baked = playtested), flip the
-five generator signs to match, add a test comparing generator output
-transforms to the baked scene. **Do NOT run the endless regen until this
-is fixed** (see §9).
+### B1. Endless generator/scene facing — CLAIM WITHDRAWN after verification ❌
+Original claim: the shipped `.tscn` was baked by different code (negated
+rotations), so regen would mirror the park. **Wrong.** `.tscn`
+`Transform3D` serializes basis ROWS; hand-reading file triples as columns
+transposes every normal, so all five "negations" pointed backwards. A
+regen round-trip proved it: original literals reproduce the shipped scene
+byte-identically (zero diff on SR1/SR2), and a sign flip by "standard-math
+intuition" is what actually mirrored the park — caught by the endless
+probe test, reverted same session. There was never any drift. Standing
+rule (enforced by `_test_endless_repair` generator-vs-baked asserts):
+trust the suite check, never file-eyeballed normals. The §9 regen warning
+below is retracted; regen is safe and stable.
 
-### B2. Endless platforms are unreachable in both sign conventions
+### B2. Endless platforms WERE unreachable — FIXED ✅
 UpRampA (center y=88, half-length 725, sin16°) ends ≈ +307/−93 while
 PlatformA top is 200 with ~200u of overlap band *under* the platform;
 UpRampB ends ≈ +581/−53 with a 54u z-gap and ~390u wall to PlatformB top
 340 (`generate_endless_map.gd:73-81`, `endless.tscn:120-157`). A 56u-apex
-jump cannot board either end. **Remedy:** rebuild approaches as reachable
-inclines (rise ≤ ~50u per jump, overlapping landings) or cut the
-platforms; add a reachability test (simulated jump between endpoints).
+jump cannot board either end. **Fixed:** rebuilt as grade-meeting inclines
+(UpRampA 8.5° floor→PlatformA top, UpRampB 7.2° PlatformA→PlatformB top,
+walkable, no jumping), locked by `_test_endless_repair` reachability
+asserts (low/high corner grade + footprint + walkable angle).
 
-### B3. Endless SurfRamp3 sits exactly on the classification boundary
-Baked normal `(−0.707,0.707,0)` ⇒ slope exactly 45.0°
-(`endless.tscn:111`); both classifiers use strict `<`
-(`Collision.gd:37`, `Surf.gd:33`), and the engine's `floor_max_angle`
-calls it floor — while `VisualEffects` tags it surf-glow by name prefix.
-Expect walk/stick flicker. This is the same bug class history claims was
-fixed twice (tutorial got its 48°; endless never did — §7). **Remedy:**
-re-anchor to 50° (rotation + normal + test).
+### B3. Endless SurfRamp3 sat exactly on the classification boundary — FIXED ✅
+Baked slope was exactly 45.0° (angle reads the same transposed) with
+strict-`<` classifiers (floor side) while glow-tagged surf by name.
+**Fixed:** re-anchored to 50°, same facing family, asserted 49–51° in
+`_test_endless_repair`.
 
 ### B4. Precision P3 ride-to-exit is impossible as built
 P3 (`(0,−800,−2800)→(0,−1220,−3014)`, actual 63.0°, 150 wide) ends 46u
@@ -308,7 +306,7 @@ workshop pages for beginner/kitsune/mesa_aether/ace (tiers, maxvel).
 | Channel walls "350→500 tall for longer carves" | **FAIL** — boxes are `(40,400,length)` (`generate_maps.gd:98,104`), half-extent `slope=200` (`:86`). 400 ≠ 500 (≠ 350). |
 | LowWall 80→44, top < apex | HOLDS — `(500,44,40)` at y=22 (`:441`); suite asserts top ≤ 50. |
 | casual.tres 42→40 to match floor | HOLDS — both exactly 40.0; contract tests green. |
-| Endless SR3 "45°→48°, re-anchored" | **FAIL** — generator still `(0,0,−45)` (`generate_endless_map.gd:68`); baked still exactly 45° (`endless.tscn:111`). Tutorial got its 48°; endless didn't. |
+| Endless SR3 "45°→48°, re-anchored" | **FAIL then FIXED** — true at audit time (generator `(0,0,−45)`, baked exactly 45°); repaired this session to 50°, same facing family, locked by test. |
 | air_accel 14 cap-limited by cap 45 | HOLDS — first-tick add `14·0.01·320 = 44.8` vs `45 − current` (`AirMovement.gd:34-36`). |
 | Exit boost ~2 u/s placebo, flagged | HOLDS (honest) — math confirms ~1.5–1.8 u/s. |
 | Beginner kill-plane "−1600 kept" | SUPERSEDED — round-3 channels replaced that geometry; current −960 matches shipped design. Stale, not a lie. |
@@ -345,9 +343,9 @@ suite.
 
 ## 8. Fix backlog (blockers-first order, per decision)
 
-1. B3+B1+B2: endless repair — re-anchor SR3 to 50°, flip generator signs
-   to baked-canonical, reconnect platforms reachably, add
-   generator-vs-baked + reachability tests. Then regen endless ONLY.
+1. ~~B3+B1+B2: endless repair~~ DONE this session — SR3 re-anchored to
+   50°, inclines rebuilt grade-meeting (8.5°/7.2°), generator-vs-baked +
+   reachability tests green; B1 withdrawn (no drift — row/column misread).
 2. B4+B5: precision exits — extend/unbury P1–P3, daylight asserts.
    Correct the three angle comments.
 3. B6: respawn latch reset on map load + regression test (replacing the
@@ -365,8 +363,9 @@ suite.
 
 ## 9. Do-not warnings
 
-- **Do NOT re-run the endless-map generator** until B1 signs are fixed —
-  it will mirror all five slabs (verified facing math above).
+- **Endless regen is safe** (B1 withdrawn — round-trip verified stable),
+  but any future facing-sign change must go through the
+  generator-vs-baked suite check, never file-eyeballed normals.
 - **Resources are never hand-edited** (repo rule): all `.tscn`/`.tres`
   changes via generators + regen, as with every fix to date.
 - Physics tick stays 100 Hz; `MovementConfig` stays the single home for

@@ -465,3 +465,23 @@ standard (CS2 reference), written as `audit.md`.
   blockers-first order, endless repaired, test_map hidden.
 - Verify: no code changed in this slice; spot-verified the endless facing
   math + SR3 boundary against the tree before publishing.
+
+## Audit backlog item 1 — endless repair (2026-09-24)
+
+One fix at a time per user; `audit.md` updated with ✅ per landed fix.
+
+- SR3 re-anchored 45° → 50° (same facing family), locked 49–51° by test.
+- Platforms reconnected: UpRampA 8.5° (floor→PlatformA top) and UpRampB
+  7.2° (PlatformA→PlatformB top), both meeting grade at each end.
+  Walkable, no jumping required.
+- New `_test_endless_repair`: generator-vs-baked basis agreement for all
+  five slabs + incline reachability (corner grade, footprint, walkable).
+- **Correction worth remembering:** audit B1 (generator/scene sign
+  mismatch) was FALSE — `.tscn` Transform3D serializes basis ROWS, so all
+  hand-read normals were transposed. A regen round-trip proved zero drift
+  (SR1/SR2 byte-identical); a "corrective" sign flip is what briefly
+  mirrored the park, caught by the endless probe test and reverted same
+  session. `audit.md` B1 withdrawn in-file. Standing rule: trust the suite
+  check, never file-eyeballed normals (temp basis-diagnostic script used,
+  deleted after).
+- Verify: suite **468 / 0**; smoke endless RESULT=OK (675u/5s).

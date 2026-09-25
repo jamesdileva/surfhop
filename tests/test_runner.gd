@@ -110,6 +110,7 @@ func _run_all_tests() -> void:
 	await _test_main_menu_flow()
 	await _test_visual_materials()
 	await _test_endless_mode()
+	await _test_endless_repair()
 
 	print("---")
 	print("Checks run: %d, Failures: %d" % [_checks, _failures.size()])
@@ -3051,6 +3052,78 @@ func _test_endless_mode() -> void:
 		DirAccess.remove_absolute(record_path)
 	player_root.queue_free()
 	await process_frame
+
+
+func _test_endless_repair() -> void:
+	# Audit B1/B2/B3: the generator's canonical facings must match the baked
+	# park (a regen with flipped signs would mirror every slab), SR3 must
+	# sit clear of the 45-degree sticky boundary, and both platform inclines
+	# must meet grade at floor and platform top (reachable, walkable).
+	var gen: GDScript = load("res://tools/generate_endless_map.gd")
+	var scene: PackedScene = load("res://scenes/maps/endless.tscn")
+	_check(scene != null, "endless scene loads for repair check")
+	if scene == null:
+		return
+	var park := scene.instantiate()
+	for c in [
+		["SurfRamp1", gen.SR1_ROT], ["SurfRamp2", gen.SR2_ROT],
+		["SurfRamp3", gen.SR3_ROT], ["UpRampA", gen.UPRA_ROT],
+		["UpRampB", gen.UPRB_ROT],
+	]:
+		var body: Node3D = park.find_child(c[0], true, false)
+		_check(body != null, "%s present in baked park" % c[0])
+		if body == null:
+			continue
+		var want := Basis.from_euler(Vector3(
+			deg_to_rad(c[1].x), deg_to_rad(c[1].y), deg_to_rad(c[1].z)))
+		var got: Basis = body.transform.basis.orthonormalized()
+		_check(got.x.dot(want.x) > 0.9999 and got.y.dot(want.y) > 0.9999,
+			"%s baked facing matches generator (dot %.5f)" % [c[0], got.y.dot(want.y)])
+
+	var sr3: Node3D = park.find_child("SurfRamp3", true, false)
+	if sr3 != null:
+		var n3: Vector3 = sr3.transform.basis.orthonormalized() * Vector3.UP
+		var ang3 := rad_to_deg(acos(clampf(n3.dot(Vector3.UP), -1.0, 1.0)))
+		_check(ang3 > 49.0 and ang3 < 51.0,
+			"SR3 re-anchored to 50deg, clear of boundary (got %.2f)" % ang3)
+
+	_check_ramp_reaches(park, "UpRampA", "PlatformA", 200.0, -12.0, 2.0)
+	_check_ramp_reaches(park, "UpRampB", "PlatformB", 340.0, 185.0, 200.0)
+	park.free()
+
+
+## Incline reachability: the ramp's top-face low corner meets the lower
+## surface (floor or platform top) and its high corner meets the platform
+## top inside the platform footprint, at a walkable angle.
+func _check_ramp_reaches(park: Node, ramp_name: String, plat_name: String,
+		plat_top: float, low_lo: float, low_hi: float) -> void:
+	var ramp: Node3D = park.find_child(ramp_name, true, false)
+	var plat: Node3D = park.find_child(plat_name, true, false)
+	if ramp == null or plat == null:
+		_check(false, "%s/%s present for reachability" % [ramp_name, plat_name])
+		return
+	var shape_node: CollisionShape3D = ramp.find_children(
+		"*", "CollisionShape3D", true, false)[0] as CollisionShape3D
+	var box := shape_node.shape as BoxShape3D
+	var p_low: Vector3 = ramp.transform * Vector3(0, box.size.y / 2.0, -box.size.z / 2.0)
+	var p_high: Vector3 = ramp.transform * Vector3(0, box.size.y / 2.0, box.size.z / 2.0)
+	if p_low.y > p_high.y:
+		var tmp: Vector3 = p_low
+		p_low = p_high
+		p_high = tmp
+	_check(p_low.y >= low_lo and p_low.y <= low_hi,
+		"%s low end meets grade (y=%.1f)" % [ramp_name, p_low.y])
+	_check(absf(p_high.y - plat_top) <= 8.0,
+		"%s high end meets %s top (%.1f vs %.1f)" % [ramp_name, plat_name, p_high.y, plat_top])
+	var pshape: CollisionShape3D = plat.find_children(
+		"*", "CollisionShape3D", true, false)[0] as CollisionShape3D
+	var pbox := pshape.shape as BoxShape3D
+	_check(absf(p_high.x - plat.position.x) <= pbox.size.x / 2.0 \
+		and absf(p_high.z - plat.position.z) <= pbox.size.z / 2.0,
+		"%s high end lands inside %s footprint" % [ramp_name, plat_name])
+	var n: Vector3 = ramp.transform.basis.orthonormalized() * Vector3.UP
+	_check(rad_to_deg(acos(clampf(n.dot(Vector3.UP), -1.0, 1.0))) < 40.0,
+		"%s walkable incline" % ramp_name)
 
 
 func _test_save_manager_defaults() -> void:

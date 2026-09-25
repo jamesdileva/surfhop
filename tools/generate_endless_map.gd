@@ -9,6 +9,22 @@ const MAP_METADATA := preload("res://scripts/core/MapMetadata.gd")
 
 const RATE_FLOOR_SIZE := Vector3(8000, 100, 8000)
 
+# Facing convention (audit B1 saga — read this before touching signs):
+# .tscn Transform3D serializes basis ROWS, so eyeballing file triples reads
+# TRANSPOSED normals (every hand-read tilt in the audit pointed backwards).
+# rotation_degrees itself is standard-math: literal (a,0,0) puts the +Y
+# column at (0, cos a, sin a). Verified by regen round-trip + headless
+# basis diagnostics (not file eyeballing). The pre-audit literals were
+# consistent with the shipped park; the suite's generator-vs-baked check
+# below locks that agreement — trust it, not intuition.
+# SR3 sits at 50° — same facing family as the old 45°, clear of the sticky
+# boundary (audit B3).
+const SR1_ROT := Vector3(-50, 0, 0)
+const SR2_ROT := Vector3(0, 0, 60)
+const SR3_ROT := Vector3(0, 0, -50)
+const UPRA_ROT := Vector3(8.5, 0, 0)
+const UPRB_ROT := Vector3(7.19, 0, 0)
+
 
 func _initialize() -> void:
 	process_frame.connect(_run)
@@ -61,24 +77,29 @@ func _generate_map() -> Node:
 
 	# --- Surf ramps (SurfRamp* prefix: glow shader, skipped by tinting) ---
 	_add_box(root, "SurfRamp1", Vector3(0, -95, 1200),
-		Vector3(1600, 40, 2200), Vector3(-50, 0, 0))
+		Vector3(1600, 40, 2200), SR1_ROT)
 	_add_box(root, "SurfRamp2", Vector3(1900, -130, -400),
-		Vector3(2200, 40, 1600), Vector3(0, 0, 60))
+		Vector3(2200, 40, 1600), SR2_ROT)
 	_add_box(root, "SurfRamp3", Vector3(-1900, -75, -400),
-		Vector3(2200, 40, 1600), Vector3(0, 0, -45))
+		Vector3(2200, 40, 1600), SR3_ROT)
 
-	# --- Elevated platforms with walkable approach ramps ---
-	# Platform A: top at y = 200, reached by a ~16-degree incline from the
-	# floor to its southern edge.
+	# --- Elevated platforms with walkable approach inclines (audit B2) ---
+	# Old approach slabs floated hundreds of units from the platforms and
+	# were unboardable (56u jump apex). These inclines meet grade at both
+	# ends: UpRampA rises floor y=0 (z=-360) to PlatformA top 200 at its
+	# south edge (face meets 200 right at z=-1700, box end buried 5u proud
+	# stepping down onto the top); UpRampB rises PlatformA top 200
+	# (z=-3461) to PlatformB top 340 at its south edge. Both < 9°, trivially
+	# walkable, no jumping required.
 	_add_box(root, "PlatformA", Vector3(0, 180, -2600),
 		Vector3(1800, 40, 1800))
-	_add_box(root, "UpRampA", Vector3(0, 88, -1180),
-		Vector3(1200, 40, 1450), Vector3(-16, 0, 0))
-	# Platform B: top at y = 340, steeper ~28-degree approach off Platform A.
+	_add_box(root, "UpRampA", Vector3(0, 78.0, -1018.0),
+		Vector3(1200, 40, 1450), UPRA_ROT)
+	# Platform B: top at y = 340, 7.2-degree approach off Platform A.
 	_add_box(root, "PlatformB", Vector3(0, 320, -5300),
 		Vector3(1400, 40, 1400))
-	_add_box(root, "UpRampB", Vector3(0, 245, -3950),
-		Vector3(1000, 40, 1350), Vector3(-28, 0, 0))
+	_add_box(root, "UpRampB", Vector3(0, 248.5, -4003.0),
+		Vector3(1000, 40, 1230), UPRB_ROT)
 
 	# --- Strafe corridor near spawn: carve speed between the walls ---
 	_add_box(root, "CorridorWallL", Vector3(-700, 110, 2000),
