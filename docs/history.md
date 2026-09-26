@@ -518,3 +518,18 @@ Two tinies in one slice per user; `audit.md` ✅ per fix.
   pre-checkpoint death on the new map) + `test_mapButton` absence in the
   main-menu flow test.
 - Verify: suite **484 / 0**; smoke beginner RESULT=OK.
+
+## Audit backlog M1 — flat gaps to 200u (2026-09-24)
+
+- Intermediate A→B (350u) / D→E (380u) and Advanced B→C (380u) / D→E
+  (380u) needed 467–507 u/s — expert gates at walk speed. Extended the
+  floors toward each other: all four gaps now exactly 200u (needs ≤ 267
+  u/s, a fair walk-speed bhop hop). Checkpoints, ramps, kill planes
+  untouched.
+- Tests: `_gap_between` helper + per-gap asserts (real void > 0, fair ≤
+  200) in both map tests; existing void-raycast probes still read mid-gap
+  (coordinates unchanged by luck of symmetric extension).
+- Regen note 2: same id-churn revert as item 2 — shipped only
+  intermediate.tscn + advanced.tscn.
+- `audit.md`: M1 ✅ fixed.
+- Verify: suite **488 / 0**; smokes intermediate + advanced RESULT=OK.

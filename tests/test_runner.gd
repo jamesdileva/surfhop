@@ -1940,6 +1940,15 @@ func _test_intermediate_map() -> void:
 	_check(gm.kill_plane_y == -2600.0,
 		"metadata kill plane applied (%s)" % gm.kill_plane_y)
 
+	# Audit M1: flat void gaps must clear at walk-speed bhop pace (<= 200u
+	# needs <= 267 u/s) while staying real voids (> 0, no overlaps).
+	for gap in [
+		["FloorA", "FloorB"], ["FloorD", "FloorE"],
+	]:
+		var width := _gap_between(map, gap[0], gap[1])
+		_check(width > 0.0 and width <= 200.0,
+			"%s->%s flat gap fair and real (%.0fu)" % [gap[0], gap[1], width])
+
 	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
 	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
 	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
@@ -2028,6 +2037,17 @@ func r1_angle_ok(angle: float) -> bool:
 	return angle >= 49.0
 
 
+## Void width between two same-level floors laid out along -Z: north edge
+## of the southern floor minus south edge of the northern one (audit M1).
+## Positive = real void; zero/negative = touching or overlapping.
+func _gap_between(map_node: Node, upper: String, lower: String) -> float:
+	var a := map_node.get_node(upper) as StaticBody3D
+	var b := map_node.get_node(lower) as StaticBody3D
+	var sa := (a.get_node("CollisionShape3D") as CollisionShape3D).shape as BoxShape3D
+	var sb := (b.get_node("CollisionShape3D") as CollisionShape3D).shape as BoxShape3D
+	return (a.position.z - sa.size.z / 2.0) - (b.position.z + sb.size.z / 2.0)
+
+
 func _test_advanced_map() -> void:
 	var loader: Node = root.get_node("LevelLoader")
 	var gm: Node = root.get_node("GameManager")
@@ -2064,6 +2084,14 @@ func _test_advanced_map() -> void:
 		"exactly 6 checkpoints registered (got %d)" % gm.total_checkpoints)
 	_check(gm.kill_plane_y == -4600.0,
 		"metadata kill plane applied (%s)" % gm.kill_plane_y)
+
+	# Audit M1: flat void gaps must clear at walk-speed bhop pace.
+	for gap in [
+		["FloorB", "FloorC"], ["FloorD", "FloorE"],
+	]:
+		var width := _gap_between(map, gap[0], gap[1])
+		_check(width > 0.0 and width <= 200.0,
+			"%s->%s flat gap fair and real (%.0fu)" % [gap[0], gap[1], width])
 
 	for ramp_name: String in ["SurfRamp1", "SurfRamp2", "SurfRamp2b", "SurfRamp4"]:
 		var angle: float = rad_to_deg(absf(map.get_node(ramp_name).rotation.x))

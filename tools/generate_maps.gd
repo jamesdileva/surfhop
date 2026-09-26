@@ -315,11 +315,11 @@ func build_intermediate() -> void:
 	meta.kill_plane_y = -2600.0
 	map.set_meta("map_metadata", meta)
 
-	_static_body("FloorA", Vector3(340.0, 100.0, 3350.0), Vector3(0.0, -50.0, -1625.0))
-	_static_body("FloorB", Vector3(340.0, 100.0, 2550.0), Vector3(0.0, -50.0, -4925.0))
+	_static_body("FloorA", Vector3(340.0, 100.0, 3425.0), Vector3(0.0, -50.0, -1662.5))
+	_static_body("FloorB", Vector3(340.0, 100.0, 2625.0), Vector3(0.0, -50.0, -4887.5))
 	_static_body("FloorC", Vector3(340.0, 100.0, 2560.0), Vector3(0.0, -530.0, -7920.0))
-	_static_body("FloorD", Vector3(340.0, 100.0, 2600.0), Vector3(0.0, -1060.0, -10800.0))
-	_static_body("FloorE", Vector3(340.0, 100.0, 2220.0), Vector3(0.0, -1060.0, -13590.0))
+	_static_body("FloorD", Vector3(340.0, 100.0, 2690.0), Vector3(0.0, -1060.0, -10845.0))
+	_static_body("FloorE", Vector3(340.0, 100.0, 2310.0), Vector3(0.0, -1060.0, -13545.0))
 	_static_body("FloorF", Vector3(340.0, 100.0, 2140.0), Vector3(0.0, -1850.0, -16130.0))
 
 	_ramp("SurfRamp1", Vector3(0.0, 10.0, -6180.0), Vector3(0.0, -490.0, -6600.0), 340.0)
@@ -355,10 +355,10 @@ func build_advanced() -> void:
 	map.set_meta("map_metadata", meta)
 
 	_static_body("FloorA", Vector3(360.0, 100.0, 5500.0), Vector3(0.0, -50.0, -2700.0))
-	_static_body("FloorB", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -850.0, -7320.0))
-	_static_body("FloorC", Vector3(360.0, 100.0, 3500.0), Vector3(0.0, -850.0, -10950.0))
-	_static_body("FloorD", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -2130.0, -14900.0))
-	_static_body("FloorE", Vector3(360.0, 100.0, 2500.0), Vector3(0.0, -2130.0, -18030.0))
+	_static_body("FloorB", Vector3(360.0, 100.0, 3090.0), Vector3(0.0, -850.0, -7365.0))
+	_static_body("FloorC", Vector3(360.0, 100.0, 3590.0), Vector3(0.0, -850.0, -10905.0))
+	_static_body("FloorD", Vector3(360.0, 100.0, 3090.0), Vector3(0.0, -2130.0, -14945.0))
+	_static_body("FloorE", Vector3(360.0, 100.0, 2590.0), Vector3(0.0, -2130.0, -17985.0))
 	_static_body("FloorF", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -3040.0, -21100.0))
 
 	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)

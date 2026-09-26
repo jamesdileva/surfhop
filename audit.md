@@ -105,12 +105,18 @@ them. Asserted in the main-menu flow test.
 
 ## 2. Majors (experts-only gates, broken flow, wrong guarantees)
 
-### M1. Four mandatory flat void jumps need 467–507 u/s (47–58% over walk)
+### M1. Four mandatory flat void jumps needed 467–507 u/s — FIXED ✅
+Intermediate A→B 350u, D→E 380u; Advanced B→C 380u, D→E 380u — all gated
+experts at walk speed. **Fixed:** extended the floors toward each other so
+all four gaps measure exactly 200u (needs ≤ 267 u/s — a fair walk-speed
+bhop hop). Checkpoints, ramps, and kill planes untouched (same heights,
+same positions otherwise). Locked by `_gap_between` asserts (real void >
+0 and fair ≤ 200) in both map tests; existing void-raycast probes still
+read mid-gap.
 Intermediate A→B 350u → 467 u/s; D→E 380u → 507; Advanced B→C 380u →
 507; D→E 380u → 507. Walk-speed riders fall to kill; difficulty 3 gates
 experts. (Drop-jump bypasses at 320 all succeed, 491–707u ranges — the
-punishment lands specifically on flat same-level gaps.) **Remedy:** shrink
-to ≤ 240u, add ramp bridges, or move them behind explicit skill gates.
+punishment landed specifically on flat same-level gaps.)
 
 ### M2. Surf exits land low with no high-line telegraphing
 Intermediate R1/R2 (−10u vs landing, face −18/−19u), Advanced R2→R2b
@@ -343,18 +349,14 @@ suite.
 
 ## 8. Fix backlog (blockers-first order, per decision)
 
-1. ~~B3+B1+B2: endless repair~~ DONE this session — SR3 re-anchored to
-   50°, inclines rebuilt grade-meeting (8.5°/7.2°), generator-vs-baked +
-   reachability tests green; B1 withdrawn (no drift — row/column misread).
-2. ~~B4+B5: precision exits — extend/unbury P1–P3, daylight asserts.~~
-   DONE this session — exits daylight above pools (P1 37u, P2 ~15u, P3
-   22u; P3 re-angled 63→60°), honest angle comments, live P1 ride test.
-3. ~~B6: respawn latch reset on map load + regression test (replacing the
-   suite workaround).~~ DONE this session — `reset_spawn()` in finalize,
-   workaround line removed, `_test_spawn_latch_reset` green.
-4. ~~B7: MapSelect tag filter (hide `dev`/`test`).~~ DONE this session —
-   `HIDDEN_TAGS`, loader still discovers, menu hides; asserted.
-5. M1: hold-bhop friction parity (or documented tiers) + test.
+1. ~~B3+B1+B2: endless repair~~ DONE — SR3 at 50°, inclines connected,
+   facing lock green; B1 withdrawn (no drift — row/column misread).
+2. ~~B4+B5: precision exits~~ DONE — exits daylight above pools, P3 at
+   60°, live P1 ride test.
+3. ~~B6/B7: respawn latch + MapSelect filter~~ DONE.
+4. ~~M1: flat gaps~~ DONE this session — all four at exactly 200u
+   (walk-speed bhop fair), locked by `_gap_between` asserts.
+5. M4: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.
 7. M8: OC wall face x=80 + surf signage (hop entry).

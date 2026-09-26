@@ -1,16 +1,17 @@
-# Worklog — audit backlog B6+B7: respawn latch + MapSelect filter (2026-09-24)
+# Worklog — audit backlog M1: flat gaps to 200u (2026-09-24)
 
-Two tinies, one slice; audit.md carries ✅ per landed fix (B6/B7).
+Severity order continues; audit.md carries ✅ (M1).
 
 ## Shipped
-- B6: `GameManager.reset_spawn()` called on every map load (race-free:
-  finalize + emit + positioning atomic in one frame). Old suite
-  workaround line removed — fix stands alone.
-- B7: MapSelect hides `dev`/`test`-tagged maps; loader still discovers.
-- Tests: `_test_spawn_latch_reset` + `test_mapButton` absence assert.
+- 4 flat gaps (Inter A→B/D→E, Adv B→C/D→E: 350–380u → exactly 200u) via
+  floor extensions toward each other. Needs ≤ 267 u/s now — fair
+  walk-speed bhop. Checkpoints/ramps/kill planes untouched.
+- Tests: `_gap_between` helper + asserts (0 < gap ≤ 200) in both map
+  suites. (Helper sign fixed once: traveling -z, gap = southA − northB.)
+- audit.md: M1 ✅ fixed.
 
 ## Verify
-- `tests/test_runner.gd`: 484 checks, 0 failures, exit 0.
-- Smoke beginner RESULT=OK.
+- `tests/test_runner.gd`: 488 checks, 0 failures, exit 0.
+- Smokes intermediate + advanced RESULT=OK.
 
-Next: majors (M1 flat gaps first?) when user calls it.
+Next: M2 (low exits) or as user calls it.
