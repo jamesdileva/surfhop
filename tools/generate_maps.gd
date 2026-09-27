@@ -317,7 +317,11 @@ func build_intermediate() -> void:
 
 	_static_body("FloorA", Vector3(340.0, 100.0, 3425.0), Vector3(0.0, -50.0, -1662.5))
 	_static_body("FloorB", Vector3(340.0, 100.0, 2625.0), Vector3(0.0, -50.0, -4887.5))
-	_static_body("FloorC", Vector3(340.0, 100.0, 2560.0), Vector3(0.0, -530.0, -7920.0))
+	# Audit M2: extended 70u north (-6640 -> -6570) so SurfRamp1's face
+	# meets FloorC top right at its edge (face crosses -480 ~6u past the
+	# edge). Before, the face hit landing level 48u over the void and riders
+	# fell short into the slab edge. CS2 rule: exit meets the next surface.
+	_static_body("FloorC", Vector3(340.0, 100.0, 2630.0), Vector3(0.0, -530.0, -7885.0))
 	_static_body("FloorD", Vector3(340.0, 100.0, 2690.0), Vector3(0.0, -1060.0, -10845.0))
 	_static_body("FloorE", Vector3(340.0, 100.0, 2310.0), Vector3(0.0, -1060.0, -13545.0))
 	_static_body("FloorF", Vector3(340.0, 100.0, 2140.0), Vector3(0.0, -1850.0, -16130.0))
@@ -363,7 +367,11 @@ func build_advanced() -> void:
 
 	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
 	_ramp("SurfRamp2", Vector3(0.0, -790.0, -12650.0), Vector3(0.0, -1490.0, -12977.0), 360.0)
-	_ramp("SurfRamp2b", Vector3(0.0, -1480.0, -12990.0), Vector3(0.0, -2080.0, -13493.0), 360.0)
+	# Audit M2: shifted so the seam is a 5u DOWN step with
+	# overlapping boxes instead of a 13u gap + 10u UP step no ballistic
+	# trajectory can cross (exit vy~-700). Same 50.0-degree shape, just
+	# moved. CS2 rule: linked segments overlap, top vertices almost touch.
+	_ramp("SurfRamp2b", Vector3(0.0, -1495.0, -12985.0), Vector3(0.0, -2095.0, -13488.0), 360.0)
 	_ramp("SurfRamp4", Vector3(0.0, -2090.0, -19330.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))

@@ -118,13 +118,25 @@ Intermediate A→B 350u → 467 u/s; D→E 380u → 507; Advanced B→C 380u →
 experts. (Drop-jump bypasses at 320 all succeed, 491–707u ranges — the
 punishment landed specifically on flat same-level gaps.)
 
-### M2. Surf exits land low with no high-line telegraphing
-Intermediate R1/R2 (−10u vs landing, face −18/−19u), Advanced R2→R2b
-(13u gap + 10u UP step against vy≈−700), all demand CS high-line
-technique (exit 200u+ high with 400+ horizontal) that nothing teaches;
-ride-to-bottom = wall/fall. Only Advanced R1 is perfect (entry +1, exit
-−1, bridges 370u). **Remedy:** daylight exits ≥ landing level, or add
-tutorial signage for the high line; assert exit-face ≥ landing−2u.
+### M2. Surf exits landed low with no high-line telegraphing — FIXED (with one correction) ✅
+- Inter R1: **fixed** — FloorC extended 70u north so the face meets its
+  top right at the edge (was: face hit landing level 48u over the void,
+  riders fell short into the slab edge). Assert: exit past edge ≤ 60u and
+  within 40u of top level.
+- Adv R2→R2b: **fixed** — R2b translated to a 5u DOWN step with
+  overlapping boxes (was: 13u gap + 10u UP step no ballistic trajectory
+  can cross). Same 50.0° shape. Assert: no UP step, plan overlap.
+- Inter R2 / R3, Adv R4: **re-derived during the fix and need NO change**
+  — the audit treated "buried face end" as "exit fails", but the
+  face-meets-slab-top transition happens 15–65u BEFORE the buried portion
+  with 22u+ corner clearance (R2: transition −9515 vs burial −9535+;
+  R3 touchdown −15107; R4 touchdown −19651). Ride-to-bottom dies, but
+  natural riding transitions first. Lesson recorded: burial past the
+  transition point is hidden and harmless.
+- CS2 grounding (researched this session): linked segments overlap with
+  top vertices almost touching; end-of-ramp discontinuities kill momentum
+(rampbug literature); playerclip faces have zero cuts (ours are single
+boxes ✓).
 
 ### M3. 65°/70° faces peel slow learners; R4 is an elevator shaft
 Advanced R2 (65°) / R4 (70°): `anti_stuck` peels riders under ~20 u/s
@@ -354,8 +366,11 @@ suite.
 2. ~~B4+B5: precision exits~~ DONE — exits daylight above pools, P3 at
    60°, live P1 ride test.
 3. ~~B6/B7: respawn latch + MapSelect filter~~ DONE.
-4. ~~M1: flat gaps~~ DONE this session — all four at exactly 200u
-   (walk-speed bhop fair), locked by `_gap_between` asserts.
+4. ~~M1: flat gaps~~ DONE — all four at exactly 200u, `_gap_between`
+   asserts.
+5. ~~M2: low exits~~ DONE this session — Inter FloorC +70u meets R1 exit
+   at its edge; R2b 5u DOWN-step overlap seam; R2/R3/R4 verified fine
+   (transition-before-burial), exit + seam asserts.
 5. M4: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.

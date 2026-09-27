@@ -533,3 +533,23 @@ Two tinies in one slice per user; `audit.md` ✅ per fix.
   intermediate.tscn + advanced.tscn.
 - `audit.md`: M1 ✅ fixed.
 - Verify: suite **488 / 0**; smokes intermediate + advanced RESULT=OK.
+
+## Audit backlog M2 — low surf exits (2026-09-24)
+
+CS2 research first (user request): linked segments overlap with top
+vertices almost touching (CS2-Surf-Mapping curved-ramp guide); end-of-
+ramp discontinuities annihilate momentum (rampbug literature, zer0k-z
+gist); surf faces must be single uncut planes (ours are single boxes ✓).
+Applied both fixes in that spirit.
+
+- Inter R1 exit: FloorC extended 70u north (−6640 → −6570) so the face
+  meets its top ~6u past the edge (was: landing level 48u over the void).
+  Assert: exit past edge ≤ 60u, within 40u of top.
+- Adv R2→R2b seam: R2b shifted to a 5u DOWN step with box overlap (was:
+  13u gap + 10u UP step). Same 50.0° shape. Assert: no UP step + overlap.
+- Correction: Inter R2/R3 + Adv R4 re-derived and need NO change — the
+  audit confused "buried face end" with "exit fails", but transition
+  happens 15–65u before burial with 22u+ corner clearance. Burial past
+  the transition is hidden/harmless. Recorded in `audit.md` M2.
+- `audit.md`: M2 ✅ fixed (with the correction noted in-file).
+- Verify: suite **492 / 0**; smokes intermediate + advanced RESULT=OK.

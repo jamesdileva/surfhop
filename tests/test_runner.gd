@@ -1949,6 +1949,20 @@ func _test_intermediate_map() -> void:
 		_check(width > 0.0 and width <= 200.0,
 			"%s->%s flat gap fair and real (%.0fu)" % [gap[0], gap[1], width])
 
+	# Audit M2: R1's exit must meet FloorC top at its edge (CS2 exit-links
+	# rule). Ramp end past the edge by <= 60u and within 40u of top level —
+	# the face crosses landing level right at the edge instead of 48u over
+	# the void.
+	var r1e2: Vector3 = map.get_meta("SurfRamp1_e2")
+	var floor_c: StaticBody3D = map.get_node("FloorC")
+	var fc_shape := (floor_c.get_node("CollisionShape3D") as CollisionShape3D).shape as BoxShape3D
+	var fc_edge: float = floor_c.position.z + fc_shape.size.z / 2.0
+	var fc_top: float = floor_c.position.y + fc_shape.size.y / 2.0
+	_check(r1e2.z <= fc_edge and fc_edge - r1e2.z <= 60.0,
+		"R1 exit reaches FloorC edge (end %.0f vs edge %.0f)" % [r1e2.z, fc_edge])
+	_check(absf(r1e2.y - fc_top) <= 40.0,
+		"R1 exit near landing level (end %.0f vs top %.0f)" % [r1e2.y, fc_top])
+
 	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
 	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
 	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
@@ -2092,6 +2106,16 @@ func _test_advanced_map() -> void:
 		var width := _gap_between(map, gap[0], gap[1])
 		_check(width > 0.0 and width <= 200.0,
 			"%s->%s flat gap fair and real (%.0fu)" % [gap[0], gap[1], width])
+
+	# Audit M2: the R2->R2b seam must be a small DOWN step with overlap,
+	# never a gap + UP step (exit vy~-700 cannot climb). CS2 linked
+	# segments overlap with top vertices almost touching.
+	var seam_end: Vector3 = map.get_meta("SurfRamp2_e2")
+	var seam_start: Vector3 = map.get_meta("SurfRamp2b_e1")
+	_check(seam_start.y <= seam_end.y + 1.0,
+		"R2b starts at/below R2 end (no UP step: %.0f vs %.0f)" % [seam_start.y, seam_end.y])
+	_check(seam_start.z <= seam_end.z + 20.0,
+		"R2b overlaps R2 in plan (no gap: %.0f vs %.0f)" % [seam_start.z, seam_end.z])
 
 	for ramp_name: String in ["SurfRamp1", "SurfRamp2", "SurfRamp2b", "SurfRamp4"]:
 		var angle: float = rad_to_deg(absf(map.get_node(ramp_name).rotation.x))

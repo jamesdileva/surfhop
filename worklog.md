@@ -1,17 +1,22 @@
-# Worklog — audit backlog M1: flat gaps to 200u (2026-09-24)
+# Worklog — audit backlog M2: low surf exits (2026-09-24)
 
-Severity order continues; audit.md carries ✅ (M1).
+Severity order; audit.md carries ✅ (M2, with correction).
+
+## Research (user request)
+CS2-Surf-Mapping guide: linked ramp segments overlap, top vertices
+almost touching. Rampbug literature (zer0k-z): end-of-ramp
+discontinuities annihilate momentum; surf faces must be single uncut
+planes (ours comply — single boxes).
 
 ## Shipped
-- 4 flat gaps (Inter A→B/D→E, Adv B→C/D→E: 350–380u → exactly 200u) via
-  floor extensions toward each other. Needs ≤ 267 u/s now — fair
-  walk-speed bhop. Checkpoints/ramps/kill planes untouched.
-- Tests: `_gap_between` helper + asserts (0 < gap ≤ 200) in both map
-  suites. (Helper sign fixed once: traveling -z, gap = southA − northB.)
-- audit.md: M1 ✅ fixed.
+- Inter R1: FloorC +70u north; face meets top ~6u past edge.
+- Adv R2b: 5u DOWN-step overlap seam (same 50.0° shape).
+- Correction: R2/R3/R4 need NO change (transition-before-burial;
+  audit overstated). Documented in audit.md.
+- Tests: R1 exit-link + seam no-upstep/overlap asserts.
 
 ## Verify
-- `tests/test_runner.gd`: 488 checks, 0 failures, exit 0.
+- `tests/test_runner.gd`: 492 checks, 0 failures, exit 0.
 - Smokes intermediate + advanced RESULT=OK.
 
-Next: M2 (low exits) or as user calls it.
+Next: M3/M4 or as user calls it.
