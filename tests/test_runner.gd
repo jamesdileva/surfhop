@@ -86,6 +86,7 @@ func _run_all_tests() -> void:
 	await _test_surfing()
 	await _test_surf_polish()
 	await _test_surf_glide_holds()
+	await _test_steep_peel()
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
@@ -876,6 +877,78 @@ func _test_surf_glide_holds() -> void:
 	_check(_h_speed(player) > 10.0, "rider keeps sliding speed while holding jump")
 
 	world.queue_free()
+	await process_frame
+
+
+func _test_steep_peel() -> void:
+	# Audit M3: what does anti-stuck actually do on very steep faces?
+	# Established by experiment: NOBODY peels. Drop-in and slow-slide riders
+	# alike retain 70° faces and accelerate — the outward push (3 u/s/tick
+	# under h=20) always loses to slide-buildup within ticks. Steep-face
+	# difficulty is steering authority, not grip. Each scenario gets a solo
+	# world so ramps can't interfere (a shared world broke the 50° control
+	# via edge-graze deflection).
+
+	# --- 70° drop-in: enters SURF and builds speed (no peel) ---
+	var world70 := Node3D.new()
+	root.add_child(world70)
+	_make_ramp(world70, 70.0)
+	var dropper: Player = _spawn_test_player_at(world70, Vector3(0.0, 60.0, 0.0))
+	dropper.velocity = Vector3(0.0, -30.0, 0.0)
+	var entered70 := false
+	for i in 120:
+		await physics_frame
+		if dropper.movement_controller.state == MovementState.SURF:
+			entered70 = true
+			break
+	_check(entered70, "70-degree face produces SURF on contact")
+	if entered70:
+		for i in 120:
+			await physics_frame
+		_check(_h_speed(dropper) > 200.0,
+			"70-degree drop-in builds slide speed, not peeled (h=%.0f)" % _h_speed(dropper))
+	world70.queue_free()
+	await process_frame
+
+	# --- 70° slow slide: already touching with h < surf_min_speed ---
+	var world_slow := Node3D.new()
+	root.add_child(world_slow)
+	_make_ramp(world_slow, 70.0)
+	var slider: Player = _spawn_test_player_at(world_slow, Vector3(2.0, 0.0, 0.0))
+	slider.velocity = Vector3(10.0, -30.0, 0.0)
+	var entered_slow := false
+	for i in 60:
+		await physics_frame
+		if slider.movement_controller.state == MovementState.SURF:
+			entered_slow = true
+			break
+	_check(entered_slow, "slow slider contacts 70-degree face")
+	if entered_slow:
+		var slow_kept := 0
+		for i in 120:
+			await physics_frame
+			if slider.movement_controller.state == MovementState.SURF:
+				slow_kept += 1
+		_check(slow_kept >= 100,
+			"slow slider retains 70-degree face (SURF %d/120 ticks, h=%.0f)" \
+				% [slow_kept, _h_speed(slider)])
+	world_slow.queue_free()
+	await process_frame
+
+	# --- 50° drop-in control: enters and retains 120 ticks ---
+	var world50 := Node3D.new()
+	root.add_child(world50)
+	_make_ramp(world50, 50.0)
+	var keeper: Player = _spawn_test_player_at(world50, Vector3(-150.0, 250.0, 0.0))
+	var kept := 0
+	for i in 150:
+		await physics_frame
+		if keeper.movement_controller.state == MovementState.SURF:
+			kept += 1
+	# 90, not 120: riders eventually ride off the slab end (~101 observed);
+	# retention (never peeling) is what's asserted, not endless riding.
+	_check(kept >= 90, "slow rider retains SURF on 50-degree face (%d ticks)" % kept)
+	world50.queue_free()
 	await process_frame
 
 

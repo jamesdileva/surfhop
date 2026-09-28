@@ -553,3 +553,18 @@ Applied both fixes in that spirit.
   the transition is hidden/harmless. Recorded in `audit.md` M2.
 - `audit.md`: M2 ✅ fixed (with the correction noted in-file).
 - Verify: suite **492 / 0**; smokes intermediate + advanced RESULT=OK.
+
+## Audit backlog M3 — steep faces retain (correction) (2026-09-24)
+
+- Experiment beat theory: `_test_steep_peel` proves drop-in AND slow-slide
+  riders retain 70° faces and accelerate (h≈357/323) — the anti-stuck push
+  (3 u/s/tick under h=20) always loses to slide-buildup within ticks. The
+  ">~65° peels" code comment was wrong; corrected in `Surf.gd`.
+- Steep-face difficulty is steering authority, not grip. User guide
+  documents the 48°→70° progression (enter with speed for control, never W
+  into the ramp).
+- Test-design lesson: shared worlds let ramps interfere (edge-graze
+  deflection broke the 50° control) — solo world per scenario now.
+- No behavior changed (comments/docs/tests only).
+- `audit.md`: M3 ✅ fixed-with-correction.
+- Verify: suite **497 / 0**; smoke beginner RESULT=OK.

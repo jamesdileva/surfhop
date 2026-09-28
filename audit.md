@@ -138,12 +138,16 @@ punishment landed specifically on flat same-level gaps.)
 (rampbug literature); playerclip faces have zero cuts (ours are single
 boxes ✓).
 
-### M3. 65°/70° faces peel slow learners; R4 is an elevator shaft
-Advanced R2 (65°) / R4 (70°): `anti_stuck` peels riders under ~20 u/s
-horizontal (`Surf.gd:101-106`, crossover ≈ 68°). Cannot be learned slowly;
-must enter hot. **Remedy:** keep for advanced but gate progression
-(50°→60°→65°→70° across maps already exists — document it as the
-intended curve) and assert peel/retain behavior (§8.4).
+### M3. 65°/70° faces were thought to peel slow learners — CORRECTION: they retain ✅
+Experiment (not theory) decided it: drop-in AND slow-slide riders retain
+70° faces and accelerate (h=357/323 observed) — the 3 u/s/tick outward
+push always loses to slide-buildup within ticks. The ">~65° peels" code
+comment was wrong and is corrected in-file. Steep-face difficulty is
+steering authority, not grip; the 48°→70° map curve is kept as the
+intended progression and documented in the user guide (enter with speed
+for control, never W into the ramp). Locked by `_test_steep_peel`
+(drop-in + slow-slide retention on 70°, 50° control; solo worlds — a
+shared world broke the control via edge-graze deflection).
 
 ### M4. Hold-to-bhop pays full friction every landing (two-tier bhop)
 `Friction` runs at module index 0, `Jump` at 6
@@ -368,9 +372,10 @@ suite.
 3. ~~B6/B7: respawn latch + MapSelect filter~~ DONE.
 4. ~~M1: flat gaps~~ DONE — all four at exactly 200u, `_gap_between`
    asserts.
-5. ~~M2: low exits~~ DONE this session — Inter FloorC +70u meets R1 exit
-   at its edge; R2b 5u DOWN-step overlap seam; R2/R3/R4 verified fine
-   (transition-before-burial), exit + seam asserts.
+5. ~~M2: low exits~~ DONE — FloorC +70u, R2b DOWN-step seam, R2/R3/R4
+   verified fine.
+6. ~~M3: steep curve~~ DONE this session — experiment proved retention
+   (no peel) on 70°; comment + guide corrected, `_test_steep_peel`.
 5. M4: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.

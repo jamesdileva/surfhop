@@ -96,8 +96,11 @@ func _preserve_entry_speed(velocity_in: Vector3, velocity_out: Vector3) -> Vecto
 
 ## Pushes the player off the ramp if horizontal speed falls too low (§4.6).
 ## Applied as an acceleration (scaled by delta) so that on moderate ramps
-## gravity's inward pull wins and contact is maintained, while on very steep
-## ramps (>~65 deg) a slow player still peels off instead of clinging.
+## gravity's inward pull wins and contact is maintained. Verified by
+## experiment (audit M3): the push NEVER separates a touching rider — slide
+## acceleration builds h past surf_min_speed within ticks on any angle, so
+## steep faces retain rather than peel. Steep-face difficulty is steering
+## authority, not grip; this stays as zero-speed-cling insurance only.
 func anti_stuck(velocity: Vector3, normal: Vector3, delta: float) -> Vector3:
 	var h_speed := Vector2(velocity.x, velocity.z).length()
 	if h_speed < _controller.config.surf_min_speed:

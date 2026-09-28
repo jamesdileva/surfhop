@@ -67,6 +67,11 @@ converts into downhill speed. Steer with `A/D` against the ramp plus mouse;
 you cannot jump off mid-surf — ride it to the end or slide off. Ramps glow
 cyan while you ride them.
 
+**Steeper is harder to steer, not harder to grip.** Maps progress 48° →
+56° → 60° → 65° → 70° faces; slow riders stick to all of them, but fast
+steep faces punish sloppy lines instantly. Enter with speed for control,
+carve early, and never hold `W` into the ramp (it kills grip).
+
 **Speed is everything.** The HUD speedometer colors by tier: gray → white →
 yellow (400+) → orange (600+) → red (800+). Good lines mix all three skills.
 
