@@ -50,8 +50,10 @@ Velocity runs its simulation at a fixed **100 Hz** with Quake-style physics
 ### 1. Bunny hopping
 
 Jumping the instant you land skips most ground friction and keeps your speed.
-Hold `Space` — the game auto-jumps on every landing for you. Ground running is
-capped at 320 u/s; bhopping preserves momentum and strafing builds more.
+Hold `Space` — the game auto-jumps on every landing for you, with zero
+speed penalty versus perfect manual timing (CS2 autobhop parity). Ground
+running is capped at 320 u/s; bhopping preserves momentum and strafing
+builds more.
 
 ### 2. Air strafing
 

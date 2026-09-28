@@ -8,6 +8,9 @@ extends MovementModule
 
 var jump_buffer_timer: float = 0.0
 var total_jumps: int = 0
+## Whether jump is currently held (sampled every tick). Lets the landing
+## handler extend the friction skip to held-hop landings (audit M4).
+var _jump_held := false
 
 
 func enabled_in_state(state: int) -> bool:
@@ -19,6 +22,7 @@ func process(input: InputState, delta: float) -> void:
 	if input.jump_just_pressed:
 		jump_buffer_timer = _controller.config.jump_buffer_ms / 1000.0
 	jump_buffer_timer = maxf(0.0, jump_buffer_timer - delta)
+	_jump_held = input.jump_held
 
 
 ## Called by the controller's generic post-move dispatch when a landing
@@ -33,6 +37,13 @@ func on_land(velocity: Vector3, fall_speed: float) -> void:
 		_controller.apply_jump_impulse()
 		jump_buffer_timer = 0.0
 		total_jumps += 1
+	elif _controller.config.auto_bhop and _jump_held and _controller.is_on_floor():
+		# Hold path (audit M4, CS2 sv_autobunnyhopping parity): the hop
+		# itself fires next tick from Jump (grounded + held), but Friction
+		# runs first that tick — without this skip, holders pay one full
+		# ground-friction tick (~19 u/s at 320) per landing that press
+		# players never pay. Same skip, same momentum.
+		_controller.friction_override = _controller.config.friction_override_factor
 
 	if bus != null:
 		bus.player_landed.emit({

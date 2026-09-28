@@ -82,6 +82,7 @@ func _run_all_tests() -> void:
 	await _test_ground_friction()
 	await _test_jump_coyote_and_no_double_jump()
 	await _test_bunny_hop_buffer()
+	await _test_bhop_hold_parity()
 	await _test_air_strafing()
 	await _test_surfing()
 	await _test_surf_polish()
@@ -599,6 +600,56 @@ func _test_bunny_hop_buffer() -> void:
 	var after_friction := _h_speed(player)
 	_check(after_friction < bhop_speed * 0.5,
 		"unbuffered landing applies full friction (%s -> %s)" % [bhop_speed, after_friction])
+
+	world.queue_free()
+	await process_frame
+
+
+func _test_bhop_hold_parity() -> void:
+	# Audit M4 (CS2 sv_autobunnyhopping parity): holding jump must preserve
+	# momentum like perfect presses — no full-friction landing tick. W is
+	# released after takeoff so ground accel can't mask friction bleed;
+	# two consecutive held landings compound any loss (~94% then ~88%
+	# unfixed vs ~99% fixed).
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(40)
+
+	Input.action_press("move_forward")
+	await _wait_ticks(30)
+	var cruise := _h_speed(player)
+	_check(cruise > 300.0, "hold-parity: reached run speed (%s)" % cruise)
+
+	# Initial hop via edge press, then HOLD jump (edge long expired by
+	# touchdown) and release W to isolate friction.
+	root.get_node("InputManager")._input(_jump_press_event())
+	await _wait_ticks(2)
+	Input.action_press("jump")
+	Input.action_release("move_forward")
+
+	for landing in [1, 2]:
+		var touched := false
+		for i in 120:
+			await physics_frame
+			if player.is_on_floor():
+				touched = true
+				break
+		_check(touched, "hold-parity: landing %d touched down" % landing)
+		var rehopped := false
+		for i in 20:
+			await physics_frame
+			if not player.is_on_floor() and player.velocity.y > 100.0:
+				rehopped = true
+				break
+		_check(rehopped, "hold-parity: landing %d auto-hopped" % landing)
+		if landing == 1:
+			_check(_h_speed(player) >= cruise * 0.95,
+				"hold-parity: single held landing keeps 95%% (%.0f -> %.0f)" \
+					% [cruise, _h_speed(player)])
+	Input.action_release("jump")
+	_check(_h_speed(player) >= cruise * 0.93,
+		"hold-parity: two held landings keep 93%% (%.0f -> %.0f)" % [cruise, _h_speed(player)])
 
 	world.queue_free()
 	await process_frame

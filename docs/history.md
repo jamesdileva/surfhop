@@ -568,3 +568,24 @@ Applied both fixes in that spirit.
 - No behavior changed (comments/docs/tests only).
 - `audit.md`: M3 ✅ fixed-with-correction.
 - Verify: suite **497 / 0**; smoke beginner RESULT=OK.
+
+## Audit backlog M4 — hold-bhop parity (2026-09-24)
+
+CS2 research first: `sv_autobunnyhopping` exists precisely so hold-jump
+equals perfect presses (isolates strafing from timing) — our hold path
+paying ~19 u/s per landing violated that contract.
+
+- `BunnyHop` samples `jump_held` every tick; `on_land` extends the same
+  0.1× friction skip to held-hop floor landings (surf walls still
+  excluded). The hop still fires next tick from `Jump`. No reorder, no
+  Jump change — minimal diff, engine boundary intact.
+- `_test_bhop_hold_parity`: W released to isolate friction, two
+  consecutive held landings (compounds bleed): 95% single / 93% double.
+- Negative control run (skip temporarily disabled): exactly the predicted
+  320→301→283 red, everything else green — the test discriminates, not
+  vacuous.
+- Emergent confirmation: beginner smoke bot (holds jump) now travels
+  743u/5s vs 661u before.
+- User guide bhop section notes zero-penalty hold.
+- `audit.md`: M4 ✅ fixed.
+- Verify: suite **504 / 0**; smoke beginner RESULT=OK.

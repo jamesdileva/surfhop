@@ -149,14 +149,17 @@ for control, never W into the ramp). Locked by `_test_steep_peel`
 (drop-in + slow-slide retention on 70°, 50° control; solo worlds — a
 shared world broke the control via edge-graze deflection).
 
-### M4. Hold-to-bhop pays full friction every landing (two-tier bhop)
-`Friction` runs at module index 0, `Jump` at 6
-(`MovementController.gd:8-18`); the skipping buffer arms only on
-`jump_just_pressed` (`BunnyHop.gd:18-21`). Press-technique keeps ~98%,
-hold-technique (the advertised default: `auto_bhop=true`, smoke path)
-loses ~19 u/s per landing ≈ 94%, below the suite's own 95% bar — which
-only exercises the press path. **Remedy:** arm the skip on grounded
-hold-jump landings too, or document the tiers; add the parity test (§8.5).
+### M4. Hold-to-bhop paid full friction every landing — FIXED ✅
+Friction (module 0) ran before Jump (module 6) with the skip buffer armed
+only on fresh presses: holders paid one full-friction tick (~19 u/s at
+320) per landing. **Fixed:** BunnyHop samples `jump_held` every tick and
+extends the same 0.1× skip to held-hop floor landings (surf-wall
+touchdowns still excluded); the hop itself still fires next tick from
+Jump. CS2 grounding: `sv_autobunnyhopping` exists precisely so hold
+equals perfect presses — verified by negative control (without the fix:
+320→301→283 across two landings, exactly the predicted bleed; with it:
+parity). Locked by `_test_bhop_hold_parity` (95% single / 93% double,
+W released to isolate friction); guide notes zero-penalty hold.
 
 ### M5. One-tick state lag + GROUND beats SURF at every lip/seam
 `_resolve_state()` reads last tick's contacts (`MovementController.gd:86,
@@ -374,8 +377,10 @@ suite.
    asserts.
 5. ~~M2: low exits~~ DONE — FloorC +70u, R2b DOWN-step seam, R2/R3/R4
    verified fine.
-6. ~~M3: steep curve~~ DONE this session — experiment proved retention
-   (no peel) on 70°; comment + guide corrected, `_test_steep_peel`.
+6. ~~M3: steep curve~~ DONE — retention proven (no peel), comment +
+   guide corrected, `_test_steep_peel`.
+7. ~~M4: hold-bhop parity~~ DONE this session — same skip for held-hop
+   landings, negative control 320→301→283, `_test_bhop_hold_parity`.
 5. M4: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.
