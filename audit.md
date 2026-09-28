@@ -161,17 +161,19 @@ equals perfect presses — verified by negative control (without the fix:
 parity). Locked by `_test_bhop_hold_parity` (95% single / 93% double,
 W released to isolate friction); guide notes zero-penalty hold.
 
-### M5. One-tick state lag + GROUND beats SURF at every lip/seam
-`_resolve_state()` reads last tick's contacts (`MovementController.gd:86,
-132-137`); `on_floor()` is checked before steep, so simultaneous
-floor+wall contact (lips, channel junctions, slab creases) classifies
-GROUND → friction 6.0, and a buffered press auto-ejects at the lip via
-`BunnyHop.on_land:31` — contradicting the "surf touchdowns never eject"
-guarantee (whose test only covers pure-wall touchdowns). The A2 entry
-preservation also compensates one tick late (engine clipped during the
-AIR-state contact tick). **Remedy:** prefer SURF on mixed contact when a
-steep normal exists; move preservation to cover the contact tick; extend
-the no-eject test to lip (floor+wall) touchdowns.
+### M5. GROUND-beats-SURF braked lip carves — FIXED at the friction layer ✅
+Verified all three sub-claims with weights: (a) 1-tick state lag is real
+but 10ms-negligible — state machine untouched by design; (b) simultaneous
+floor+wall classifies GROUND — real, but analysis showed friction is its
+ONLY material gameplay effect (accel caps, jump/coyote, and HUD are all
+already correct on real ground); (c) preservation off-by-one is real but
+bounded (wall-slide preserves tangential velocity). **Fixed (b) only:**
+`Friction` uses the surf rate when steep contact exists AND horizontal
+speed exceeds walk speed (a carve, not standing); at/below walk speed
+full friction still stops wall-leaners. No hysteresis state to mistune.
+Locked by `_test_mixed_contact_friction` (carve keeps ~396/400, lean
+stops, no-contact control bleeds); lip-riding integration covered by the
+beginner channel traversal.
 
 ### M6. W-into-ramp energy is added then deleted every tick
 `AirMovement` runs before `Surf` and is enabled in SURF
@@ -379,8 +381,11 @@ suite.
    verified fine.
 6. ~~M3: steep curve~~ DONE — retention proven (no peel), comment +
    guide corrected, `_test_steep_peel`.
-7. ~~M4: hold-bhop parity~~ DONE this session — same skip for held-hop
-   landings, negative control 320→301→283, `_test_bhop_hold_parity`.
+7. ~~M4: hold-bhop parity~~ DONE — same skip for held-hop landings,
+   negative control 320→301→283, `_test_bhop_hold_parity`.
+8. ~~M5: mixed-contact friction~~ DONE this session — surf-rate friction
+   on fast steep contact (lips/seams keep carves); lag + preservation
+   timing verified negligible/bounded, state machine untouched.
 5. M4: hold-bhop friction parity (or documented tiers) + test.
 6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
    lip no-eject test.

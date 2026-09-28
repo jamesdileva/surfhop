@@ -25,6 +25,16 @@ func apply_friction(delta: float, override: float = 1.0) -> void:
 		return
 
 	var friction: float = _controller.config.ground_friction * _controller.friction_override * override
+	# Audit M5: mixed contact (lips, seams, grinding a wall while grounded)
+	# classifies GROUND, but full ground friction there kills carves — the
+	# only material effect of GROUND-beats-SURF (accel caps and jump/coyote
+	# are already correct on real ground). Above walk speed the contact is
+	# a carve, not standing: use the surf rate. At/below walk speed keep
+	# full friction so leaning on walls still stops. State machine
+	# untouched by design (no stickiness hysteresis to mistune).
+	if _controller.get_surface_normal() != Vector3.ZERO \
+			and speed > _controller.config.walk_speed:
+		friction = _controller.config.surf_friction
 	var control: float = maxf(speed, _controller.config.stop_speed)
 	var drop: float = minf(control * friction * delta, speed)
 

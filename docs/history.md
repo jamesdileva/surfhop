@@ -589,3 +589,19 @@ paying ~19 u/s per landing violated that contract.
 - User guide bhop section notes zero-penalty hold.
 - `audit.md`: M4 ✅ fixed.
 - Verify: suite **504 / 0**; smoke beginner RESULT=OK.
+
+## Audit backlog M5 — mixed-contact friction (2026-09-24)
+
+- Verified all three sub-claims with weights: 1-tick lag real but
+  10ms-negligible (state machine untouched by design); GROUND-beats-SURF
+  real with friction as its ONLY material gameplay effect; preservation
+  off-by-one real but bounded (wall-slide keeps tangential velocity).
+- Fix: `Friction` uses surf rate when steep contact exists AND h-speed
+  exceeds walk speed (carve vs standing); slow wall-leaners still stop.
+  No hysteresis state to mistune; no reorder; engine boundary intact.
+- Tests: `_test_mixed_contact_friction` (carve ~396/400, lean stops,
+  control bleeds) — 507 checks green first try, numbers as computed.
+  Lip integration via existing beginner channel traversal.
+- User guide surfing: grinding-at-speed vs standing-still rule.
+- `audit.md`: M5 ✅ fixed (lag/preservation explicitly scoped out).
+- Verify: suite **507 / 0**; smoke beginner RESULT=OK.

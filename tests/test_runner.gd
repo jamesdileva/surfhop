@@ -80,6 +80,7 @@ func _run_all_tests() -> void:
 	_test_player_camera_sensitivity_and_invert()
 	await _test_player_basic_movement()
 	await _test_ground_friction()
+	await _test_mixed_contact_friction()
 	await _test_jump_coyote_and_no_double_jump()
 	await _test_bunny_hop_buffer()
 	await _test_bhop_hold_parity()
@@ -470,6 +471,51 @@ func _test_ground_friction() -> void:
 	_check(vel_module != null and is_zero_approx(vel_module.horizontal_speed()),
 		"Velocity module horizontal_speed() agrees with stopped state")
 
+	world.queue_free()
+	await process_frame
+
+
+func _test_mixed_contact_friction() -> void:
+	# Audit M5: steep contact while grounded must not brake a carve — surf
+	# rate above walk speed — while slow leaning-against-wall contact must
+	# still stop (full friction). Direct module calls with an injected
+	# steep normal; controller physics frozen so nothing else moves
+	# velocity. (Full lip-riding integration is covered by the beginner
+	# channel traversal: SURF + exit asserts.)
+	var spawned := _spawn_test_player()
+	var world: Node3D = spawned[0]
+	var player: Player = spawned[1]
+	await _wait_ticks(2)
+	player.movement_controller.set_physics_process(false)
+
+	var friction: Friction = player.movement_controller.get_module(Friction)
+	var idle := InputState.new()
+	var steep := Vector3(-0.8, 0.6, 0.0)  # wall contact, dot 0.6 < cos45
+
+	# Fast carve + steep contact: surf-rate bleed only (400 -> ~396).
+	player.velocity = Vector3(400.0, 0.0, 0.0)
+	player.movement_controller._steep_normal = steep
+	for i in 20:
+		friction.process(idle, 0.01)
+	_check(_h_speed(player) > 390.0,
+		"fast grind keeps speed under steep contact (%.0f)" % _h_speed(player))
+
+	# Slow lean + steep contact: full friction still stops.
+	player.velocity = Vector3(100.0, 0.0, 0.0)
+	for i in 20:
+		friction.process(idle, 0.01)
+	_check(_h_speed(player) < 50.0,
+		"slow lean against a wall still stops (%.0f)" % _h_speed(player))
+
+	# Control: fast slide with no steep contact bleeds fully.
+	player.movement_controller._steep_normal = Vector3.ZERO
+	player.velocity = Vector3(400.0, 0.0, 0.0)
+	for i in 20:
+		friction.process(idle, 0.01)
+	_check(_h_speed(player) < 140.0,
+		"control: no-contact slide bleeds fully (%.0f)" % _h_speed(player))
+
+	player.movement_controller.set_physics_process(true)
 	world.queue_free()
 	await process_frame
 

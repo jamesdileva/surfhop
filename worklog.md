@@ -1,20 +1,20 @@
-# Worklog — audit backlog M4: hold-bhop parity (2026-09-24)
+# Worklog — audit backlog M5: mixed-contact friction (2026-09-24)
 
-Severity order; audit.md carries ✅ (M4).
+Severity order; audit.md carries ✅ (M5, friction layer only).
 
-## Research
-CS2 `sv_autobunnyhopping 1` = hold jump, server times hops perfectly —
-hold MUST equal perfect presses. Our hold path paid ~19 u/s/landing.
+## Verification (weighted, not all claims equal)
+- 1-tick state lag: real, 10ms, negligible → state machine untouched.
+- GROUND-beats-SURF: real; friction its ONLY material effect.
+- Preservation off-by-one: real, bounded → untouched.
 
 ## Shipped
-- BunnyHop samples `jump_held`; same 0.1× skip on held-hop floor
-  landings (surf excluded). Hop still fires from Jump next tick.
-- `_test_bhop_hold_parity` (W off, two landings compound): 95/93 bars.
-- Negative control: 320→301→283 red without fix, all else green.
-- Guide: zero-penalty hold note. audit.md M4 ✅.
+- Friction: surf rate on steep contact + h > walk_speed; full stop
+  otherwise. No hysteresis, no reorder.
+- `_test_mixed_contact_friction` (carve/lean/control triple).
+- Guide one-liner. audit.md M5 ✅.
 
 ## Verify
-- `tests/test_runner.gd`: 504 checks, 0 failures, exit 0.
-- Smoke beginner RESULT=OK (743u vs 661u before — bot holds jump).
+- `tests/test_runner.gd`: 507 checks, 0 failures, exit 0.
+- Smoke beginner RESULT=OK.
 
-Next: M5 (mixed-contact prefers SURF) or as user calls it.
+Next: M6 (surf steering coverage) or as user calls it.
