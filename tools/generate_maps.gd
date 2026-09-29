@@ -438,10 +438,12 @@ func build_challenge_oc() -> void:
 	_static_body("FloorBridge", Vector3(150.0, 100.0, 1050.0), Vector3(0.0, -50.0, -3575.0)) # y=0 z -4100..-3050 (narrow!)
 	_static_body("FloorC", Vector3(500.0, 100.0, 1500.0), Vector3(0.0, -50.0, -4850.0))  # y=0 z -4100..-5600
 
-	# Banked surf wall on FloorC's right side (face at x=90, z -4550..-5050):
+	# Banked surf wall on FloorC's right side (face at x=80, z -4550..-5050):
 	# the map's only surfable geometry. Beside the main line so the bhop
-	# route stays pure — veer right and press D into the face to carve.
-	_surf_wall("SurfRampB1", 90.0, -4800.0, 500.0, 1, 0.0)
+	# route stays pure — veer right, hop onto the face (grounded contact
+	# doesn't surf), and press D into it to carve. Face at 80 keeps the
+	# whole body inside FloorC's ±250 bounds (was 90: 7u overhang).
+	_surf_wall("SurfRampB1", 80.0, -4800.0, 500.0, 1, 0.0)
 
 	# Pillar slalom 1.
 	for x: float in [-150.0, 0.0, 150.0]:
@@ -462,6 +464,10 @@ func build_challenge_oc() -> void:
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -5450.0))
 	_checkpoint("Checkpoint2", Vector3(0.0, 40.0, -3600.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
+
+	# Audit M8: telegraph the hop entry — grounded contact doesn't surf.
+	_sign("SurfSign", "SURF WALL\nHop onto the banked face and hold D\nto carve along it.",
+		Vector3(150.0, 40.0, -4300.0))
 
 	_lighting()
 	_finish_map("challenge_oc")

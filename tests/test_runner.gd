@@ -2663,6 +2663,26 @@ func _test_challenge_oc_roles() -> void:
 		var tilt: float = rad_to_deg(absf(bank.rotation.z))
 		_check(tilt > 30.0 and tilt < 40.0,
 			"surf wall banked 34 from vertical = 56-degree face (%.1f)" % tilt)
+		# Audit M8: face at x=80 with the whole body inside FloorC bounds
+		# (was 90: 7u overhang past ±250).
+		var bshape := (bank.get_node("CollisionShape3D") as CollisionShape3D).shape as BoxShape3D
+		var trad: float = absf(bank.rotation.z)
+		var face_x: float = bank.position.x \
+			- (bshape.size.y / 2.0 * sin(trad) + bshape.size.x / 2.0 * cos(trad))
+		var max_x: float = bank.position.x \
+			+ (bshape.size.y / 2.0 * sin(trad) + bshape.size.x / 2.0 * cos(trad))
+		_check(face_x > 78.0 and face_x < 82.0,
+			"surf face at x=80 (%.1f)" % face_x)
+		_check(max_x < 250.0,
+			"wall body fully inside FloorC bounds (max x=%.1f)" % max_x)
+
+	var surf_sign: Area3D = map_node.get_node_or_null("SurfSign")
+	_check(surf_sign != null and surf_sign is TutorialSign,
+		"surf entry sign present")
+	if surf_sign != null:
+		var surf_label: Label3D = surf_sign.get_node("SignLabel")
+		_check(surf_label.text.contains("SURF"),
+			"surf sign text set")
 
 	var wall_mesh: MeshInstance3D = null
 	var floor_mesh: MeshInstance3D = null
@@ -2687,7 +2707,7 @@ func _test_challenge_oc_roles() -> void:
 	# Ride the banked wall: drop onto its face, carve along it.
 	var player_root := Node3D.new()
 	root.add_child(player_root)
-	var rider: Player = _spawn_test_player_at(player_root, Vector3(128.0, 120.0, -4700.0))
+	var rider: Player = _spawn_test_player_at(player_root, Vector3(118.0, 120.0, -4700.0))
 	rider.velocity = Vector3(0.0, -80.0, -320.0)
 	var surfing := false
 	for i in 200:
@@ -2706,6 +2726,14 @@ func _test_challenge_oc_roles() -> void:
 				break
 		_check(furthest < z_at_entry - 60.0,
 			"rider carves along the wall (z %.0f -> %.0f)" % [z_at_entry, furthest])
+
+	# Surf sign reveals on approach (same pattern as tutorial signs).
+	if surf_sign != null:
+		rider.velocity = Vector3.ZERO
+		rider.position = surf_sign.position + Vector3(0.0, -30.0, 0.0)
+		await _wait_ticks(4)
+		_check((surf_sign.get_node("SignLabel") as Label3D).visible,
+			"surf sign appears when player approaches")
 	player_root.queue_free()
 
 	loader.unload_current()

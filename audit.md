@@ -204,12 +204,14 @@ per crossing is accepted; truly capless chains belong to M10.)
 Locked by the seam-ride block (entry + cross + handoff + momentum) plus
 the pre-existing ruler assert (now 70u, still < 150).
 
-### M8. OC SurfRampB1 needs a hop to surf; body overhangs the edge
-Grounded contact classifies GROUND, so walk-in riders grind instead of
-surfing — must hop (56u apex reaches the lower third, face x≈128 at apex)
-then carve. "Veer and press D" omits the hop. Body center x=173.7 extends
-to 257, 7u past FloorC's ±250 edge. **Remedy:** document the hop entry
-(surf sign), pull face to x=80.
+### M8. OC wall overhung the edge with unsigned entry — FIXED ✅
+Face was at x=90 with the body center reaching x=257, 7u past FloorC's
+±250 edge; nothing telegraphed the hop-to-surf entry. **Fixed:** face
+pulled to x=80 (body max 247.4, inside bounds) plus a `SurfSign`
+("hop onto the banked face and hold D") 250u before the wall, reusing the
+tutorial-sign proximity pattern. Locked by face/overhang asserts, sign
+presence/text/reveal asserts, and the updated live ride (drop follows the
+face).
 
 ### M9. Beginner "unhoppable" channels are hoppable at speed
 At 600 u/s (`R=750`) the whole 610u channel+gap clears longitudinally —
@@ -403,18 +405,17 @@ suite.
    timing verified negligible/bounded, state machine untouched.
 9. ~~M6: surf steering~~ DONE this session — carve proven (> 15° vs
    drift, speed kept), wish-clip dropped for lack of justification.
-10. ~~M7: ridden seam test~~ DONE this session — overlap attempt
-    trace-proven to pinch riders (AIR stall, frozen h-speed); rebuilt as
-    drop-transfer (R2b −65y, same 50°), handoff + momentum + ≤1 cap-graze
-    green; kill-check W-hygiene fix included.
-11. M8: OC wall face x=80 + surf signage (hop entry).
-11. M8: OC wall face x=80 + surf signage (hop entry).
+10. ~~M7: ridden seam test~~ DONE — overlap attempt trace-proven to
+    pinch riders (AIR stall, frozen h-speed); rebuilt as drop-transfer
+    (R2b −65y, same 50°), handoff + momentum + ≤1 cap-graze green;
+    kill-check W-hygiene fix included.
+11. ~~M8: OC wall + signage~~ DONE this session — face at x=80 in
+    bounds, SurfSign telegraphs hop entry, asserts + live ride.
 12. M10: rollercoaster rework of intermediate/advanced (separate sprint —
     biggest item here).
 13. Minors batch: M9/beginner comment, m7 coplanar embedding, m1 snap
-    ownership, dead knobs, sweep blind spots.
-10. M6/m3/m4/m5/m6/m8: dead knobs (wire or remove), clamp docs, glow
-    seam behavior, grid fade, sweep blind spots.
+    ownership, dead knobs, sweep blind spots, glow seam behavior, grid
+    fade, clamp docs.
 
 ## 9. Do-not warnings
 

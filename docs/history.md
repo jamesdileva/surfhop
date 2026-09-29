@@ -641,3 +641,15 @@ paying ~19 u/s per landing violated that contract.
   bit-stable 2.24u readings; print removed after.)
 - `audit.md`: M7 ✅ fixed; M2 paragraph corrected (overlap superseded).
 - Verify: suite **516 / 0**; smoke advanced RESULT=OK.
+
+## Audit backlog M8 — OC wall in-bounds + signage (2026-09-24)
+
+- Wall face 90 → 80 (body max 247.4, inside FloorC ±250; was 7u over).
+  Same 56° face math, shifted.
+- New `SurfSign` 250u before the wall: "hop onto the banked face and hold
+  D" — grounded contact doesn't surf, now telegraphed in-world (tutorial-
+  sign proximity pattern).
+- Tests: face/overhang asserts, sign presence/text/reveal, live ride drop
+  follows the face (128 → 118).
+- `audit.md`: M8 ✅ fixed; backlog tail deduplicated.
+- Verify: suite **521 / 0**; smoke challenge_oc RESULT=OK.
