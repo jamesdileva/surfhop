@@ -1,20 +1,18 @@
-# Worklog — audit backlog M5: mixed-contact friction (2026-09-24)
+# Worklog — audit backlog M6: surf steering (2026-09-24)
 
-Severity order; audit.md carries ✅ (M5, friction layer only).
+Coverage, not a fix; audit.md carries ✅ (M6).
 
-## Verification (weighted, not all claims equal)
-- 1-tick state lag: real, 10ms, negligible → state machine untouched.
-- GROUND-beats-SURF: real; friction its ONLY material effect.
-- Preservation off-by-one: real, bounded → untouched.
+## Result
+A/D + mouse redirects rides (> 15° carve vs drift, speed kept) — green
+first try. W-projection-away is correct CS doctrine; wish-clip dropped
+for lack of justification. No behavior changed.
 
 ## Shipped
-- Friction: surf rate on steep contact + h > walk_speed; full stop
-  otherwise. No hysteresis, no reorder.
-- `_test_mixed_contact_friction` (carve/lean/control triple).
-- Guide one-liner. audit.md M5 ✅.
+- `_test_surf_steering` + `_ride_surf_face` helper (steer vs control).
+- audit.md M6 ✅ + backlog list cleanup.
 
 ## Verify
-- `tests/test_runner.gd`: 507 checks, 0 failures, exit 0.
+- `tests/test_runner.gd`: 511 checks, 0 failures, exit 0.
 - Smoke beginner RESULT=OK.
 
-Next: M6 (surf steering coverage) or as user calls it.
+Next: M7 (ridden seam test) or as user calls it.

@@ -175,13 +175,15 @@ Locked by `_test_mixed_contact_friction` (carve keeps ~396/400, lean
 stops, no-contact control bleeds); lip-riding integration covered by the
 beginner channel traversal.
 
-### M6. W-into-ramp energy is added then deleted every tick
-`AirMovement` runs before `Surf` and is enabled in SURF
-(`AirMovement.gd:10-14`); `process_surf` then projects the normal
-component away. Only tangential A/D + mouse steering survives — correct
-per CS doctrine (never W on ramps) but zero suite coverage applies any
-input during SURF (all rides are no-input slides). **Remedy:** add the
-steering test (§8.1); optionally clip wish to the plane pre-accel.
+### M6. Surf steering had zero coverage — COVERED, no physics fix needed ✅
+`AirMovement` runs before `Surf` and stays enabled in SURF, so W-into-ramp
+is added then projected away each tick. Verified this is correct, not a
+bug: the guide already teaches "never W into the ramp", and the new test
+proves A/D + mouse redirects rides (> 15° carve vs hands-off drift, speed
+kept) — the tangential residual is the whole steering mechanism, exactly
+as CS doctrine expects. The optional wish-clip was dropped: no code change
+could be justified against green evidence. Locked by `_test_surf_steering`
+(+ `_ride_surf_face` helper with hands-off control).
 
 ### M7. Seam chains asserted by ruler, never ridden
 `steep_normal()` keeps only the FIRST steep contact (`Collision.gd:32-39`)
@@ -383,16 +385,17 @@ suite.
    guide corrected, `_test_steep_peel`.
 7. ~~M4: hold-bhop parity~~ DONE — same skip for held-hop landings,
    negative control 320→301→283, `_test_bhop_hold_parity`.
-8. ~~M5: mixed-contact friction~~ DONE this session — surf-rate friction
+8. ~~M5: mixed-contact friction~~ DONE — surf-rate friction
    on fast steep contact (lips/seams keep carves); lag + preservation
    timing verified negligible/bounded, state machine untouched.
-5. M4: hold-bhop friction parity (or documented tiers) + test.
-6. M2+M5: mixed-contact prefers SURF; preservation covers contact tick;
-   lip no-eject test.
-7. M8: OC wall face x=80 + surf signage (hop entry).
-8. M2-exits/M10: exit daylighting pass; rollercoaster rework of
-   intermediate/advanced (separate sprint — biggest item here).
-9. M9/m7/m1: comment correction, coplanar embedding, snap ownership.
+9. ~~M6: surf steering~~ DONE this session — carve proven (> 15° vs
+   drift, speed kept), wish-clip dropped for lack of justification.
+10. M7: ridden seam test (R2→R2b across, zero GROUND ticks).
+11. M8: OC wall face x=80 + surf signage (hop entry).
+12. M10: rollercoaster rework of intermediate/advanced (separate sprint —
+    biggest item here).
+13. Minors batch: M9/beginner comment, m7 coplanar embedding, m1 snap
+    ownership, dead knobs, sweep blind spots.
 10. M6/m3/m4/m5/m6/m8: dead knobs (wire or remove), clamp docs, glow
     seam behavior, grid fade, sweep blind spots.
 

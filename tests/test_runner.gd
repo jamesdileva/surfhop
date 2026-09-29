@@ -89,6 +89,7 @@ func _run_all_tests() -> void:
 	await _test_surf_polish()
 	await _test_surf_glide_holds()
 	await _test_steep_peel()
+	await _test_surf_steering()
 	await _test_tuning_measurements()
 	await _test_fixed_tick_determinism()
 	await _test_movement_debug_tools()
@@ -1047,6 +1048,64 @@ func _test_steep_peel() -> void:
 	_check(kept >= 90, "slow rider retains SURF on 50-degree face (%d ticks)" % kept)
 	world50.queue_free()
 	await process_frame
+
+
+## Rides one 50-degree face with scripted inputs; returns [heading_change,
+## end_speed] over the 60-tick steering window. steer=true holds D and yaws
+## right (classic carve); false coasts hands-off as the control.
+func _ride_surf_face(steer: bool) -> Array:
+	var world := Node3D.new()
+	root.add_child(world)
+	_make_ramp(world, 50.0)
+	var rider: Player = _spawn_test_player_at(world, Vector3(-150.0, 250.0, 0.0))
+	var entered := false
+	for i in 300:
+		await physics_frame
+		if rider.movement_controller.state == MovementState.SURF:
+			entered = true
+			break
+	var result := [0.0, 0.0, false]
+	if not entered:
+		world.queue_free()
+		await process_frame
+		return result
+	for i in 40:  # build slide speed before the steering window
+		await physics_frame
+	var start_heading := Vector2(rider.velocity.x, rider.velocity.z).angle()
+	if steer:
+		Input.action_press("move_right")
+	for i in 60:
+		if steer:
+			rider.rotation.y += 0.03
+		await physics_frame
+	if steer:
+		Input.action_release("move_right")
+	var end_heading := Vector2(rider.velocity.x, rider.velocity.z).angle()
+	result = [
+		absf(wrapf(end_heading - start_heading, -PI, PI)),
+		_h_speed(rider),
+		true,
+	]
+	world.queue_free()
+	await process_frame
+	return result
+
+
+func _test_surf_steering() -> void:
+	# Audit M6: A/D + mouse must redirect a surf ride (the core CS surf
+	# skill) — steering run must turn far more than the hands-off control,
+	# without stalling.
+	var steered := await _ride_surf_face(true)
+	var coasted := await _ride_surf_face(false)
+	_check(steered[2] and coasted[2], "steering test: both rides entered SURF")
+	if not (steered[2] and coasted[2]):
+		return
+	_check(steered[0] > deg_to_rad(15.0),
+		"D + mouse-right carves the ride (turned %.0f deg)" % rad_to_deg(steered[0]))
+	_check(steered[0] > coasted[0] + deg_to_rad(10.0),
+		"carve beats hands-off drift (%.0f vs %.0f deg)" % [rad_to_deg(steered[0]), rad_to_deg(coasted[0])])
+	_check(steered[1] > 100.0,
+		"carving rider keeps sliding speed (%.0f u/s)" % steered[1])
 
 
 func _test_tuning_measurements() -> void:

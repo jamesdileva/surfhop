@@ -605,3 +605,17 @@ paying ~19 u/s per landing violated that contract.
 - User guide surfing: grinding-at-speed vs standing-still rule.
 - `audit.md`: M5 ✅ fixed (lag/preservation explicitly scoped out).
 - Verify: suite **507 / 0**; smoke beginner RESULT=OK.
+
+## Audit backlog M6 — surf steering proven, no fix needed (2026-09-24)
+
+- The core CS surf skill (A/D + mouse redirecting a ride) had zero
+  coverage — all rides were no-input slides. New `_test_surf_steering`
+  (+ `_ride_surf_face` helper with hands-off control): D + mouse-right
+  carves > 15° vs drift with speed kept, green first try.
+- Verdict: W-into-ramp being projected away is correct per CS doctrine
+  (guide already teaches it) — the tangential residual IS the steering
+  mechanism. Optional wish-clip dropped: no code change justifiable
+  against green evidence. No behavior changed (tests only).
+- `audit.md`: M6 ✅ fixed-as-coverage; backlog list renumbered cleanly
+  (stale duplicate tail merged).
+- Verify: suite **511 / 0**; smoke beginner RESULT=OK.
