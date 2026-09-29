@@ -1,18 +1,22 @@
-# Worklog — audit backlog M6: surf steering (2026-09-24)
+# Worklog — audit backlog M7: drop-transfer seam (2026-09-24)
 
-Coverage, not a fix; audit.md carries ✅ (M6).
+Hardest slice so far; audit.md carries ✅ (M7, with M2 correction).
 
-## Result
-A/D + mouse redirects rides (> 15° carve vs drift, speed kept) — green
-first try. W-projection-away is correct CS doctrine; wish-clip dropped
-for lack of justification. No behavior changed.
+## Diagnosis (trace evidence)
+The M2 overlap fix trapped riders: position/state trace showed an AIR
+stall with frozen h-speed in the end-cap pinch — never touching R2b.
+Overlapping boxes don't hand off. Also caught: the handoff asserts as
+first written would pass on broken geometry too (airborne drift fakes
+momentum) — strengthened to require SURF past the seam before trusting.
 
 ## Shipped
-- `_test_surf_steering` + `_ride_surf_face` helper (steer vs control).
-- audit.md M6 ✅ + backlog list cleanup.
+- R2b −65y, same 50.0° shape (drop-transfer; converges by construction).
+- Seam ride: entry + cross + handoff + momentum + ≤1 cap-graze.
+- Kill-check W-hygiene (drift-luck straddle explained + fixed).
+- audit.md M7 ✅, M2 corrected.
 
 ## Verify
-- `tests/test_runner.gd`: 511 checks, 0 failures, exit 0.
-- Smoke beginner RESULT=OK.
+- `tests/test_runner.gd`: 516 checks, 0 failures, exit 0.
+- Smoke advanced RESULT=OK.
 
-Next: M7 (ridden seam test) or as user calls it.
+Next: M8 (OC wall face + signage) or as user calls it.

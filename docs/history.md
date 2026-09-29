@@ -619,3 +619,25 @@ paying ~19 u/s per landing violated that contract.
 - `audit.md`: M6 ✅ fixed-as-coverage; backlog list renumbered cleanly
   (stale duplicate tail merged).
 - Verify: suite **511 / 0**; smoke beginner RESULT=OK.
+
+## Audit backlog M7 — drop-transfer seam, pinch-trap lesson (2026-09-24)
+
+- The M2 overlap fix (5u DOWN step) looked right on paper. The new live
+  ride test with a position/state trace proved otherwise: riders stalled
+  in a pinch between the segments' end caps (AIR, frozen h-speed, sliding
+  underside faces) — overlapping boxes trap, they don't hand off. All
+  three handoff asserts would ALSO have passed on the broken seam (drift
+  across the gap with frozen h-speed), so the test was strengthened to
+  require SURF ticks past the seam — which went red as designed.
+- Fix: R2b translated −65y on the same 50.0° shape (drop-transfer). The
+  65° exit trajectory converges onto the shallower face below; even
+  near-zero-speed riders drop straight onto it. Handoff green, momentum
+  kept, ≤1 cap-graze GROUND tick (end caps stay walkable-angled; truly
+  capless chains belong to M10).
+- Test-hygiene fix on the adjacent kill check: released W before the kill
+  teleport — W-held air drift (~0.55u/tick × tick-phase) straddled the 2.0
+  bar, so the check measured drift luck instead of respawn position.
+  Gravity-only settle has 1.2u margin. (Debugged via temporary print +
+  bit-stable 2.24u readings; print removed after.)
+- `audit.md`: M7 ✅ fixed; M2 paragraph corrected (overlap superseded).
+- Verify: suite **516 / 0**; smoke advanced RESULT=OK.

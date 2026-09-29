@@ -367,11 +367,13 @@ func build_advanced() -> void:
 
 	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
 	_ramp("SurfRamp2", Vector3(0.0, -790.0, -12650.0), Vector3(0.0, -1490.0, -12977.0), 360.0)
-	# Audit M2: shifted so the seam is a 5u DOWN step with
-	# overlapping boxes instead of a 13u gap + 10u UP step no ballistic
-	# trajectory can cross (exit vy~-700). Same 50.0-degree shape, just
-	# moved. CS2 rule: linked segments overlap, top vertices almost touch.
-	_ramp("SurfRamp2b", Vector3(0.0, -1495.0, -12985.0), Vector3(0.0, -2095.0, -13488.0), 360.0)
+	# Audit M7: DROP transfer, not overlap. The 5u-overlap attempt pinched
+	# riders between the segments' end caps (trace-proven stall: AIR with
+	# frozen h-speed, never touching R2b's face). R2b sits 65u below R2's
+	# end on the same 50.0-degree shape: the 65° exit trajectory converges
+	# onto its face (steeper rider path meets shallower face), and even
+	# near-zero-speed riders drop straight onto it. CS2 drop-transfer.
+	_ramp("SurfRamp2b", Vector3(0.0, -1560.0, -12985.0), Vector3(0.0, -2160.0, -13488.0), 360.0)
 	_ramp("SurfRamp4", Vector3(0.0, -2090.0, -19330.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))

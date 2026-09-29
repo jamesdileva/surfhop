@@ -123,9 +123,11 @@ punishment landed specifically on flat same-level gaps.)
   top right at the edge (was: face hit landing level 48u over the void,
   riders fell short into the slab edge). Assert: exit past edge ≤ 60u and
   within 40u of top level.
-- Adv R2→R2b: **fixed** — R2b translated to a 5u DOWN step with
-  overlapping boxes (was: 13u gap + 10u UP step no ballistic trajectory
-  can cross). Same 50.0° shape. Assert: no UP step, plan overlap.
+- Adv R2→R2b: **fixed, in two attempts** — the M2 DOWN-step overlap
+  looked right but trace evidence (M7 investigation) proved riders stalled
+  in a pinch between the end caps; final form is a drop-transfer (R2b
+  −65y, same 50° shape; 65° exit converges onto the shallower face).
+  Assert: no UP step, plan overlap, live handoff.
 - Inter R2 / R3, Adv R4: **re-derived during the fix and need NO change**
   — the audit treated "buried face end" as "exit fails", but the
   face-meets-slab-top transition happens 15–65u BEFORE the buried portion
@@ -185,11 +187,22 @@ as CS doctrine expects. The optional wish-clip was dropped: no code change
 could be justified against green evidence. Locked by `_test_surf_steering`
 (+ `_ride_surf_face` helper with hands-off control).
 
-### M7. Seam chains asserted by ruler, never ridden
-`steep_normal()` keeps only the FIRST steep contact (`Collision.gd:32-39`)
-— at the R2(65°)→R2b(50°) seam both planes touch and the second is
-discarded. The suite asserts `distance < 150u` and teleports onto each
-ramp solo. **Remedy:** ride-across-seam test with zero GROUND ticks (§8.3).
+### M7. Seam was ruler-measured, and the first fix was wrong — FIXED via drop-transfer ✅
+The suite asserted `distance < 150u` and teleported onto each ramp solo.
+First attempt (5u DOWN-step overlap, same session as M2) looked right on
+paper — but the new live ride test (position/state trace) proved riders
+stalled in a pinch between the segments' end caps: AIR state, frozen
+h-speed, sliding underside faces, never touching R2b. Overlapping boxes
+don't hand off; they trap.
+**Fixed:** R2b translated −65y on the same 50.0° shape — a CS2
+drop-transfer. The 65° exit trajectory converges onto the shallower face
+below (a steeper path always meets a shallower face), and even
+near-zero-speed riders drop straight onto it. Handoff proven: SURF ticks
+past the seam, ≤1 cap-graze GROUND tick, momentum kept. (Boxed-segment
+end caps stay walkable-angled by construction — one graze tick ≈ 24 u/s
+per crossing is accepted; truly capless chains belong to M10.)
+Locked by the seam-ride block (entry + cross + handoff + momentum) plus
+the pre-existing ruler assert (now 70u, still < 150).
 
 ### M8. OC SurfRampB1 needs a hop to surf; body overhangs the edge
 Grounded contact classifies GROUND, so walk-in riders grind instead of
@@ -379,8 +392,8 @@ suite.
 3. ~~B6/B7: respawn latch + MapSelect filter~~ DONE.
 4. ~~M1: flat gaps~~ DONE — all four at exactly 200u, `_gap_between`
    asserts.
-5. ~~M2: low exits~~ DONE — FloorC +70u, R2b DOWN-step seam, R2/R3/R4
-   verified fine.
+5. ~~M2: low exits~~ DONE — FloorC +70u, R2/R3/R4 verified fine;
+   R2b finished under M7 as a drop-transfer (overlap attempt superseded).
 6. ~~M3: steep curve~~ DONE — retention proven (no peel), comment +
    guide corrected, `_test_steep_peel`.
 7. ~~M4: hold-bhop parity~~ DONE — same skip for held-hop landings,
@@ -390,7 +403,11 @@ suite.
    timing verified negligible/bounded, state machine untouched.
 9. ~~M6: surf steering~~ DONE this session — carve proven (> 15° vs
    drift, speed kept), wish-clip dropped for lack of justification.
-10. M7: ridden seam test (R2→R2b across, zero GROUND ticks).
+10. ~~M7: ridden seam test~~ DONE this session — overlap attempt
+    trace-proven to pinch riders (AIR stall, frozen h-speed); rebuilt as
+    drop-transfer (R2b −65y, same 50°), handoff + momentum + ≤1 cap-graze
+    green; kill-check W-hygiene fix included.
+11. M8: OC wall face x=80 + surf signage (hop entry).
 11. M8: OC wall face x=80 + surf signage (hop entry).
 12. M10: rollercoaster rework of intermediate/advanced (separate sprint —
     biggest item here).

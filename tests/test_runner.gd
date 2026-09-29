@@ -2412,8 +2412,57 @@ func _test_advanced_map() -> void:
 				break
 		_check(surfing, "%s produces SURF state" % ramp_info[0])
 
-	# Kill plane respawn mid-course.
+	# Audit M7: ride the R2->R2b seam live (ruler asserts aren't riding).
+	# Drop-transfer design: R2b's face sits below R2's exit on the same
+	# 50° shape, so the 65° exit trajectory converges onto it (a steeper
+	# rider path always meets a shallower face below). Assert the handoff
+	# directly — frozen h-speed in free fall would fake momentum checks.
+	player.position = Vector3(0.0, -1050.0, -12780.0)
+	player.velocity = Vector3(0.0, -120.0, -250.0)
+	# Let the teleport settle: contact flags refresh on the next move, so
+	# pre-teleport state must not leak into the entry/crossing windows.
+	await physics_frame
+	await physics_frame
+	var seam_entered := false
+	for i in 90:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			seam_entered = true
+			break
+	_check(seam_entered, "seam ride enters SURF on R2")
+	if seam_entered:
+		var h_at_entry := _h_speed(player)
+		var ground_ticks := 0
+		var crossed := false
+		var surf_post_seam := 0
+		for i in 300:
+			await physics_frame
+			if player.movement_controller.state == MovementState.GROUND:
+				ground_ticks += 1
+			if player.position.z < -13100.0:
+				crossed = true
+				for j in 60:
+					await physics_frame
+					if player.movement_controller.state == MovementState.SURF:
+						surf_post_seam += 1
+					if player.position.z < -13200.0:
+						break
+				break
+		_check(crossed, "seam ride crosses onto R2b (at %s)" % player.position)
+		_check(ground_ticks <= 1,
+			"seam crossing touches at most one GROUND tick (%d)" % ground_ticks)
+		_check(surf_post_seam >= 5,
+			"seam hands off to R2b face (SURF %d ticks past seam)" % surf_post_seam)
+		_check(_h_speed(player) >= h_at_entry * 0.85,
+			"seam keeps momentum (%.0f -> %.0f)" % [h_at_entry, _h_speed(player)])
+
+	# Kill plane respawn mid-course. Release W first: with move held, air
+	# accel drifts the respawned rider ~0.55u/tick, and 3-vs-4 drift ticks
+	# (tick-phase trivia) straddles the 2.0 bar — the check must measure
+	# respawn POSITION, not drift luck. Gravity-only settle is ~0.8u.
+	Input.action_release("move_forward")
 	player.position = Vector3(0.0, -4700.0, -9010.0)
+	player.velocity = Vector3.ZERO
 	await _wait_ticks(4)
 	_check(player.position.distance_to(gm.respawn_transform.origin) < 2.0,
 		"kill plane respawn works on advanced course")
