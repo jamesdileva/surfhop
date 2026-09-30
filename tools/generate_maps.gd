@@ -393,6 +393,81 @@ func build_advanced() -> void:
 # --------------------------------------------------------------- challenges --
 
 ## Oscillating wall/platform (AnimatableBody3D + MovingPlatform script).
+# ------------------------------------------------------------- rollercoaster --
+# Audit M10a: dedicated flow map. Start high, drop into linked surf faces
+# with kickers and drop-transfers between them — no flat slogs. Pools
+# double as checkpoints, catch zones, and launch pads. Angles progress
+# 48.7 -> 55 -> 60 with a 65 finale; kickers are net-zero (up ~50-90,
+# land back at grade into the next drop). Gravity stays 800 throughout:
+# airtime comes from speed + geometry, never config tweaks.
+func build_rollercoaster() -> void:
+	map = Node3D.new()
+	map.name = "RollercoasterMap"
+	var meta := MapMetadata.new()
+	meta.map_id = "rollercoaster"
+	meta.display_name = "Rollercoaster"
+	meta.author = "Velocity Engine"
+	meta.difficulty = 3
+	meta.tags = PackedStringArray(["surf", "flow", "air"])
+	meta.movement_config_path = "res://resources/movement/default.tres"
+	meta.kill_plane_y = -2600.0
+	map.set_meta("map_metadata", meta)
+
+	# Spawn platform + drop-in opener (48.7-degree face, prow mount).
+	_static_body("SpawnPlatform", Vector3(400.0, 100.0, 500.0), Vector3(0.0, 550.0, 250.0))
+	_ramp("SurfRampR1", Vector3(0.0, 595.0, -150.0), Vector3(0.0, 60.0, -620.0), 340.0)
+
+	# Pool 1 catch + kicker launch pad. Short 26.6-degree face: a 320 cruise
+	# barely exits it, so the transfer is tuned for real flow speed (450+,
+	# which R1 + pool bhop always provides) — the kicker rewards speed.
+	# The north end starts 100u back along the face line, buried 45u deep
+	# in the pool slab: box end caps are walkable-angled walls, and a cap
+	# sitting at grade in the rider's path perches them (trace-proven
+	# stall). Buried start = clean emerging face, smooth mount.
+	_static_body("Pool1", Vector3(400.0, 100.0, 900.0), Vector3(0.0, -50.0, -1050.0))
+	_ramp("Kicker1", Vector3(0.0, -45.0, -1261.0), Vector3(0.0, 45.0, -1440.0), 250.0, true)
+
+	# Transfer ramp 55 degrees, top meets the kicker flight.
+	_ramp("SurfRampR2", Vector3(0.0, 70.0, -1680.0), Vector3(0.0, -430.0, -2030.0), 320.0)
+
+	# Pool 2 catch + drop-transfer to the 60-degree face (M7 pattern:
+	# steeper exit path converges onto the shallower face below).
+	_static_body("Pool2", Vector3(400.0, 100.0, 800.0), Vector3(0.0, -530.0, -2400.0))
+	_ramp("SurfRampR3", Vector3(0.0, -510.0, -2060.0), Vector3(0.0, -1110.0, -2408.0), 300.0)
+
+	# Pool 3 catch + optional banked carve wall on its east side.
+	_static_body("Pool3", Vector3(520.0, 100.0, 700.0), Vector3(0.0, -1210.0, -2750.0))
+	_surf_wall("SurfRampW1", 90.0, -2900.0, 400.0, 1, -1160.0)
+
+	# Mini V-channel across the 100u gap onto Floor4 (beginner pattern).
+	_surf_channel("SurfRampC", -3400.0, 400.0, -1410.0)
+	_static_body("Floor4", Vector3(400.0, 100.0, 550.0), Vector3(0.0, -1460.0, -3875.0))
+
+	# 65-degree finale ramp into the finish pool.
+	_ramp("SurfRampR4", Vector3(0.0, -1400.0, -3900.0), Vector3(0.0, -2000.0, -4180.0), 300.0)
+	_static_body("Pool4", Vector3(400.0, 100.0, 600.0), Vector3(0.0, -2100.0, -4450.0))
+
+	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 650.0, 150.0))
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -2010.0, -4650.0))
+	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1050.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -440.0, -2400.0))
+	_checkpoint("Checkpoint3", Vector3(0.0, -1120.0, -2750.0))
+	_checkpoint("Checkpoint4", Vector3(0.0, -1370.0, -3700.0))
+	_checkpoint("Checkpoint5", Vector3(0.0, -2010.0, -4400.0))
+	_marker(Vector3(0.0, 630.0, 300.0))
+
+	_sign("DropSign", "FIRST DROP\nRun off the edge and ride\nthe big face down!",
+		Vector3(180.0, 640.0, 150.0))
+	_sign("KickerSign", "KICKER\nRide up it fast\nand fly to the next ramp!",
+		Vector3(180.0, 40.0, -1200.0))
+	_sign("WallSign", "CARVE WALL\nHop on and hold D\nto carve!",
+		Vector3(150.0, -1080.0, -2600.0))
+
+	_lighting()
+	_finish_map("rollercoaster")
+
+
+## Challenge 1: pillar slaloms, low walls, moving walls, narrow bridge.
 func _moving_body(body_name: String, size: Vector3, pos: Vector3,
 		axis: Vector3, amplitude: float, period: float) -> AnimatableBody3D:
 	var body := AnimatableBody3D.new()
@@ -560,6 +635,7 @@ func build_metadata_and_presets() -> void:
 		["challenge_oc", "Obstacle Course", 3, ["bhop", "obstacles"], "res://resources/movement/default.tres", -600.0],
 		["challenge_precision", "Precision Surf", 4, ["surf", "precision"], "res://resources/movement/default.tres", -1800.0],
 		["challenge_speedrun", "Speed Run", 4, ["bhop", "air-strafe", "speed"], "res://resources/movement/default.tres", -1000.0],
+		["rollercoaster", "Rollercoaster", 3, ["surf", "flow", "air"], "res://resources/movement/default.tres", -2600.0],
 	]:
 		var meta := MapMetadata.new()
 		meta.map_id = m[0]
@@ -582,6 +658,7 @@ func build_dev_scenes() -> void:
 		["dev_challenge_oc", "res://scenes/maps/challenge_oc.tscn"],
 		["dev_challenge_precision", "res://scenes/maps/challenge_precision.tscn"],
 		["dev_challenge_speedrun", "res://scenes/maps/challenge_speedrun.tscn"],
+		["dev_rollercoaster", "res://scenes/maps/rollercoaster.tscn"],
 	]:
 		var dev_root := Node3D.new()
 		dev_root.name = dev[0]
@@ -609,6 +686,7 @@ func _initialize() -> void:
 	build_challenge_oc()
 	build_challenge_precision()
 	build_challenge_speedrun()
+	build_rollercoaster()
 	build_dev_scenes()
 	print("ALL MAPS REGENERATED")
 	quit()

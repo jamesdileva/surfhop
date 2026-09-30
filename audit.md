@@ -220,10 +220,22 @@ floor), but the design comment is wrong and speed-lines bypass the lesson.
 **Remedy:** correct the comment; optionally raise walls for the R3
 channel only.
 
-### M10. Intermediate/Advanced are not rollercoasters
-2500–5500u flat bhop slogs between drops plus stop-on-fail voids, vs
-CS2's exit-points-at-next-entry linking with no flat transit. Beginner
-passes (flush alternation). **Remedy:** backlog item — interleave ramps
+### M10. Intermediate/Advanced were not rollercoasters — M10a DONE, M10b pending ✅/⏳
+M10a shipped: new `rollercoaster` map (difficulty 3, tags surf/flow/air).
+Start platform y=600 → 48.7° drop-in opener → Pool1 → 26.6° kicker launch
+→ 55° transfer → drop-transfer to 60° → Pool3 + optional banked carve
+wall → mini V-channel → 65° finale → catch-pool finish. Five pool
+checkpoints, kill −2600, gravity untouched at 800 (airtime from speed +
+geometry, per decision). Test lessons: steep faces need slow-drift drops
+(60° out-descends fast entries); kicker starts must bury (exposed end
+caps perch riders); kicker transfers are tuned for flow speed and tested
+with input-driven bhop cruise, never velocity overwrites (which wedge).
+Locked by discovery/angles/rides/chain-handoff/kicker-launch asserts;
+smoke bot flows 2500u/8s (2× other maps). M10b (inter/advanced relevance
+pass: anti-bypass per ramp, R2b exit, R4 feed) is next. Standing M10b
+finding: 2500–5500u flat bhop slogs between drops plus stop-on-fail
+voids on inter/advanced, vs CS2's exit-points-at-next-entry linking with
+no flat transit. Beginner passes (flush alternation).
 (drop→ramp→drop), convert the M1 flats to surf bridges, add variety
 (curves, trapezoid faces, windows) per §6 tier levers.
 
@@ -411,8 +423,8 @@ suite.
     kill-check W-hygiene fix included.
 11. ~~M8: OC wall + signage~~ DONE this session — face at x=80 in
     bounds, SurfSign telegraphs hop entry, asserts + live ride.
-12. M10: rollercoaster rework of intermediate/advanced (separate sprint —
-    biggest item here).
+12. M10: rollercoaster rework — M10a DONE this session (new map), M10b
+    pending (inter/advanced relevance pass).
 13. Minors batch: M9/beginner comment, m7 coplanar embedding, m1 snap
     ownership, dead knobs, sweep blind spots, glow seam behavior, grid
     fade, clamp docs.

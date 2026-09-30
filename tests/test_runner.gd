@@ -110,6 +110,7 @@ func _run_all_tests() -> void:
 	await _test_advanced_map()
 	await _test_challenge_maps()
 	await _test_challenge_oc_roles()
+	await _test_rollercoaster_map()
 	await _test_kill_planes()
 	await _test_steam()
 	await _test_main_menu_flow()
@@ -2737,6 +2738,185 @@ func _test_challenge_oc_roles() -> void:
 	player_root.queue_free()
 
 	loader.unload_current()
+	await process_frame
+
+
+func _test_rollercoaster_map() -> void:
+	# Audit M10a: dedicated flow map — drop-in opener, kicker air, transfer,
+	# drop-chain, carve wall, channel, steep finale. No flat slogs.
+	var loader: Node = root.get_node("LevelLoader")
+	var gm: Node = root.get_node("GameManager")
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "rollercoaster":
+			entry = e
+			break
+	_check(not entry.is_empty(), "rollercoaster map discovered")
+	if entry.is_empty():
+		return
+	var meta: MapMetadata = entry["metadata"]
+	_check(meta.difficulty == 3, "rollercoaster difficulty 3")
+	_check(meta.tags.has("surf") and meta.tags.has("flow"),
+		"rollercoaster tagged surf/flow")
+	_check(meta.movement_config_path.ends_with("default.tres"),
+		"rollercoaster uses standard config (gravity untouched)")
+	_check(meta.kill_plane_y == -2600.0, "rollercoaster kill plane set")
+
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	var player: Player = _spawn_test_player_at(player_root, Vector3(0.0, 640.0, 300.0))
+	var ts := TimerSystem.new()
+	root.add_child(ts)
+
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "rollercoaster map loads")
+	if not loaded:
+		player_root.queue_free()
+		ts.queue_free()
+		return
+	await _wait_ticks(5)
+	var map_node: Node = loader.current_map
+	_check(gm.total_checkpoints == 5,
+		"exactly 5 checkpoints registered (got %d)" % gm.total_checkpoints)
+	_check(gm.kill_plane_y == -2600.0, "kill plane applied")
+
+	# Honest angles: 48.7 opener, 55 transfer, 60 chain, 65 finale.
+	for ramp_info in [
+		["SurfRampR1", 47.0, 50.0], ["SurfRampR2", 54.0, 56.0],
+		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 64.0, 66.0],
+	]:
+		var e1: Vector3 = map_node.get_meta("%s_e1" % ramp_info[0])
+		var e2: Vector3 = map_node.get_meta("%s_e2" % ramp_info[0])
+		var ang := rad_to_deg(atan(absf(e2.y - e1.y) / absf(e2.z - e1.z)))
+		_check(ang >= ramp_info[1] and ang <= ramp_info[2],
+			"%s honest angle (%.1f deg)" % [ramp_info[0], ang])
+	# Kicker is walkable (< 45), not a surf face.
+	var ke1: Vector3 = map_node.get_meta("Kicker1_e1")
+	var ke2: Vector3 = map_node.get_meta("Kicker1_e2")
+	var kang := rad_to_deg(atan(absf(ke2.y - ke1.y) / absf(ke2.z - ke1.z)))
+	_check(kang < 40.0, "kicker walkable, not surf (%.1f deg)" % kang)
+
+	# Drop-ride every face (raycast-informed entry points).
+	for ramp_info in [
+		["SurfRampR1", Vector3(0.0, 400.0, -385.0), Vector3(0.0, -100.0, -200.0)],
+		["SurfRampR2", Vector3(0.0, -100.0, -1855.0), Vector3(0.0, -100.0, -200.0)],
+		["SurfRampR3", Vector3(0.0, -730.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
+		["SurfRampR4", Vector3(0.0, -1600.0, -4020.0), Vector3(0.0, -60.0, -60.0)],
+	]:
+		player.position = ramp_info[1]
+		player.velocity = ramp_info[2]
+		var surfing := false
+		for i in 80:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF:
+				surfing = true
+				break
+		_check(surfing, "%s produces SURF state" % ramp_info[0])
+
+	# Wall carve (hop entry, OC pattern — same relative drop as the OC
+	# wall test, so identical entry physics).
+	player.position = Vector3(128.0, -1040.0, -2900.0)
+	player.velocity = Vector3(0.0, -80.0, -200.0)
+	var carving := false
+	for i in 60:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			carving = true
+			break
+	_check(carving, "carve wall produces SURF state")
+
+	# Channel ride (beginner pattern).
+	player.position = Vector3(140.0, -1260.0, -3400.0)
+	player.velocity = Vector3(0.0, -80.0, -320.0)
+	var channeling := false
+	for i in 60:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			channeling = true
+			break
+	_check(channeling, "channel produces SURF state")
+
+	# Kicker launch: bhop cruise (W + held jump = auto-bhop chain, the way
+	# players actually arrive) carries real flow speed up the walkable
+	# face; launch airborne with upward velocity, land past it toward R2.
+	# (Scripted velocity overwrites were tried first: forcing horizontal
+	# speed into the incline wedges the rider instead of climbing.)
+	Input.action_press("move_forward")
+	Input.action_press("jump")
+	player.position = Vector3(0.0, 5.0, -1100.0)
+	player.velocity = Vector3(0.0, 0.0, -550.0)
+	var launched := false
+	for i in 200:
+		await physics_frame
+		if not player.is_on_floor() and player.velocity.y > 50.0:
+			launched = true
+			break
+	_check(launched, "kicker launches the rider airborne")
+	var past := false
+	for i in 200:
+		await physics_frame
+		if player.position.z < -1600.0:
+			past = true
+			break
+	Input.action_release("move_forward")
+	Input.action_release("jump")
+	_check(past, "kicker flight clears past its end (at %s)" % player.position)
+
+	# Chain proof: R2 exit velocity reaches R3's face (drop-transfer live).
+	player.position = Vector3(0.0, -430.0, -2030.0)
+	player.velocity = Vector3(0.0, -410.0, -290.0)
+	var chained := false
+	for i in 90:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF \
+				and player.position.z < -2060.0:
+			chained = true
+			break
+	_check(chained, "R2 exit hands off to R3 face (at %s)" % player.position)
+
+	# Start trigger begins the run from spawn.
+	gm.restart()
+	player.position = Vector3(0.0, 630.0, 300.0)
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(6)
+	Input.action_press("move_forward")
+	var running := false
+	for i in 200:
+		await physics_frame
+		if gm.race_state == gm.RaceState.RUNNING:
+			running = true
+			break
+	Input.action_release("move_forward")
+	_check(running, "leaving spawn starts the run")
+
+	# Kill plane respawns at last checkpoint (none yet: spawn area).
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(0.0, -2700.0, -3000.0)
+	await _wait_ticks(4)
+	_check(player.position.distance_to(gm.respawn_transform.origin) < 60.0,
+		"kill plane respawn works on rollercoaster (player=%s respawn=%s)"
+			% [player.position, gm.respawn_transform.origin])
+
+	# Finish the run.
+	player.position = Vector3(0.0, -2010.0, -4655.0)
+	var finished := false
+	for i in 30:
+		await physics_frame
+		if gm.race_state == gm.RaceState.FINISHED:
+			finished = true
+			break
+	_check(finished, "finish line completes the run")
+
+	loader.unload_current()
+	player_root.queue_free()
+	ts.queue_free()
 	await process_frame
 
 

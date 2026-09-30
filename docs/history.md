@@ -653,3 +653,23 @@ paying ~19 u/s per landing violated that contract.
   follows the face (128 → 118).
 - `audit.md`: M8 ✅ fixed; backlog tail deduplicated.
 - Verify: suite **521 / 0**; smoke challenge_oc RESULT=OK.
+
+## Audit backlog M10a — new rollercoaster map (2026-09-24)
+
+Per user: new dedicated map first (M10b relevance pass later); gravity
+stays 800 (airtime from speed + geometry, never config tweaks — lowering
+it would invalidate every tuned gap/map/test).
+
+- Layout: spawn y=600 → 48.7° opener → Pool1 → 26.6° kicker → 55° →
+  drop-transfer 60° → Pool3 (+optional banked wall) → V-channel →
+  65° finale → catch-pool finish. 5 pool checkpoints, kill −2600.
+- Test lessons (all three cost a red run each): steep faces need
+  slow-drift test drops (60° out-descends fast entries); kicker starts
+  must bury inside the pool (exposed end caps perch riders at grade);
+  kicker transfers need flow speed — tested with input-driven bhop
+  cruise, never velocity overwrites (forcing horizontal speed into an
+  incline wedges instead of climbing).
+- Suite-only new files: rollercoaster.tscn + dev + metadata tres.
+- `audit.md`: M10a ✅ done, M10b scoped next.
+- Verify: suite **547 / 0**; smoke rollercoaster RESULT=OK (2500u/8s —
+  the bot genuinely flows, 2× other maps).

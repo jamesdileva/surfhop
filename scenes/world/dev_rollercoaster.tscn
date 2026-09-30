@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_ob8bq"]
+
+[node name="dev_rollercoaster" type="Node3D" unique_id=999179594]
+script = ExtResource("1_ob8bq")
+default_map = "res://scenes/maps/rollercoaster.tscn"
