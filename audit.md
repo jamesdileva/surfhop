@@ -444,8 +444,9 @@ suite.
     kill-check W-hygiene fix included.
 11. ~~M8: OC wall + signage~~ DONE this session — face at x=80 in
     bounds, SurfSign telegraphs hop entry, asserts + live ride.
-12. M10: rollercoaster rework — M10a DONE (new map), M10b DONE this
-    session (R2b daylight, R4 embedded-prow hop entry, bypass verdicts).
+12. M10: rollercoaster rework — M10a DONE (new map), M10b DONE (R2b
+    daylight, R4 prow entry, bypass verdicts), M10c DONE this session
+    (blocker lips: raised face tops +75 so jumps can't fly over).
 13. Minors batch — DONE this session ✅
     - M9: channel "unhoppable" comments corrected (600+ clears accepted).
     - m1: floor_snap_length owned explicitly via MovementConfig (was

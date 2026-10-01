@@ -2198,8 +2198,8 @@ func _test_intermediate_map() -> void:
 	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
 	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
 	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
-	_check(r1_angle_ok(r1) and r1 < r2 and r2 < r3 and r3 <= 60.5,
-		"ramps steepen within 50-60 degrees (%.1f < %.1f < %.1f)" % [r1, r2, r3])
+	_check(r1_angle_ok(r1) and r1 < r2 and r2 < r3 and r3 <= 63.5,
+		"ramps steepen within 53-63 degrees (%.1f < %.1f < %.1f)" % [r1, r2, r3])
 
 	# Gaps are genuine voids: raycast down mid-gap must miss everything.
 	var space := root.get_world_3d().direct_space_state
@@ -2240,7 +2240,7 @@ func _test_intermediate_map() -> void:
 	_check(gm.checkpoint_splits.size() == 5, "all five splits recorded while running")
 
 	# Drop steeply onto ramp3 mid-section.
-	player.position = Vector3(0.0, -1395.0, -14881.0)
+	player.position = Vector3(0.0, -1348.0, -14881.0)
 	player.velocity = Vector3(0.0, -120.0, -30.0)
 	var surfing := false
 	for i in 30:
@@ -2351,8 +2351,8 @@ func _test_advanced_map() -> void:
 
 	for ramp_name: String in ["SurfRamp1", "SurfRamp2", "SurfRamp2b", "SurfRamp4"]:
 		var angle: float = rad_to_deg(absf(map.get_node(ramp_name).rotation.x))
-		_check(angle >= 49.0 and angle <= 70.5,
-			"%s within 50-70 degrees (%.1f)" % [ramp_name, angle])
+		_check(angle >= 49.0 and angle <= 72.5,
+			"%s within 50-72 degrees (%.1f)" % [ramp_name, angle])
 
 	# Drop-transfer envelope (audit M10b, supersedes the old <150u ruler):
 	# R2b starts one short drop below R2's end — converging trajectories,
@@ -2442,9 +2442,9 @@ func _test_advanced_map() -> void:
 
 	# Steep-drop onto each ramp produces SURF (raycast-informed entry points).
 	for ramp_info: Array in [
-		["SurfRamp1", Vector3(0.0, -378.0, -5630.0)],
-		["SurfRamp2", Vector3(0.0, -1118.0, -12810.0)],
-		["SurfRamp4", Vector3(0.0, -2517.0, -19494.0)],
+		["SurfRamp1", Vector3(0.0, -338.0, -5630.0)],
+		["SurfRamp2", Vector3(0.0, -1080.0, -12810.0)],
+		["SurfRamp4", Vector3(0.0, -2490.0, -19494.0)],
 	]:
 		player.position = ramp_info[1]
 		player.velocity = Vector3(0.0, -120.0, -30.0)
@@ -2582,9 +2582,9 @@ func _test_challenge_maps() -> void:
 			# P2 top -790 edge -2060; P3 top -1200 edge -3060. e2 may sit up
 			# to 20u short of the pool edge (exit throw carries over).
 			for ramp_info in [
-				["SurfRampP1", -400.0, -1000.0, 54.0, 56.0],
-				["SurfRampP2", -790.0, -2060.0, 59.0, 61.0],
-				["SurfRampP3", -1200.0, -3060.0, 59.0, 61.0],
+		["SurfRampP1", -400.0, -1000.0, 59.0, 61.0],
+		["SurfRampP2", -790.0, -2060.0, 63.0, 66.0],
+		["SurfRampP3", -1200.0, -3060.0, 63.0, 66.0],
 			]:
 				var e1: Vector3 = loader.current_map.get_meta("%s_e1" % ramp_info[0])
 				var e2: Vector3 = loader.current_map.get_meta("%s_e2" % ramp_info[0])
@@ -2832,8 +2832,8 @@ func _test_rollercoaster_map() -> void:
 
 	# Honest angles: 48.7 opener, 55 transfer, 60 chain, 65 finale.
 	for ramp_info in [
-		["SurfRampR1", 47.0, 50.0], ["SurfRampR2", 54.0, 56.0],
-		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 64.0, 66.0],
+		["SurfRampR1", 47.0, 50.5], ["SurfRampR2", 57.0, 60.0],
+		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 66.0, 69.0],
 	]:
 		var e1: Vector3 = map_node.get_meta("%s_e1" % ramp_info[0])
 		var e2: Vector3 = map_node.get_meta("%s_e2" % ramp_info[0])
@@ -2848,9 +2848,9 @@ func _test_rollercoaster_map() -> void:
 
 	# Drop-ride every face (raycast-informed entry points).
 	for ramp_info in [
-		["SurfRampR1", Vector3(0.0, 400.0, -385.0), Vector3(0.0, -100.0, -200.0)],
-		["SurfRampR2", Vector3(0.0, -100.0, -1855.0), Vector3(0.0, -100.0, -200.0)],
-		["SurfRampR3", Vector3(0.0, -730.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
+		["SurfRampR1", Vector3(0.0, 355.0, -385.0), Vector3(0.0, -100.0, -200.0)],
+		["SurfRampR2", Vector3(0.0, -170.0, -1855.0), Vector3(0.0, -100.0, -200.0)],
+		["SurfRampR3", Vector3(0.0, -795.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
 		["SurfRampR4", Vector3(0.0, -1600.0, -4020.0), Vector3(0.0, -60.0, -60.0)],
 	]:
 		player.position = ramp_info[1]

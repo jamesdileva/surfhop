@@ -691,6 +691,38 @@ it would invalidate every tuned gap/map/test).
 - `audit.md`: M10 ✅ closed (M10a + M10b).
 - Verify: suite **552 / 0**; smoke advanced RESULT=OK.
 
+## Audit M10c — blocker lips (2026-09-24)
+
+User report at playtest: at 1k+ u/s every advanced/intermediate ramp
+could be jumped clean over (apex 56.25 vs face tops at grade+10).
+
+- Physics gre: a jump's apex is 56.25u, so any face whose upper section
+  stays above ~70u across the crossing is un-clearable from same grade.
+- Implemented: intermediate R1(53.4°)/R2(58.4°)/
+  R3(62.2°), advanced R1(62°)/R2(67.1°), precision P1(59.9°)/P2(64.3°)/
+  P3(64.3°), tutorial R1(52.4°), rollercoaster R2(58.6°)/R4(67.5°) each
+  got e1.y += 75 (slopes recompute; e2s keep destinations). R4advanced
+  reverted to M10b anchor (71.4° prow stalled the m10b hop test). R3
+  rollercoaster reverted to M10a prow (raise displaced chain into P2 -
+  trace-proven, documented). R1 rollercoaster reverted (smoke bot
+  collision with raised prow).
+- Test-side: advanced band<=72.5, intermediate r3<=63.5, precision bands
+  raised, rollercoaster bands raised, all ride-drop Y's re-anchored,
+  feed block on advanced R4 no longer asserted (feed removed in M10b).
+- Bot diagnostic (Slice 2 entry): tools/diag_beginner.gd sweeps entry
+  speeds into beginner channel1 and through the channel: 257→338,
+  459→486, 706→718 u/s — all entry speeds SURF and EXIT preserved/faster.
+  No physics scrub in the channel itself. User's uphill-speed-lose
+  report points at (a) carving into the wall top cap (projection snap-
+  resets speed at the 56°-wall/cap≈90∘ corner), or (b) technique
+  expectation (climbing a 56° face converts speed to height by design,
+  CS2 doctrine same: carve across/down, pick it up on descent; launch
+  happens on the exit arc). Guide already taught both; will.verify next
+  session whether guide text needs strengthening with the corner case.
+- `audit.md`: M10 fully closed (a/b/c).
+- Verify: suite **567 / 0**; smokes tutorial/intermediate/advanced/
+  precision/rollercoaster all RESULT=OK (roller 2533u/8s).
+
 ## Audit minors batch (2026-09-24)
 
 - M9 channel comments corrected (600+ flyover accepted prehop).
