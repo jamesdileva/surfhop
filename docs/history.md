@@ -673,3 +673,20 @@ it would invalidate every tuned gap/map/test).
 - `audit.md`: M10a ✅ done, M10b scoped next.
 - Verify: suite **547 / 0**; smoke rollercoaster RESULT=OK (2500u/8s —
   the bot genuinely flows, 2× other maps).
+
+## Audit backlog M10b — R2b daylight, R4 entry, bypass verdicts (2026-09-24)
+
+- R2b exit shortened on its 50° line to daylight 16u over FloorD top, 8u
+  past its edge (was 80u buried). Touchdown math + asserts.
+- R4 entry: FloorE +50u south, R4 top 25u down-face (flush 1u prow);
+  entry is a HOP from the slab (auto-bhop arcs clear the nub, land upper
+  face, ride deep — proven live). Cruise/walk-off entries disproven by
+  trace (70° faces out-descend them; walk-offs wedge in R4's box end).
+  A standalone feed was tried twice (47.7° flicker stall; 53° under-box
+  wedge) and removed — interleave zones trap riders, documented.
+- Bypass verdicts: channels + R2+R2b void force commitment; the rest
+  stays walk-bypassable by geometric necessity (forcing distance
+  contradicts landing distance) — accepted per CS2 prehop doctrine, surf
+  lines pay 2–3× exit speed. Flats stay intentional bhop lines.
+- `audit.md`: M10 ✅ closed (M10a + M10b).
+- Verify: suite **552 / 0**; smoke advanced RESULT=OK.

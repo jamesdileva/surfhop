@@ -362,19 +362,27 @@ func build_advanced() -> void:
 	_static_body("FloorB", Vector3(360.0, 100.0, 3090.0), Vector3(0.0, -850.0, -7365.0))
 	_static_body("FloorC", Vector3(360.0, 100.0, 3590.0), Vector3(0.0, -850.0, -10905.0))
 	_static_body("FloorD", Vector3(360.0, 100.0, 3090.0), Vector3(0.0, -2130.0, -14945.0))
-	_static_body("FloorE", Vector3(360.0, 100.0, 2590.0), Vector3(0.0, -2130.0, -17985.0))
+	# Audit M10b: extended 50u south so R4's face emerges from FloorE's top
+	# (embedded prow, intermediate-R2 pattern) instead of floating 50u past
+	# its edge over the void. Riders mount the emerging 70-degree face at
+	# grade; no feed ramp, no interleave zone, no caps in the rider path.
+	_static_body("FloorE", Vector3(360.0, 100.0, 2640.0), Vector3(0.0, -2130.0, -18010.0))
 	_static_body("FloorF", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -3040.0, -21100.0))
 
 	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
 	_ramp("SurfRamp2", Vector3(0.0, -790.0, -12650.0), Vector3(0.0, -1490.0, -12977.0), 360.0)
-	# Audit M7: DROP transfer, not overlap. The 5u-overlap attempt pinched
-	# riders between the segments' end caps (trace-proven stall: AIR with
-	# frozen h-speed, never touching R2b's face). R2b sits 65u below R2's
-	# end on the same 50.0-degree shape: the 65° exit trajectory converges
-	# onto its face (steeper rider path meets shallower face), and even
-	# near-zero-speed riders drop straight onto it. CS2 drop-transfer.
-	_ramp("SurfRamp2b", Vector3(0.0, -1560.0, -12985.0), Vector3(0.0, -2160.0, -13488.0), 360.0)
-	_ramp("SurfRamp4", Vector3(0.0, -2090.0, -19330.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
+	# Audit M10b: exit daylights over FloorD (was 80u buried — ride to the
+	# bottom clipped into the slab). Same 50.0-degree family, shortened so
+	# the face ends 16u above the top, 8u past its edge: launch off the end
+	# and drop onto FloorD. Touchdown math holds at 0/320/600 entry speeds.
+	_ramp("SurfRamp2b", Vector3(0.0, -1560.0, -12985.0), Vector3(0.0, -2064.0, -13408.0), 360.0)
+	# Audit M10b: R4's top sits 25u down-face along the SAME 70-degree line
+	# (e1 (-2114,-19339), e2 untouched): its box north end then rests flush
+	# at FloorE's extended edge like intermediate R2's proven 1u prow.
+	# Before, the box end hovered 25u above the slab directly in the cruise
+	# lane — riders ground into it and bootstrap-stalled (no SURF in 200
+	# ticks). Same line, same angle, entry unblocked.
+	_ramp("SurfRamp4", Vector3(0.0, -2114.0, -19339.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -2950.0, -22400.0))

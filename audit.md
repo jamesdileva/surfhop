@@ -220,7 +220,29 @@ floor), but the design comment is wrong and speed-lines bypass the lesson.
 **Remedy:** correct the comment; optionally raise walls for the R3
 channel only.
 
-### M10. Intermediate/Advanced were not rollercoasters — M10a DONE, M10b pending ✅/⏳
+### M10. Intermediate/Advanced relevance — M10a DONE, M10b DONE ✅✅
+M10a shipped the new `rollercoaster` map (see above). M10b:
+- **R2b exit daylight** (user-chose fix): shortened on the same 50° line
+  to end 16u above FloorD top, 8u past its edge. Locked by daylight +
+  angle asserts.
+- **R4 entry** (was: 50u void coin-flip): FloorE extended 50u south and
+  R4's top moved 25u down-face so its box end rests flush (R2-pattern 1u
+  prow). Entry is a HOP from the slab (auto-bhop arcs clear the nub and
+  land R4's upper face) — proven live with a deep ride. Cruise and
+  walk-off entries were both disproven by trace: cruise sails over 70°
+  faces (they fall away faster than gravity catches up); walk-offs wedge
+  inside R4's box end. A standalone feed was tried twice and removed
+  (47.7° flickered floor/steep into a friction stall; 53° wedged under
+  R4's box end).
+- **Bypass verdicts** (per-ramp ballistics): beginner channels and the
+  R2+R2b void combo force commitment (SKILLED-ONLY/UNSKIPPABLE ✓);
+  tutorial R1, inter R1–R3, adv R1/R4, precision pools, rollercoaster R3
+  walk-around stay walk-bypassable — ACCEPTED, not fixable without
+  breaking exit-meet geometry (proven twice: forcing distance
+  contradicts landing distance). CS2 doctrine agrees: skilled flyovers
+  are prehop expression; surf lines pay in exit speed (2–3×), which is
+  what times sort on. New ramps follow the rule: exit-meet + daylight,
+  time sorts the rest.
 M10a shipped: new `rollercoaster` map (difficulty 3, tags surf/flow/air).
 Start platform y=600 → 48.7° drop-in opener → Pool1 → 26.6° kicker launch
 → 55° transfer → drop-transfer to 60° → Pool3 + optional banked carve
@@ -231,13 +253,12 @@ geometry, per decision). Test lessons: steep faces need slow-drift drops
 caps perch riders); kicker transfers are tuned for flow speed and tested
 with input-driven bhop cruise, never velocity overwrites (which wedge).
 Locked by discovery/angles/rides/chain-handoff/kicker-launch asserts;
-smoke bot flows 2500u/8s (2× other maps). M10b (inter/advanced relevance
-pass: anti-bypass per ramp, R2b exit, R4 feed) is next. Standing M10b
-finding: 2500–5500u flat bhop slogs between drops plus stop-on-fail
-voids on inter/advanced, vs CS2's exit-points-at-next-entry linking with
-no flat transit. Beginner passes (flush alternation).
-(drop→ramp→drop), convert the M1 flats to surf bridges, add variety
-(curves, trapezoid faces, windows) per §6 tier levers.
+smoke bot flows 2500u/8s (2× other maps).
+Standing M10b notes: 2500–5500u flat bhop slogs between drops remain on
+inter/advanced BY DESIGN (flats are intentional bhop lines; M10a serves
+flow) — vs CS2's exit-points-at-next-entry linking. Beginner passes
+(flush alternation). M10b did not add chains, windows, or curves; those
+stay future work per §6 tier levers.
 
 ---
 
@@ -423,8 +444,8 @@ suite.
     kill-check W-hygiene fix included.
 11. ~~M8: OC wall + signage~~ DONE this session — face at x=80 in
     bounds, SurfSign telegraphs hop entry, asserts + live ride.
-12. M10: rollercoaster rework — M10a DONE this session (new map), M10b
-    pending (inter/advanced relevance pass).
+12. M10: rollercoaster rework — M10a DONE (new map), M10b DONE this
+    session (R2b daylight, R4 embedded-prow hop entry, bypass verdicts).
 13. Minors batch: M9/beginner comment, m7 coplanar embedding, m1 snap
     ownership, dead knobs, sweep blind spots, glow seam behavior, grid
     fade, clamp docs.

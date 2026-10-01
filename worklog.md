@@ -1,21 +1,17 @@
-# Worklog — audit backlog M10a: new rollercoaster map (2026-09-24)
+# Worklog — audit backlog M10b: relevance pass (2026-09-24)
 
-Biggest slice yet; audit.md carries ✅ for M10a (M10b pending).
-
-## Decisions
-- New map (not rework), gravity untouched at 800 (airtime = speed +
-  geometry). M10b (inter/advanced relevance pass) later.
+Closes M10 (M10a + M10b); audit.md carries ✅ throughout.
 
 ## Shipped
-- `rollercoaster` (diff 3, surf/flow/air): spawn 600 → 48.7° → pool →
-  26.6° kicker → 55° → drop-transfer 60° → pool + carve wall →
-  V-channel → 65° finale → pool finish. 5 CPs, kill −2600.
-- Tests: discovery/meta/angles/rides/chain/kicker (~26 asserts).
-- 3 red runs → 3 lessons: slow-drift drops for steep faces, buried
-  kicker starts, input-driven (never overwritten) cruise.
+- R2b exit daylight (16u over FloorD, 8u past edge; same 50° line).
+- R4 entry: FloorE +50u, R4 top −25u down-face (flush prow); hop entry
+  proven live with deep ride. Feed tried twice, removed (documented).
+- Bypass verdicts: force where cheap (channels, void combo); accept
+  the rest (geometry-proof + CS2 prehop doctrine).
 
 ## Verify
-- `tests/test_runner.gd`: 547 checks, 0 failures, exit 0.
-- Smoke rollercoaster RESULT=OK, 2500u/8s flow.
+- `tests/test_runner.gd`: 552 checks, 0 failures, exit 0.
+- Smoke advanced RESULT=OK.
 
-Next: M10b relevance pass + minors, then user playtest.
+Remaining: minors batch (M9 comment, m1/m3/m6/m7/m8, dead knobs, sweep).
+Then: user playtest round.

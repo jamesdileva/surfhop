@@ -2352,12 +2352,53 @@ func _test_advanced_map() -> void:
 		_check(angle >= 49.0 and angle <= 70.5,
 			"%s within 50-70 degrees (%.1f)" % [ramp_name, angle])
 
-	# Ramp-to-ramp seam: Ramp2's downhill end and Ramp2b's uphill end are
-	# geometry-adjacent so flight carries across without touching a floor.
+	# Drop-transfer envelope (audit M10b, supersedes the old <150u ruler):
+	# R2b starts one short drop below R2's end — converging trajectories,
+	# not touching segments. 50-100u down, plan gap < 30u.
 	var r2_end: Vector3 = map.get_meta("SurfRamp2_e2")
 	var r2b_start: Vector3 = map.get_meta("SurfRamp2b_e1")
-	_check(r2_end.distance_to(r2b_start) < 150.0,
-		"ramp-to-ramp transition is seamless (gap %.0fu)" % r2_end.distance_to(r2b_start))
+	var drop: float = r2_end.y - r2b_start.y
+	_check(drop > 50.0 and drop < 100.0,
+		"drop-transfer falls 50-100u (%.0f)" % drop)
+	_check(absf(r2b_start.z - r2_end.z) < 30.0,
+		"drop-transfer plan gap < 30u (%.0f)" % absf(r2b_start.z - r2_end.z))
+
+	# Audit M10b: R2b exit daylights over FloorD (mirror of the precision
+	# pattern): end above/at the top and not short of its edge.
+	var r2b_end: Vector3 = map.get_meta("SurfRamp2b_e2")
+	_check(r2b_end.y >= -2080.0 and r2b_end.z <= -13400.0 + 20.0,
+		"R2b exit daylights over FloorD (e2=%s)" % r2b_end)
+	var r2b_e1: Vector3 = map.get_meta("SurfRamp2b_e1")
+	var r2b_ang := rad_to_deg(atan(absf(r2b_end.y - r2b_e1.y) / absf(r2b_end.z - r2b_e1.z)))
+	_check(r2b_ang >= 49.0 and r2b_ang <= 51.0,
+		"R2b holds 50 degrees after shorten (%.1f)" % r2b_ang)
+
+	# Audit M10b: R4's face emerges from FloorE's top (embedded prow,
+	# intermediate-R2 pattern). Hop from the slab with jump held
+	# (auto-bhop, the advertised default): arcs clear the prow nub and land
+	# on R4's upper face, then ride it past -19400. (Cruise entries sail
+	# clean over 70-degree faces; slow walk-offs wedge inside R4's box end
+	# — trace-proven. Hop entry is the technique, same as tutorial R1.)
+	Input.action_press("jump")
+	player.position = Vector3(0.0, -2070.0, -19310.0)
+	player.velocity = Vector3(0.0, 0.0, -150.0)
+	var prow_surf := false
+	for i in 250:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			prow_surf = true
+			break
+	Input.action_release("jump")
+	_check(prow_surf, "R4 face mounts from FloorE cruise")
+	if prow_surf:
+		var deep := false
+		for i in 200:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF \
+					and player.position.z < -19400.0:
+				deep = true
+				break
+		_check(deep, "R4 prow mount rides deep (at %s)" % player.position)
 
 	# Void gaps are real.
 	var space := root.get_world_3d().direct_space_state
