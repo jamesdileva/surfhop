@@ -75,6 +75,44 @@ steep faces punish sloppy lines instantly. Enter with speed for control,
 carve early, and never hold `W` into the ramp (it kills grip). Grinding a
 wall or lip at speed won't brake you; standing still against one will.
 
+## Launching off a ramp
+
+Ramps can't be climbed — a 56° face turns your speed into height at
+roughly 80% per unit, exactly like CS2 (same 56° surf ramps). What works
+and what's physics-correct:
+
+- **Traverse DOWN or ACROSS the face** — most of your line's speed comes
+  from the descent, and you preserve through the wall-ride. Carving
+  directly UP the face is a trade, not a launch: you spend speed buying
+  height, and exit with whatever's left.
+- **Launch if you bend the turn out of the wall into the inward falling
+  arc** — that's the same trajectory as CS2's "bounce off your wall
+  height".
+- **Kickers** (short shallow ramps angled 20–35° into the path, see the
+  Kicker on Rollercoaster) are where upward flight really lives: your
+  flat-line momentum meets the kicker wedge and the frictionless surface
+  converts it into an arc. On maps without one, create upward arcs by
+  exiting a face with your velocity already angled up-off it (work the
+  last meters down the face so your exit has both fall AND forward)
+  instead of trying to fire through the top edge.
+- **Flying between ramps** is the same physics as the launch: you keep your
+  ballistic from a kicker/face exit and aim it. A 65° steep face falls away
+  faster than gravity catches, so use a down-line (or kicker arc) aimed at
+  it, never a flat cruise.
+
+Bench check (beginner V-channel, with-debug-timer (bhop cruise) runs):
+
+|entry speed|exit speed|
+|---|---|
+|257 u/s|338 u/s|
+|459 u/s|486 u/s|
+|706 u/s|718 u/s|
+
+Conserves/gains at all entry speeds — if your speed is collapsing, check
+you're not headfirsting the corner of the wall's end cap (the strictly
+around-90° edge where the surf plane projects against your forward path):
+arcs are reliable, adjust course so the corner is never vertical to you.
+
 **Speed is everything.** The HUD speedometer colors by tier: gray → white →
 yellow (400+) → orange (600+) → red (800+). Good lines mix all three skills.
 
