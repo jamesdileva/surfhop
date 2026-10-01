@@ -33,8 +33,12 @@ func _apply_body_physics() -> void:
 	# tangential velocity - exactly Source-style surf behavior.
 	_body.floor_max_angle = deg_to_rad(config.floor_max_angle_deg)
 	_body.floor_stop_on_slope = false
-	_body.floor_snap_length = config.floor_snap_length
-	_body.floor_snap_length = config.floor_snap_length
+	# Hardening (not the happy path): get_indexed returns null instead of
+	# erroring when a hot-reload desync (pulled code under a running
+	# editor) leaves a stale MovementConfig class without this export.
+	# Consistent trees always take the resource value.
+	var stored_snap: Variant = config.get_indexed("floor_snap_length")
+	_body.floor_snap_length = stored_snap if stored_snap != null else 0.1
 
 var state: int = MovementState.AIR
 

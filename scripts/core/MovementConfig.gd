@@ -37,9 +37,12 @@ extends Resource
 @export var surf_push: float = 300.0         # Outward accel (u/s^2) when below surf_min_speed
 @export var surf_exit_boost: float = 1.0      # Down-fling scale on ramp exit (§5.3)
 @export var floor_max_angle_deg: float = 45.0 # Walkable limit; steeper surfaces are surf ramps (walls)
+@export var floor_snap_length: float = 0.1  # Godot default, owned explicitly (audit m1)
 
 # Physics
 @export var tick_rate: int = 100
+# Per-axis box clamp, NOT a speed clamp: diagonals may read ~5656 u/s.
+# The vertical leg never binds before max_fall_speed (audit m3).
 @export var max_velocity: Vector3 = Vector3(4000, 1500, 4000)
 
 # Debug

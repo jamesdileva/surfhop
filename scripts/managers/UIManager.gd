@@ -142,7 +142,10 @@ func show_menu(menu_name: String) -> void:
 			get_tree().paused = true
 			get_node("/root/GameManager").pause()
 			set_mouse_captured(false)
-		"settings", "main", "map_select":
+		"settings", "main", "map_select", "results", "credits":
+			# results opens mid-session with capture stuck ON (invisible
+			# cursor over buttons — the mouse had to be freed via
+			# minimize dance); credits rides along for consistency.
 			set_mouse_captured(false)
 	print("UIManager: showing menu '%s'" % menu_name)
 
@@ -205,6 +208,14 @@ func launch_map(map_path: String) -> void:
 func set_mouse_captured(captured: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if captured \
 		else Input.MOUSE_MODE_VISIBLE
+	# Single source of truth: PlayerCamera keeps its own mouse_captured
+	# flag for look input + focus handling, which used to desync (e.g.
+	# Esc-resume left OS captured while the camera thought it was free,
+	# killing mouse-look until the next click). Sync it on every change.
+	var player := get_tree().get_first_node_in_group("player")
+	var cam := player.get_node_or_null("PlayerCamera") if player != null else null
+	if cam != null:
+		cam.set("mouse_captured", captured)
 
 
 func update_hud(data: Dictionary) -> void:

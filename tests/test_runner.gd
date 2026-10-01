@@ -3558,11 +3558,18 @@ func _test_main_menu_flow() -> void:
 		"results shows finish time (%s)" % time_text)
 	var pb_text: String = results.get_node("Root/Column/PbLabel").text
 	_check(pb_text == "NEW PERSONAL BEST!", "PB callout shown (%s)" % pb_text)
+	# Headless cannot assert OS mouse_mode (dummy driver no-ops the setter),
+	# so the syncable surface — PlayerCamera's capture flag, which drives
+	# look input — is asserted instead. Results must free the cursor.
+	_check(player.get_node("PlayerCamera").get("mouse_captured") == false,
+		"results menu releases the mouse (camera flag)")
 
 	ui.close_menu()
 	await process_frame
 	_check(ui.current_menu == "" and not paused,
 		"results close returns to gameplay")
+	_check(player.get_node("PlayerCamera").get("mouse_captured") == true,
+		"closing results recaptures the mouse (camera flag synced)")
 
 	# --- Return to menu: teardown ---
 	game.return_to_menu()
