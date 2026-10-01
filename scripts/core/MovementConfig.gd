@@ -14,7 +14,6 @@ extends Resource
 # Air movement
 @export var air_accel: float = 14.0  # playtest P2: raised from 10 for snappier strafe gain
 @export var air_speed_cap: float = 45.0  # playtest P2: raised from 30 - the real gain knob (air_accel is cap-limited past ~10)
-@export var air_cap_multiplier: float = 1.0
 
 # Jumping
 @export var jump_impulse: float = 300.0
@@ -32,7 +31,6 @@ extends Resource
 # source of truth — the body, Collision.steep_normal and Surf.is_surf_normal
 # all classify against it. Keep surf_angle_min_deg equal to it (legacy alias).
 @export var surf_angle_min_deg: float = 45.0
-@export var surf_speed_multiplier: float = 1.0
 @export var surf_preservation: float = 0.95
 @export var surf_friction: float = 0.05       # Ramp friction; near-zero per CS surf (playtest P2: 0.25 bled too much speed)
 @export var surf_min_speed: float = 20.0      # Anti-stuck threshold (§4.6)

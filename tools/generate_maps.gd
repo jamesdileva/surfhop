@@ -76,9 +76,11 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
 
 ## CS-style V-channel junction (playtest P2 round 3): two opposing 56-degree
 ## banked surf walls meeting a flat bottom lip. Players fall in and carve
-## face to face - walls cannot be hopped over like the old top-ridable
-## slopes (catch distance grows with speed squared, so fast players flew
-## right over them). Face proportions follow the classic 512:384 CS ramp.
+## face to face - walls can't be hopped over AT INTENDED SPEEDS like the old
+## top-ridable slopes (catch distance grows with speed squared, so fast
+## players flew right over them - and 600+ bhoppers still clear these
+## channels too: accepted prehop expression, landings stay safe, audit M9).
+## Face proportions follow the classic 512:384 CS ramp.
 ## base_y is the channel floor level (= the next platform's top).
 func _surf_channel(prefix: String, center_z: float, length: float,
 		base_y: float) -> void:
@@ -87,8 +89,10 @@ func _surf_channel(prefix: String, center_z: float, length: float,
 	var lip_half := 60.0
 	# Lip deliberately breaks the SurfRamp prefix: it is FLOOR (white neon
 	# treatment) so the channel reads ground-vs-wall by color (playtest P2).
+	# Sunk 2u: lip tops elsewhere sit exactly coplanar with the floors they
+	# meet, which flickers (audit m7) — a 2u step-down rides unnoticed.
 	_static_body("Channel" + prefix.substr(8) + "Lip",
-		Vector3(120.0, 40.0, length), Vector3(0.0, base_y - 20.0, center_z))
+		Vector3(120.0, 40.0, length), Vector3(0.0, base_y - 22.0, center_z))
 	for side: int in [-1, 1]:
 		var wall := StaticBody3D.new()
 		wall.name = prefix + ("R" if side > 0 else "L")
@@ -274,8 +278,9 @@ func build_beginner() -> void:
 	# Playtest P2 round 3 layout: V-channel surf junctions (CS-style). The
 	# round-2 restoration proved the original top-ridable slopes unfixable at
 	# speed — catch distance grows with speed squared, so fast players bhopped
-	# clean over them. Channels are walls: impossible to hop over, you fall in
-	# and carve face to face (the classic surf rhythm), exiting with the speed
+	# clean over them. Channels are walls: riders fall in and carve face to
+	# face at intended speeds (600+ bhop can still clear them lengthwise —
+	# accepted, safe landing, audit M9), exiting with the speed
 	# the frictionless faces build. Junctions are 600 deep (spacing = the
 	# channel itself) with 250u drops.
 	meta.kill_plane_y = -960.0
@@ -528,20 +533,21 @@ func build_challenge_oc() -> void:
 	# whole body inside FloorC's ±250 bounds (was 90: 7u overhang).
 	_surf_wall("SurfRampB1", 80.0, -4800.0, 500.0, 1, 0.0)
 
-	# Pillar slalom 1.
+	# Pillar slalom 1. Sunk 2u: bodies resting exactly coplanar on floor
+	# tops flicker (audit m7) — 2u embed reads identically in play.
 	for x: float in [-150.0, 0.0, 150.0]:
-		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 150.0, -800.0), "obstacle")
-	# Low wall: bhop over it. Top at y=44 clears under the 56.25 jump apex
+		_static_body("PillarA%d" % int(x), Vector3(60.0, 300.0, 60.0), Vector3(x, 148.0, -800.0), "obstacle")
+	# Low wall: bhop over it. Top at y=42 clears under the 56.25 jump apex
 	# (the old 80-tall wall was only passable via the wall-climb exploit).
-	_static_body("LowWall", Vector3(500.0, 44.0, 40.0), Vector3(0.0, 22.0, -1400.0), "obstacle")
+	_static_body("LowWall", Vector3(500.0, 44.0, 40.0), Vector3(0.0, 20.0, -1400.0), "obstacle")
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1700.0))
 
-	# Moving walls over the bridge approach.
-	_moving_body("MovingWall1", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 100.0, -2100.0),
+	# Moving walls over the bridge approach (sunk 2u into the floor, m7).
+	_moving_body("MovingWall1", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 98.0, -2100.0),
 		Vector3.RIGHT, 200.0, 4.0)
-	_moving_body("MovingWall2", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 100.0, -2500.0),
+	_moving_body("MovingWall2", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 98.0, -2500.0),
 		Vector3.LEFT, 200.0, 5.0)
 
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -5450.0))

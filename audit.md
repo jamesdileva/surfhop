@@ -446,9 +446,20 @@ suite.
     bounds, SurfSign telegraphs hop entry, asserts + live ride.
 12. M10: rollercoaster rework — M10a DONE (new map), M10b DONE this
     session (R2b daylight, R4 embedded-prow hop entry, bypass verdicts).
-13. Minors batch: M9/beginner comment, m7 coplanar embedding, m1 snap
-    ownership, dead knobs, sweep blind spots, glow seam behavior, grid
-    fade, clamp docs.
+13. Minors batch — DONE this session ✅
+    - M9: channel "unhoppable" comments corrected (600+ clears accepted).
+    - m1: floor_snap_length owned explicitly via MovementConfig (was
+      unexamined Godot default).
+    - m3: max_velocity documented as per-axis box clamp in-code.
+    - m6: neon grid fwidth fade (distant moiré).
+    - m7: OC obstacles + all channel lips embedded 2u (no more coplanar
+      rest/z-fight).
+    - m8: kill sweep reads spheres, ignores trigger volumes, skips
+      dev/test fixtures (vacuous INF impossible), counts shipped maps.
+    - Dead knobs removed: air_cap_multiplier, surf_speed_multiplier
+      (zero code refs; docs/01 still lists them — flagged divergence).
+    - m5-sequel: surf_entered with a raycast miss releases the glow
+      instead of sticking to the previous wall.
 
 ## 9. Do-not warnings
 

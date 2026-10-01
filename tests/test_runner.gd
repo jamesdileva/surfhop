@@ -874,6 +874,8 @@ func _test_surf_polish() -> void:
 	_check(casual_cfg != null and casual_cfg.floor_max_angle_deg == casual_cfg.surf_angle_min_deg,
 		"casual preset thresholds agree (floor=%.1f surf=%.1f)"
 			% [casual_cfg.floor_max_angle_deg, casual_cfg.surf_angle_min_deg])
+	_check(default_cfg.floor_snap_length == 0.1,
+		"floor snap owned explicitly (%.2f)" % default_cfg.floor_snap_length)
 
 	var spawned := _spawn_test_player()
 	var world: Node3D = spawned[0]
@@ -3131,6 +3133,19 @@ func _test_visual_effects() -> void:
 	_check(glow_off < glow_on and glow_off < 0.05,
 		"glow fades after surf exit (%.2f -> %.2f)" % [glow_on, glow_off])
 
+	# Seam miss clears instead of lighting the previous wall (audit m5):
+	# re-enter surf on the ramp, then enter where the raycast hits nothing.
+	bus.surf_entered.emit({"normal": Vector3.UP, "position": Vector3(0.0, -30.0, 0.0)})
+	await _wait_ticks(2)
+	_check(vfx._active_ramp == mesh,
+		"re-entered ramp tracked for glow")
+	bus.surf_entered.emit({"normal": Vector3.UP, "position": Vector3(0.0, 5000.0, 3000.0)})
+	await physics_frame
+	_check(vfx._active_ramp == null,
+		"seam miss releases the glow instead of sticking to the old wall")
+	bus.surf_exited.emit()
+	await physics_frame
+
 	# --- Settings gate: nothing spawns or emits while disabled ---
 	ui.set_vfx_enabled(false)
 	_check(not vfx.enabled and not bool(sm.get_setting("video/vfx_enabled")),
@@ -3311,8 +3326,11 @@ func _test_kill_planes() -> void:
 	var found: Array[Dictionary] = loader.discover_maps()
 	_check(found.size() >= 7,
 		"kill-plane sweep covers all maps (got %d)" % found.size())
+	var swept := 0
 	for e: Dictionary in found:
 		var meta: MapMetadata = e["metadata"]
+		if meta.tags.has("dev") or meta.tags.has("test"):
+			continue  # audit m8: fixtures aren't shipped (B7 hides them)
 		var scene: PackedScene = load(e["path"])
 		if scene == null:
 			_check(false, "%s: scene loads for kill-plane sweep" % meta.map_id)
@@ -3321,10 +3339,46 @@ func _test_kill_planes() -> void:
 		var corners: Array = [INF]
 		_accumulate_lowest_y(map, Transform3D.IDENTITY, corners)
 		var lowest: float = corners[0]
+		_check(lowest < INF,
+			"%s: sweep found collision (not a vacuous pass)" % meta.map_id)
 		_check(meta.kill_plane_y < lowest - 100.0,
 			"%s: kill plane %.0f sits %.0fu below lowest surface %.0f"
 				% [meta.map_id, meta.kill_plane_y, lowest - meta.kill_plane_y, lowest])
 		map.free()
+		swept += 1
+	_check(swept >= 9, "sweep checked all shipped maps (got %d)" % swept)
+
+	# Synthetic sweep unit: spheres count, trigger volumes don't.
+	var dummy := Node3D.new()
+	var box_body := StaticBody3D.new()
+	var box_shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(100.0, 100.0, 100.0)
+	box_shape.shape = box
+	box_shape.position.y = 400.0
+	box_body.add_child(box_shape)
+	var ball_body := StaticBody3D.new()
+	var ball_shape := CollisionShape3D.new()
+	var ball := SphereShape3D.new()
+	ball.radius = 50.0
+	ball_shape.shape = ball
+	ball_shape.position.y = 100.0
+	ball_body.add_child(ball_shape)
+	var trigger := Area3D.new()
+	var trig_shape := CollisionShape3D.new()
+	var trig_box := BoxShape3D.new()
+	trig_box.size = Vector3(600.0, 200.0, 100.0)
+	trig_shape.shape = trig_box
+	trig_shape.position.y = -5000.0  # must NOT pollute the sweep
+	trigger.add_child(trig_shape)
+	dummy.add_child(box_body)
+	dummy.add_child(ball_body)
+	dummy.add_child(trigger)
+	var synth: Array = [INF]
+	_accumulate_lowest_y(dummy, Transform3D.IDENTITY, synth)
+	_check(synth[0] == 50.0,
+		"sweep reads spheres (50) and ignores trigger volumes (got %s)" % synth[0])
+	dummy.queue_free()
 	await process_frame
 
 
@@ -3332,6 +3386,8 @@ func _accumulate_lowest_y(node: Node, parent_xform: Transform3D,
 		lowest: Array) -> void:
 	var xform := parent_xform * (node as Node3D).transform \
 		if node is Node3D else parent_xform
+	if node is Area3D:
+		return  # audit m8: trigger/checkpoint/sign volumes aren't surfaces
 	if node is CollisionShape3D:
 		var shape_node := node as CollisionShape3D
 		if shape_node.shape is BoxShape3D:
@@ -3342,6 +3398,11 @@ func _accumulate_lowest_y(node: Node, parent_xform: Transform3D,
 					for cz: float in [-1.0, 1.0]:
 						var corner := xform * (Vector3(cx, cy, cz) * half)
 						lowest[0] = minf(lowest[0], corner.y)
+			return
+		if shape_node.shape is SphereShape3D:
+			var ball := shape_node.shape as SphereShape3D
+			var center := xform * Vector3.ZERO
+			lowest[0] = minf(lowest[0], center.y - ball.radius)
 			return
 	for child in node.get_children():
 		_accumulate_lowest_y(child, xform, lowest)

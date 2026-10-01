@@ -33,6 +33,8 @@ func _apply_body_physics() -> void:
 	# tangential velocity - exactly Source-style surf behavior.
 	_body.floor_max_angle = deg_to_rad(config.floor_max_angle_deg)
 	_body.floor_stop_on_slope = false
+	_body.floor_snap_length = config.floor_snap_length
+	_body.floor_snap_length = config.floor_snap_length
 
 var state: int = MovementState.AIR
 

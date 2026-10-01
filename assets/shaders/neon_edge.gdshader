@@ -18,7 +18,9 @@ void fragment() {
 	vec3 world_pos = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 cell = abs(fract(world_pos / 128.0) - 0.5);
 	float line_dist = min(min(cell.x, cell.y), cell.z);
-	float grid = 1.0 - smoothstep(0.0, 0.03, line_dist);
+	// Derivative fade (audit m6): raw fract grids moiré at distance; widen
+	// the line with screen-space footprint so far fields go clean.
+	float grid = 1.0 - smoothstep(0.0, max(0.03, fwidth(line_dist) * 1.5), line_dist);
 
 	ALBEDO = mix(vec3(0.92), vec3(0.10), dark_base);
 	EMISSION = tint.rgb * clamp(fresnel * 0.9 + grid * grid_strength, 0.0, 1.2);

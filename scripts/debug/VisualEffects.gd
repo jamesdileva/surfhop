@@ -109,7 +109,15 @@ func _on_player_takeoff(payload: Dictionary) -> void:
 
 func _on_surf_entered(payload: Dictionary) -> void:
 	_surfing = true
-	_active_ramp = _find_ramp_mesh(payload.get("position"), payload.get("normal"))
+	var mesh := _find_ramp_mesh(payload.get("position"), payload.get("normal"))
+	if mesh != null:
+		_active_ramp = mesh
+	else:
+		# Audit m5-seam: the raycast can hit a non-ramp body at lips/seams
+		# (returns null). Release immediately instead of lighting the
+		# previous wall until decay.
+		_active_ramp = null
+		_glow = 0.0
 
 
 func _on_surf_exited() -> void:

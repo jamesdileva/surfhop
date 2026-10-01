@@ -690,3 +690,19 @@ it would invalidate every tuned gap/map/test).
   lines pay 2–3× exit speed. Flats stay intentional bhop lines.
 - `audit.md`: M10 ✅ closed (M10a + M10b).
 - Verify: suite **552 / 0**; smoke advanced RESULT=OK.
+
+## Audit minors batch (2026-09-24)
+
+- M9 channel comments corrected (600+ flyover accepted prehop).
+- floor_snap_length owned via MovementConfig (was silent default 0.1).
+- Removed dead exports air_cap_multiplier/surf_speed_multiplier (zero
+  refs; docs/01 §15 still lists them — flagged divergence per contract).
+- max_velocity per-axis semantics noted in-code.
+- OC obstacles + all channel lips embedded 2u (coplanar flicker gone).
+- Neon grid fwidth fade; surf-glow releases on raycast miss.
+- Kill sweep: spheres read, trigger volumes skipped, dev/test fixtures
+  skipped with shipped-map count, vacuous-INF impossible.
+- `audit.md`: minors ✅ closed. Full audit backlog now blockers + majors
+  + minors complete; M10-rollercoaster follow-ups and playtest polish
+  remain future work.
+- Verify: suite **552 / 0**; smokes beginner/OC/rollercoaster RESULT=OK.
