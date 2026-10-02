@@ -723,6 +723,23 @@ could be jumped clean over (apex 56.25 vs face tops at grade+10).
 - Verify: suite **567 / 0**; smokes tutorial/intermediate/advanced/
   precision/rollercoaster all RESULT=OK (roller 2533u/8s).
 
+## Audit M10d — rollercoaster flow restore (2026-10-02)
+
+User report: ramps poking above surfaces, no visible kicker, still
+flyover-skippable, can't mount from platforms.
+
+- Root causes found: (1) M10c's +75 lip raise perched R2's prow 145u
+  over Pool1 and R4's 85u over Floor4 — unmountable walls, so reverted
+  both to M10a anchors (55°/65°). Kept: tutorial/intermediate/advanced/
+  precision lips (their mounts are grade-flush, verified by suite).
+- (2) Kicker1 lacked the SurfRamp prefix so it rendered pool-white and
+  read invisible — renamed SurfRampKicker1 (dark-base + glow treatment).
+- Audit caught during review: committed scenes match source (advanced
+  metas verified), guide commit was docs-only, uncommitted work needed
+  only the regen it was missing.
+- Verify: suite **567 / 0**; smoke rollercoaster RESULT=OK (2500u/8s —
+  flow restored from the blocked 83u).
+
 ## Audit minors batch (2026-09-24)
 
 - M9 channel comments corrected (600+ flyover accepted prehop).

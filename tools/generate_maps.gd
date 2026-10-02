@@ -440,15 +440,19 @@ func build_rollercoaster() -> void:
 	# Pool 1 catch + kicker launch pad. Short 26.6-degree face: a 320 cruise
 	# barely exits it, so the transfer is tuned for real flow speed (450+,
 	# which R1 + pool bhop always provides) — the kicker rewards speed.
-	# The north end starts 100u back along the face line, buried 45u deep
-	# in the pool slab: box end caps are walkable-angled walls, and a cap
+	# North end starts 100u back along the face line, buried 45u deep inside
+	# the pool slab: box end caps are walkable-angled walls, and a cap
 	# sitting at grade in the rider's path perches them (trace-proven
 	# stall). Buried start = clean emerging face, smooth mount.
 	_static_body("Pool1", Vector3(400.0, 100.0, 900.0), Vector3(0.0, -50.0, -1050.0))
-	_ramp("Kicker1", Vector3(0.0, -45.0, -1261.0), Vector3(0.0, 45.0, -1440.0), 250.0, true)
+	# Renamed for style/shader matching: bodies with a SurfRamp prefix get the
+	# dark-base + glow treatment (kickers read as ramps too). This was the
+	# "hidden kicker" report — same white as the pool before the rename.
+	_ramp("SurfRampKicker1", Vector3(0.0, -45.0, -1261.0), Vector3(0.0, 45.0, -1440.0), 250.0, true)
 
-	# Transfer ramp 55 degrees, top meets the kicker flight.
-	_ramp("SurfRampR2", Vector3(0.0, 145.0, -1680.0), Vector3(0.0, -430.0, -2030.0), 320.0)
+	# Transfer ramp 55 degrees, top meets the kicker flight (M10a anchor —
+	# M10c's +75 raise was reverted: it perched the prow 145u over Pool1).
+	_ramp("SurfRampR2", Vector3(0.0, 70.0, -1680.0), Vector3(0.0, -430.0, -2030.0), 320.0)
 
 	# Pool 2 catch + drop-transfer to the 60-degree face (M7 pattern:
 	# steeper exit path converges onto the shallower face below).
@@ -466,8 +470,9 @@ func build_rollercoaster() -> void:
 	_surf_channel("SurfRampC", -3400.0, 400.0, -1410.0)
 	_static_body("Floor4", Vector3(400.0, 100.0, 550.0), Vector3(0.0, -1460.0, -3875.0))
 
-	# 65-degree finale ramp into the finish pool.
-	_ramp("SurfRampR4", Vector3(0.0, -1325.0, -3900.0), Vector3(0.0, -2000.0, -4180.0), 300.0)
+	# 65-degree finale ramp into the finish pool (M10a anchor — M10c raise
+	# reverted: prow at -1325 stood too tall over Floor4 for the report).
+	_ramp("SurfRampR4", Vector3(0.0, -1400.0, -3900.0), Vector3(0.0, -2000.0, -4180.0), 300.0)
 	_static_body("Pool4", Vector3(400.0, 100.0, 600.0), Vector3(0.0, -2100.0, -4450.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 650.0, 150.0))

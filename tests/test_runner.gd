@@ -2832,8 +2832,8 @@ func _test_rollercoaster_map() -> void:
 
 	# Honest angles: 48.7 opener, 55 transfer, 60 chain, 65 finale.
 	for ramp_info in [
-		["SurfRampR1", 47.0, 50.5], ["SurfRampR2", 57.0, 60.0],
-		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 66.0, 69.0],
+		["SurfRampR1", 47.0, 50.5], ["SurfRampR2", 54.0, 56.0],
+		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 64.0, 66.0],
 	]:
 		var e1: Vector3 = map_node.get_meta("%s_e1" % ramp_info[0])
 		var e2: Vector3 = map_node.get_meta("%s_e2" % ramp_info[0])
@@ -2841,8 +2841,8 @@ func _test_rollercoaster_map() -> void:
 		_check(ang >= ramp_info[1] and ang <= ramp_info[2],
 			"%s honest angle (%.1f deg)" % [ramp_info[0], ang])
 	# Kicker is walkable (< 45), not a surf face.
-	var ke1: Vector3 = map_node.get_meta("Kicker1_e1")
-	var ke2: Vector3 = map_node.get_meta("Kicker1_e2")
+	var ke1: Vector3 = map_node.get_meta("SurfRampKicker1_e1")
+	var ke2: Vector3 = map_node.get_meta("SurfRampKicker1_e2")
 	var kang := rad_to_deg(atan(absf(ke2.y - ke1.y) / absf(ke2.z - ke1.z)))
 	_check(kang < 40.0, "kicker walkable, not surf (%.1f deg)" % kang)
 
@@ -2851,7 +2851,7 @@ func _test_rollercoaster_map() -> void:
 		["SurfRampR1", Vector3(0.0, 355.0, -385.0), Vector3(0.0, -100.0, -200.0)],
 		["SurfRampR2", Vector3(0.0, -170.0, -1855.0), Vector3(0.0, -100.0, -200.0)],
 		["SurfRampR3", Vector3(0.0, -795.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
-		["SurfRampR4", Vector3(0.0, -1600.0, -4020.0), Vector3(0.0, -60.0, -60.0)],
+		["SurfRampR4", Vector3(0.0, -1645.0, -4020.0), Vector3(0.0, -60.0, -60.0)],
 	]:
 		player.position = ramp_info[1]
 		player.velocity = ramp_info[2]
