@@ -761,6 +761,15 @@ flyover-skippable, can't mount from platforms.
   open face, never cruise into the nub).
 - Verify: suite **601 / 0** (+20 sign checks); smokes inter/adv OK.
 
+## Skypark S1 — Booster + VentTower entities (2026-10-03)
+
+- New game-layer entities (framework boundary intact): Booster sets
+  exact velocity once per entry; VentTower lifts with clamped accel and
+  tags `in_vent`, which the kill plane honors.
+- Live ride proofs in a bare fixture world; kill-exemption test caught
+  a first-frame GM-vs-entry race (fixed by ordering + physics ensure).
+- Verify: suite **610 / 0** (+9).
+
 ## Audit minors batch (2026-09-24)
 
 - M9 channel comments corrected (600+ flyover accepted prehop).

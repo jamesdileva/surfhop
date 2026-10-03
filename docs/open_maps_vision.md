@@ -50,7 +50,9 @@ the framework, never the reverse):
 - **Vent tower**: cylinder zone applying upward accel while inside
   (the remembered tower that "pushed you back up"). Riders enter low,
   ride the column, exit high onto a ramp. Config: lift accel, radius,
-  height. Kill-plane exempt inside the column.
+  height. Kill-plane exempt inside the column; vent bases still sit
+  above the kill plane (the tag registers a frame after entry, and the
+  manager would win that race below it).
 
 Both need live ride tests (enter → assert velocity/state trajectory),
 same as every slice-2 ramp proof.

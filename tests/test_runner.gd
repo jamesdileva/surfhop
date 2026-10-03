@@ -104,6 +104,7 @@ func _run_all_tests() -> void:
 	await _test_visual_effects()
 	await _test_settings_menu()
 	await _test_optimization()
+	await _test_skypark_entities()
 	await _test_tutorial_map()
 	await _test_beginner_map()
 	await _test_intermediate_map()
@@ -1901,6 +1902,103 @@ func _test_ghost_recording() -> void:
 	world.queue_free()
 	if sm.has_ghost("ghost_test_map"):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.ghost_path("ghost_test_map")))
+	await process_frame
+
+
+func _test_skypark_entities() -> void:
+	# S1 Skypark slice: Booster + VentTower live ride proofs in a bare
+	# fixture world (no map dependency).
+	var world := Node3D.new()
+	root.add_child(world)
+	var player: Player = _spawn_test_player_at(world, Vector3(0.0, 50.0, 150.0))
+
+	# --- Booster sets the exact vector on entry ---
+	var booster := Booster.new()
+	booster.boost_velocity = Vector3(0.0, 0.0, -1200.0)
+	world.add_child(booster)  # default sphere builds in _ready
+	player.velocity = Vector3(0.0, 0.0, -300.0)
+	var fired := false
+	for i in 120:
+		await physics_frame
+		if player.velocity.length() > 1000.0:
+			fired = true
+			break
+	_check(fired, "booster sets velocity on entry")
+	if fired:
+		_check(absf(player.velocity.z + 1200.0) < 60.0,
+			"booster sets the exact vector (z=%.0f)" % player.velocity.z)
+
+	# --- Booster fires once per entry (no farming inside) ---
+	player.velocity = Vector3(0.0, 0.0, -100.0)  # still inside the sphere
+	await _wait_ticks(10)
+	_check(absf(player.velocity.z + 100.0) < 60.0,
+		"booster does not refire while inside (z=%.0f)" % player.velocity.z)
+
+	# --- Booster re-arms after exit ---
+	player.position = Vector3(0.0, 50.0, 500.0)
+	await _wait_ticks(4)
+	player.position = Vector3(0.0, 50.0, 150.0)
+	player.velocity = Vector3(0.0, 0.0, -300.0)
+	var fired2 := false
+	for i in 120:
+		await physics_frame
+		if player.velocity.length() > 1000.0:
+			fired2 = true
+			break
+	_check(fired2, "booster re-arms after exit")
+
+	# --- Booster ignores non-player bodies ---
+	var cube := RigidBody3D.new()
+	var cube_shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(20.0, 20.0, 20.0)
+	cube_shape.shape = box
+	cube.add_child(cube_shape)
+	world.add_child(cube)
+	cube.position = Vector3(0.0, 50.0, 150.0)
+	cube.linear_velocity = Vector3(0.0, 0.0, -300.0)
+	await _wait_ticks(60)
+	_check(absf(cube.linear_velocity.z + 300.0) < 60.0,
+		"booster ignores non-player bodies (z=%.0f)" % cube.linear_velocity.z)
+
+	# --- VentTower lifts a 0-speed entrant out the top ---
+	var vent := VentTower.new()
+	vent.position = Vector3(500.0, 0.0, 0.0)  # clear of the booster
+	vent.radius = 80.0
+	vent.height = 600.0
+	vent.lift_accel = 1500.0
+	vent.max_rise_speed = 700.0
+	world.add_child(vent)
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(500.0, -250.0, 0.0)
+	await _wait_ticks(4)
+	_check(player.is_in_group("in_vent"), "vent tags entrant in_vent")
+	var rose := false
+	for i in 600:
+		await physics_frame
+		if player.position.y > 350.0:
+			rose = player.velocity.y > 0.0
+			break
+	_check(rose, "vent lifts 0-speed entrant out the top (at %s)" % player.position)
+	await _wait_ticks(4)
+	_check(not player.is_in_group("in_vent"), "vent untags on exit")
+
+	# --- Kill plane honors in_vent (GameManager exemption) ---
+	# Order matters: teleport first (kill still at default, safe), let the
+	# vent tag register, THEN raise the kill plane — otherwise GM wins the
+	# first-frame race before body_entered fires. Real maps obey the same
+	# rule: vent bases sit above the kill plane.
+	var gm: Node = root.get_node("GameManager")
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(500.0, -250.0, 0.0)
+	await _wait_ticks(4)
+	gm.kill_plane_y = 300.0  # above the rider: would respawn if not exempt
+	await _wait_ticks(30)
+	_check(player.position.y < 0.0,
+		"kill plane exempts vent riders (y=%.0f)" % player.position.y)
+	gm.kill_plane_y = -1000.0
+
+	world.queue_free()
 	await process_frame
 
 

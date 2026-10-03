@@ -72,3 +72,21 @@ changes); R4-sign pattern for other hop faces; playtest verdict on feel.
 
 Next: test-list for user playtest (one map at a time); then vision
 doc/plan/scope for open surf-kicker-catch maps (rollercoaster/endless).
+
+# Worklog — Skypark S1 entities: Booster + VentTower (2026-10-03)
+
+- `scripts/game/Booster.gd` (class_name): CS2 trigger_push, sets exact
+  velocity once per entry, re-arms on exit, ignores non-players,
+  self-builds a default sphere. `scripts/game/VentTower.gd`: lift accel
+  clamped to max_rise_speed, self-builds cylinder, manages `in_vent`
+  group (enter/exit signals + physics ensure for teleport-in races).
+- GameManager kill branch honors `in_vent` (one-line game-layer check).
+- Tests `_test_skypark_entities` (fixture world, no map): exact set,
+  once-per-entry, re-arm, non-player ignore, 0-speed lift-out,
+  tag/untag, kill exemption. Suite 610/610 (+9).
+- Load-bearing: kill-test ordering (teleport before raising kill, or
+  GM wins frame 1); new class_names need `--editor --quit` before the
+  headless suite sees them.
+- Vision doc: vent bases sit above kill (design rule).
+
+Next: S2 Skypark blockout (generator + map + per-link ride proofs).

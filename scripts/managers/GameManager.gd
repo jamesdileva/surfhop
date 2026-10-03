@@ -48,7 +48,9 @@ func _physics_process(_delta: float) -> void:
 		respawn_transform = player.global_transform
 		_spawn_captured = true
 	# Kill plane: falling below the map respawns at the last checkpoint.
-	if player.global_position.y < kill_plane_y:
+	# Vent riders are exempt (VentTower holds them via the in_vent group
+	# while the column lifts them back up — S1 Skypark slice).
+	if player.global_position.y < kill_plane_y and not player.is_in_group("in_vent"):
 		respawn_player()
 
 
