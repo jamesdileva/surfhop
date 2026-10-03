@@ -220,7 +220,7 @@ floor), but the design comment is wrong and speed-lines bypass the lesson.
 **Remedy:** correct the comment; optionally raise walls for the R3
 channel only.
 
-### M10. Intermediate/Advanced relevance — M10a DONE, M10b DONE ✅✅
+### M10. Intermediate/Advanced relevance — M10a DONE, M10b DONE ✅✅, slice 2 (M10c reverted, R2 embeds) ✅
 M10a shipped the new `rollercoaster` map (see above). M10b:
 - **R2b exit daylight** (user-chose fix): shortened on the same 50° line
   to end 16u above FloorD top, 8u past its edge. Locked by daylight +
@@ -254,6 +254,29 @@ caps perch riders); kicker transfers are tuned for flow speed and tested
 with input-driven bhop cruise, never velocity overwrites (which wedge).
 Locked by discovery/angles/rides/chain-handoff/kicker-launch asserts;
 smoke bot flows 2500u/8s (2× other maps).
+Slice 2 forcing verdicts (M10c REVERTED — lips were jumpable: jump head
++128 from the slab clears any lip, and the 71.4° steepening broke R4's
+prow-mount; back to M10b geometry):
+- Tall prows tried and reverted: collinear face extensions are 150–200u
+  walls across full-width corridors — walkers softlock (56-apex jump vs
+  150u wall, 50°+ unwalkable, no way around), and speed flyovers still
+  graze the corner and sail (trace: a steep face out-descends gravity, so
+  a rider above it can never come back down onto it). Blocking flight is
+  unphysical; CS2 doesn't either — forcing is routing, not walls.
+- R2 cap-trap embeds (inter R2 51.6°, adv R2 62.7°, R4 pattern): the +10
+  nubs' box-end caps (8% oversize + half-thickness rises ~32–35u above e1)
+  trapped hop/cruise entries phase-dependently — diag showed the same
+  spawn ±40u flipping mount/stall on hop-phase luck, riders pinned in
+  SURF on the slab. Embeds bury the corners 20u+ under the slab tops;
+  faces emerge at the slab edges; hop arcs meet open face. Suite proves
+  all five faces (inter R1/R2/R3, adv R1/R2) mount from cruise-hop and
+  ride deep, 581/581 green; both smokes OK.
+- Residual: R1/R3/advR1 keep M10b +10 nubs with passing hop tests, but
+  the same phase-fragility applies in principle — embed-all deferred
+  (inter R1's 49–50.5° band conflicts with embed depth; needs band + doc
+  changes, next slice). Test lesson: multi-entry ride tests must settle
+  (drain stale SURF on flat slab after each teleport) or a stale state
+  false-mounts instantly and the deep check fails at the slab.
 Standing M10b notes: 2500–5500u flat bhop slogs between drops remain on
 inter/advanced BY DESIGN (flats are intentional bhop lines; M10a serves
 flow) — vs CS2's exit-points-at-next-entry linking. Beginner passes
@@ -445,8 +468,11 @@ suite.
 11. ~~M8: OC wall + signage~~ DONE this session — face at x=80 in
     bounds, SurfSign telegraphs hop entry, asserts + live ride.
 12. M10: rollercoaster rework — M10a DONE (new map), M10b DONE (R2b
-    daylight, R4 prow entry, bypass verdicts), M10c DONE this session
-    (blocker lips: raised face tops +75 so jumps can't fly over).
+    daylight, R4 prow entry, bypass verdicts), M10c REVERTED this session
+    (blocker lips jumpable, R4 steepening broke its mount) and superseded
+    by slice-2 forcing verdicts (§M10: tall prows reverted as unphysical +
+    walker-softlocking, R2 cap-traps embedded R4-style, hop entries proven
+    per face, R4 hop sign added).
 13. Minors batch — DONE this session ✅
     - M9: channel "unhoppable" comments corrected (600+ clears accepted).
     - m1: floor_snap_length owned explicitly via MovementConfig (was

@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 
 ## Canonical headless test entry point. All test suites are reachable through
 ## this script: godot --headless --path . --script res://tests/test_runner.gd
@@ -2198,8 +2198,46 @@ func _test_intermediate_map() -> void:
 	var r1: float = rad_to_deg(absf(map.get_node("SurfRamp1").rotation.x))
 	var r2: float = rad_to_deg(absf(map.get_node("SurfRamp2").rotation.x))
 	var r3: float = rad_to_deg(absf(map.get_node("SurfRamp3").rotation.x))
-	_check(r1_angle_ok(r1) and r1 < r2 and r2 < r3 and r3 <= 63.5,
-		"ramps steepen within 53-63 degrees (%.1f < %.1f < %.1f)" % [r1, r2, r3])
+	_check(r1_angle_ok(r1) and r1 < r2 and r2 < r3 and r3 <= 60.5,
+		"ramps steepen within 50-60 degrees (%.1f < %.1f < %.1f)" % [r1, r2, r3])
+
+	# Slice 2 hop entries (R4 pattern): cruise the approach slab with jump
+	# held (auto-bhop, the advertised default) — the rising arc meets the
+	# face above its prow nub and rides deep. This is the forcing story:
+	# void-routing kills sail-overs, hop arcs mount every face.
+	for hop in [
+		[Vector3(0.0, 10.0, -6151.0), -6240.0, "R1"],
+		[Vector3(0.0, -470.0, -9121.0), -9210.0, "R2"],
+		[Vector3(0.0, -1000.0, -14621.0), -14710.0, "R3"],
+	]:
+		player.position = hop[0]
+		player.velocity = Vector3.ZERO
+		# Settle: the previous entry's ride can leave the controller in
+		# SURF across the teleport — drain it on the flat slab so the
+		# mount loop below only passes on a genuine fresh contact.
+		for i in 30:
+			await physics_frame
+			if player.movement_controller.state != MovementState.SURF:
+				break
+		Input.action_press("jump")
+		player.velocity = Vector3(0.0, 0.0, -150.0)
+		var mounted := false
+		for i in 250:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF:
+				mounted = true
+				break
+		Input.action_release("jump")
+		_check(mounted, "%s face mounts from cruise hop" % hop[2])
+		if mounted:
+			var deep := false
+			for i in 200:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF \
+						and player.position.z < hop[1]:
+					deep = true
+					break
+			_check(deep, "%s hop mount rides deep (at %s)" % [hop[2], player.position])
 
 	# Gaps are genuine voids: raycast down mid-gap must miss everything.
 	var space := root.get_world_3d().direct_space_state
@@ -2240,7 +2278,7 @@ func _test_intermediate_map() -> void:
 	_check(gm.checkpoint_splits.size() == 5, "all five splits recorded while running")
 
 	# Drop steeply onto ramp3 mid-section.
-	player.position = Vector3(0.0, -1348.0, -14881.0)
+	player.position = Vector3(0.0, -1395.0, -14881.0)
 	player.velocity = Vector3(0.0, -120.0, -30.0)
 	var surfing := false
 	for i in 30:
@@ -2351,8 +2389,8 @@ func _test_advanced_map() -> void:
 
 	for ramp_name: String in ["SurfRamp1", "SurfRamp2", "SurfRamp2b", "SurfRamp4"]:
 		var angle: float = rad_to_deg(absf(map.get_node(ramp_name).rotation.x))
-		_check(angle >= 49.0 and angle <= 72.5,
-			"%s within 50-72 degrees (%.1f)" % [ramp_name, angle])
+		_check(angle >= 49.0 and angle <= 70.5,
+			"%s within 50-70 degrees (%.1f)" % [ramp_name, angle])
 
 	# Drop-transfer envelope (audit M10b, supersedes the old <150u ruler):
 	# R2b starts one short drop below R2's end — converging trajectories,
@@ -2402,6 +2440,51 @@ func _test_advanced_map() -> void:
 				break
 		_check(deep, "R4 prow mount rides deep (at %s)" % player.position)
 
+	# Slice 2 hop entries (same proof as intermediate): R1/R2 faces mount
+	# from cruise hops with jump held — the advertised technique.
+	for hop in [
+		[Vector3(0.0, 10.0, -5371.0), -5460.0, "R1"],
+		[Vector3(0.0, -790.0, -12621.0), -12710.0, "R2"],
+	]:
+		player.position = hop[0]
+		player.velocity = Vector3.ZERO
+		# Settle: drain a stale SURF from the previous entry's ride (see
+		# intermediate note) so only a genuine fresh contact mounts.
+		for i in 30:
+			await physics_frame
+			if player.movement_controller.state != MovementState.SURF:
+				break
+		Input.action_press("jump")
+		player.velocity = Vector3(0.0, 0.0, -150.0)
+		var mounted := false
+		for i in 250:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF:
+				mounted = true
+				break
+		Input.action_release("jump")
+		_check(mounted, "%s face mounts from cruise hop" % hop[2])
+		if mounted:
+			var deep2 := false
+			for i in 200:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF \
+						and player.position.z < hop[1]:
+					deep2 = true
+					break
+			_check(deep2, "%s hop mount rides deep (at %s)" % [hop[2], player.position])
+
+	# Slice 2: R4 hop-entry sign present, worded, reveals on approach.
+	var r4_sign: Area3D = map.get_node("SignR4")
+	_check(r4_sign != null and r4_sign is TutorialSign, "SignR4 present")
+	var r4_label: Label3D = r4_sign.get_node("SignLabel")
+	_check(not r4_label.visible, "R4 sign hidden before approach")
+	_check(r4_label.text.contains("SURF RAMP"), "R4 sign text set")
+	player.velocity = Vector3.ZERO
+	player.position = r4_sign.position + Vector3(0.0, -30.0, 0.0)
+	await _wait_ticks(4)
+	_check(r4_label.visible, "R4 sign appears when player approaches")
+
 	# Void gaps are real.
 	var space := root.get_world_3d().direct_space_state
 	for gap_z: float in [-9010.0, -16590.0]:
@@ -2442,9 +2525,9 @@ func _test_advanced_map() -> void:
 
 	# Steep-drop onto each ramp produces SURF (raycast-informed entry points).
 	for ramp_info: Array in [
-		["SurfRamp1", Vector3(0.0, -338.0, -5630.0)],
-		["SurfRamp2", Vector3(0.0, -1080.0, -12810.0)],
-		["SurfRamp4", Vector3(0.0, -2490.0, -19494.0)],
+		["SurfRamp1", Vector3(0.0, -378.0, -5630.0)],
+		["SurfRamp2", Vector3(0.0, -1118.0, -12810.0)],
+		["SurfRamp4", Vector3(0.0, -2517.0, -19494.0)],
 	]:
 		player.position = ramp_info[1]
 		player.velocity = Vector3(0.0, -120.0, -30.0)
@@ -2582,9 +2665,9 @@ func _test_challenge_maps() -> void:
 			# P2 top -790 edge -2060; P3 top -1200 edge -3060. e2 may sit up
 			# to 20u short of the pool edge (exit throw carries over).
 			for ramp_info in [
-		["SurfRampP1", -400.0, -1000.0, 59.0, 61.0],
-		["SurfRampP2", -790.0, -2060.0, 63.0, 66.0],
-		["SurfRampP3", -1200.0, -3060.0, 63.0, 66.0],
+		["SurfRampP1", -400.0, -1000.0, 54.0, 56.0],
+		["SurfRampP2", -790.0, -2060.0, 59.0, 61.0],
+		["SurfRampP3", -1200.0, -3060.0, 59.0, 61.0],
 			]:
 				var e1: Vector3 = loader.current_map.get_meta("%s_e1" % ramp_info[0])
 				var e2: Vector3 = loader.current_map.get_meta("%s_e2" % ramp_info[0])

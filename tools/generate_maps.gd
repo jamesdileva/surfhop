@@ -239,9 +239,9 @@ func build_tutorial() -> void:
 	_static_body("CourseFloor", Vector3(800.0, 100.0, 1700.0), Vector3(0.0, -50.0, -800.0))
 	_static_body("LowerFloor", Vector3(800.0, 100.0, 700.0), Vector3(0.0, -464.0, -2100.0))
 
-	# Surf ramp: 52-degree slab (48+75-lip raise, M10c; above walk jumpable
-	# limit, entry via lip grab).
-	_ramp("SurfRamp", Vector3(0.0, 106.0, -1429.0), Vector3(0.0, -405.0, -1822.0), 400.0)
+	# Surf ramp: 48-degree slab (must exceed the 45-degree walkable limit
+	# unambiguously; exact 45 sat on the classification boundary).
+	_ramp("SurfRamp", Vector3(0.0, 31.0, -1429.0), Vector3(0.0, -405.0, -1822.0), 400.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -364.0, -2250.0))
@@ -331,13 +331,23 @@ func build_intermediate() -> void:
 	_static_body("FloorE", Vector3(340.0, 100.0, 2310.0), Vector3(0.0, -1060.0, -13545.0))
 	_static_body("FloorF", Vector3(340.0, 100.0, 2140.0), Vector3(0.0, -1850.0, -16130.0))
 
-	# M10c blocker-lip: face tops raised +75u so no jump (apex 56.25) can
-	# cross the face from the approach surface — entry means SURF, and
-	# "just hop it" no longer exists. Slopes steepen one band (bands
-	# updated in the map's acceptance comment).
-	_ramp("SurfRamp1", Vector3(0.0, 85.0, -6180.0), Vector3(0.0, -490.0, -6600.0), 340.0)
-	_ramp("SurfRamp2", Vector3(0.0, -395.0, -9150.0), Vector3(0.0, -1020.0, -9535.0), 340.0)
-	_ramp("SurfRamp3", Vector3(0.0, -925.0, -14650.0), Vector3(0.0, -1800.0, -15112.0), 340.0)
+	# Hop entries mount these faces (rising arc into the face, jump held);
+	# the prow nubs sit ~10u above the approach slabs. M10c lips and tall
+	# prows were both tried and reverted (audit verdict table): lips are
+	# jumpable (capsule clears +75), tall prows softlock walkers at a 150u
+	# wall and still can't catch speed flyovers (a steep face falls away
+	# faster than gravity). Forcing comes from void-routing: sail-overs
+	# fall to the kill plane, and the next floors sit beyond jump range.
+	_ramp("SurfRamp1", Vector3(0.0, 10.0, -6180.0), Vector3(0.0, -490.0, -6600.0), 340.0)
+	# Slice 2: R2's prow is EMBEDDED (e1 -535 vs slab top -480, R4 pattern).
+	# Its old +10 nub's box-end cap trapped hop/cruise entries
+	# phase-dependently (diag: same spawn ±40u mounted/stalled by hop-phase
+	# luck) — riders pinned in SURF at the slab. The box's 8%-oversize end
+	# corner rises ~32u above e1, so the embed must clear that, not just
+	# e1: corner sits ~23u under the slab, face emerges past it, hop arcs
+	# meet open face with nothing to clip early. 51.6 deg keeps R1<R2<R3.
+	_ramp("SurfRamp2", Vector3(0.0, -535.0, -9150.0), Vector3(0.0, -1020.0, -9535.0), 340.0)
+	_ramp("SurfRamp3", Vector3(0.0, -1000.0, -14650.0), Vector3(0.0, -1800.0, -15112.0), 340.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1760.0, -16900.0))
@@ -378,8 +388,16 @@ func build_advanced() -> void:
 	_static_body("FloorE", Vector3(360.0, 100.0, 2640.0), Vector3(0.0, -2130.0, -18010.0))
 	_static_body("FloorF", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -3040.0, -21100.0))
 
-	_ramp("SurfRamp1", Vector3(0.0, 85.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
-	_ramp("SurfRamp2", Vector3(0.0, -715.0, -12650.0), Vector3(0.0, -1490.0, -12977.0), 360.0)
+	# Hop entries mount these faces (rising arc into the face, jump held);
+	# the prow nubs sit ~10u above the approach slabs. Same verdict as
+	# intermediate (see note there): forcing is void-routing, not walls.
+	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
+	# Slice 2: R2's prow EMBEDDED (e1 -856 vs slab top -800, R4 pattern)
+	# — same phase-trap cap as intermediate R2 (suite: mounted but pinned
+	# at spawn). Corner rises ~35u above e1 (8% oversize + half-thickness),
+	# so embed clears that: corner ~21u under the slab. 62.7 deg stays in
+	# the 50-70 band; R2 e2, R2b seam, and drop-transfer untouched.
+	_ramp("SurfRamp2", Vector3(0.0, -856.0, -12650.0), Vector3(0.0, -1490.0, -12977.0), 360.0)
 	# Audit M10b: exit daylights over FloorD (was 80u buried — ride to the
 	# bottom clipped into the slab). Same 50.0-degree family, shortened so
 	# the face ends 16u above the top, 8u past its edge: launch off the end
@@ -391,10 +409,11 @@ func build_advanced() -> void:
 	# Before, the box end hovered 25u above the slab directly in the cruise
 	# lane — riders ground into it and bootstrap-stalled (no SURF in 200
 	# ticks). Same line, same angle, entry unblocked.
-	# Advanced R4: M10b flush anchor (−2114) — M10c +75 happened here but
-	# steepened it to 71.4° and broke the prow-mount trace (nub stalls);
-	# keep M10b geometry. Apex 56.25 vs prow −2114 (dome ...
+	# Advanced R4: M10b flush anchor (e1 -2114,-19339), same 70-degree line,
+	# box end flush at FloorE's extended edge (intermediate-R2 pattern).
 	_ramp("SurfRamp4", Vector3(0.0, -2114.0, -19339.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
+	# Slice 2: R4 hop-entry sign (jump 350u, mount emerging face at grade).
+	_sign("SignR4", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, -2040.0, -19150.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -2950.0, -22400.0))
@@ -603,11 +622,14 @@ func build_challenge_precision() -> void:
 	# the end and drop into the pool. Entries stay demanding (controlled
 	# entry speed) — precision of entry IS this map's skill; exits into
 	# solid never is.
-	_ramp("SurfRampP1", Vector3(0.0, 85.0, -750.0), Vector3(0.0, -350.0, -1002.0), 150.0)  # ~60 deg
-	_ramp("SurfRampP2", Vector3(0.0, -315.0, -1850.0), Vector3(0.0, -760.0, -2064.0), 150.0)  # ~64 deg
+	_ramp("SurfRampP1", Vector3(0.0, 10.0, -750.0), Vector3(0.0, -350.0, -1002.0), 150.0)  # ~55 deg
+	_ramp("SurfRampP2", Vector3(0.0, -390.0, -1850.0), Vector3(0.0, -760.0, -2064.0), 150.0)  # ~60 deg
 	# P3 re-angled 63 -> 60 (audit B4): at 63 no exit daylights over Pool3.
-	# +75 lip raise applies here too: (0,-715) top. ~64 deg from B4 60.
-	_ramp("SurfRampP3", Vector3(0.0, -715.0, -2840.0), Vector3(0.0, -1160.0, -3054.0), 150.0)  # ~64 deg
+	# P3 re-angled 63 -> 60: at 63° no exit point can daylight over Pool3
+	# (the line crosses pool-top level past the pool edge). 60° keeps the
+	# steepest-in-map intent; difficulty now comes from placement (entry
+	# over the void gap, 150-wide face).
+	_ramp("SurfRampP3", Vector3(0.0, -790.0, -2840.0), Vector3(0.0, -1160.0, -3054.0), 150.0)  # ~60 deg
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1160.0, -3800.0))

@@ -740,6 +740,19 @@ flyover-skippable, can't mount from platforms.
 - Verify: suite **567 / 0**; smoke rollercoaster RESULT=OK (2500u/8s —
   flow restored from the blocked 83u).
 
+## Audit slice 2 — forcing verdicts: M10c reverted, R2 embeds (2026-10-03)
+
+- M10c fully reverted (all four maps): +75 lips are jumpable (head +128),
+  and the steepening broke R4's mount. Tall-prow replacement tried and
+  reverted the same session: flyovers graze the corner and sail (face
+  out-descends gravity), 150u+ walls softlock walkers. Forcing is routing.
+- Inter R2 (51.6°) and adv R2 (62.7°) prows embedded R4-style after diag
+  proved their +10-nub caps trap entries by hop-phase luck; all five
+  faces now mount from cruise-hop and ride deep; adv R4 hop sign added.
+- Test hygiene: settle stale SURF after teleports; diag kill default
+  (-1000) vs map kill (-2600) explained a phantom teleport.
+- Verify: suite **581 / 0**; smokes intermediate/advanced RESULT=OK.
+
 ## Audit minors batch (2026-09-24)
 
 - M9 channel comments corrected (600+ flyover accepted prehop).
