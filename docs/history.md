@@ -753,6 +753,14 @@ flyover-skippable, can't mount from platforms.
   (-1000) vs map kill (-2600) explained a phantom teleport.
 - Verify: suite **581 / 0**; smokes intermediate/advanced RESULT=OK.
 
+## Audit slice 3 — hop-entry telegraphs (2026-10-03)
+
+- Hop-mount proven but undiscoverable: extended the SignR4 pattern to
+  every hop face (inter R1/R2/R3, adv R1/R2) — uniform wording, right
+  side, 40u above slab. user_guide §3 documents the hop (rising arc into
+  open face, never cruise into the nub).
+- Verify: suite **601 / 0** (+20 sign checks); smokes inter/adv OK.
+
 ## Audit minors batch (2026-09-24)
 
 - M9 channel comments corrected (600+ flyover accepted prehop).

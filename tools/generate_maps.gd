@@ -349,6 +349,14 @@ func build_intermediate() -> void:
 	_ramp("SurfRamp2", Vector3(0.0, -535.0, -9150.0), Vector3(0.0, -1020.0, -9535.0), 340.0)
 	_ramp("SurfRamp3", Vector3(0.0, -1000.0, -14650.0), Vector3(0.0, -1800.0, -15112.0), 340.0)
 
+	# Slice 3: hop-entry telegraphs (SignR4 pattern, one per face). The
+	# hop-mount is suite-proven but undiscoverable — riders cruise into
+	# the nubs and stall. Right side, 40u above the slab, ~180u before
+	# each prow.
+	_sign("SignR1", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(140.0, 40.0, -6000.0))
+	_sign("SignR2", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(140.0, -440.0, -8970.0))
+	_sign("SignR3", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(140.0, -970.0, -14470.0))
+
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1760.0, -16900.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1600.0))
@@ -414,6 +422,9 @@ func build_advanced() -> void:
 	_ramp("SurfRamp4", Vector3(0.0, -2114.0, -19339.0), Vector3(0.0, -2990.0, -19658.0), 360.0)
 	# Slice 2: R4 hop-entry sign (jump 350u, mount emerging face at grade).
 	_sign("SignR4", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, -2040.0, -19150.0))
+	# Slice 3: same telegraph for R1/R2 (right side, 40u above slab).
+	_sign("SignR1", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, 40.0, -5220.0))
+	_sign("SignR2", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, -760.0, -12470.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -2950.0, -22400.0))

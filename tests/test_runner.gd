@@ -2239,6 +2239,18 @@ func _test_intermediate_map() -> void:
 					break
 			_check(deep, "%s hop mount rides deep (at %s)" % [hop[2], player.position])
 
+	# Slice 3: hop-entry signs present, worded, reveal on approach.
+	for sign_name in ["SignR1", "SignR2", "SignR3"]:
+		var sign: Area3D = map.get_node(sign_name)
+		_check(sign != null and sign is TutorialSign, "%s present" % sign_name)
+		var label: Label3D = sign.get_node("SignLabel")
+		_check(not label.visible, "%s hidden before approach" % sign_name)
+		_check(label.text.contains("SURF RAMP"), "%s text set" % sign_name)
+		player.velocity = Vector3.ZERO
+		player.position = sign.position + Vector3(0.0, -30.0, 0.0)
+		await _wait_ticks(4)
+		_check(label.visible, "%s appears when player approaches" % sign_name)
+
 	# Gaps are genuine voids: raycast down mid-gap must miss everything.
 	var space := root.get_world_3d().direct_space_state
 	for gap_z: float in [-3475.0, -12290.0]:
@@ -2474,16 +2486,17 @@ func _test_advanced_map() -> void:
 					break
 			_check(deep2, "%s hop mount rides deep (at %s)" % [hop[2], player.position])
 
-	# Slice 2: R4 hop-entry sign present, worded, reveals on approach.
-	var r4_sign: Area3D = map.get_node("SignR4")
-	_check(r4_sign != null and r4_sign is TutorialSign, "SignR4 present")
-	var r4_label: Label3D = r4_sign.get_node("SignLabel")
-	_check(not r4_label.visible, "R4 sign hidden before approach")
-	_check(r4_label.text.contains("SURF RAMP"), "R4 sign text set")
-	player.velocity = Vector3.ZERO
-	player.position = r4_sign.position + Vector3(0.0, -30.0, 0.0)
-	await _wait_ticks(4)
-	_check(r4_label.visible, "R4 sign appears when player approaches")
+	# Slice 3: hop-entry signs present, worded, reveal on approach.
+	for sign_name in ["SignR1", "SignR2", "SignR4"]:
+		var sign: Area3D = map.get_node(sign_name)
+		_check(sign != null and sign is TutorialSign, "%s present" % sign_name)
+		var label: Label3D = sign.get_node("SignLabel")
+		_check(not label.visible, "%s hidden before approach" % sign_name)
+		_check(label.text.contains("SURF RAMP"), "%s text set" % sign_name)
+		player.velocity = Vector3.ZERO
+		player.position = sign.position + Vector3(0.0, -30.0, 0.0)
+		await _wait_ticks(4)
+		_check(label.visible, "%s appears when player approaches" % sign_name)
 
 	# Void gaps are real.
 	var space := root.get_world_3d().direct_space_state

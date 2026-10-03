@@ -71,9 +71,15 @@ cyan while you ride them.
 
 **Steeper is harder to steer, not harder to grip.** Maps progress 48° →
 56° → 60° → 65° → 70° faces; slow riders stick to all of them, but fast
-steep faces punish sloppy lines instantly. Enter with speed for control,
-carve early, and never hold `W` into the ramp (it kills grip). Grinding a
-wall or lip at speed won't brake you; standing still against one will.
+ steep faces punish sloppy lines instantly. Enter with speed for control,
+ carve early, and never hold `W` into the ramp (it kills grip). Grinding a
+ wall or lip at speed won't brake you; standing still against one will.
+
+ **Hop onto the face, don't cruise into its foot.** Ramp faces start a
+ short nub above the approach slab — cruising in grinds you to a stall on
+ it. Jump just before the ramp so your rising arc meets the open face
+ above the nub (auto-bhop held works), then ride it down. In-game
+ `SURF RAMP` signs mark every hop entry.
 
 ## Launching off a ramp
 

@@ -55,3 +55,20 @@ playtest verdict on lips elsewhere.
 
 Next: embed-all deferred (R1 49-50.5 band vs embed depth; needs band+doc
 changes); R4-sign pattern for other hop faces; playtest verdict on feel.
+
+# Worklog — slice 3 hop-entry telegraphs (2026-10-03)
+
+- Same-issue-across-maps fix: hop-mount is suite-proven but
+  undiscoverable (riders cruise into nubs and stall). SignR4 pattern
+  extended: inter SignR1/R2/R3, adv SignR1/R2 — right side, 40u above
+  slab, ~180u before each prow. Uniform text ("SURF RAMP / Hop onto the
+  face / and ride it down!").
+- Tests: per-map sign loops (present + TutorialSign + hidden + text +
+  reveal). user_guide §3 gained the hop-entry doctrine (2 lines).
+- Rollercoaster already telegraphed (Drop/Kicker/Wall signs, M10a);
+  tutorial has its school signs; precision pool-drops are a different
+  technique (out of scope).
+- Verify: suite 601/601 (+20 sign checks); smokes inter/adv OK.
+
+Next: test-list for user playtest (one map at a time); then vision
+doc/plan/scope for open surf-kicker-catch maps (rollercoaster/endless).
