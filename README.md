@@ -40,6 +40,7 @@ Requires [Godot 4.x](https://godotengine.org/download). See
 | [`docs/history.md`](docs/history.md) | Engineering log (what shipped, what broke) |
 | [`docs/performance_profile.md`](docs/performance_profile.md) | Performance baseline & methodology |
 | [`docs/open_maps_vision.md`](docs/open_maps_vision.md) | Phase 7 arena map (Skypark) vision + slice plan |
+| [`docs/test_list.md`](docs/test_list.md) | Map-by-map playtest checklist (incl. unbuilt Skypark) |
 | [`AGENTS.md`](AGENTS.md) | Operating rules for AI coding agents |
 
 ## Repository layout
