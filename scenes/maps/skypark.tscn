@@ -1,0 +1,429 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/core/MapMetadata.gd" id="1_sle70"]
+[ext_resource type="Script" path="res://scripts/game/Booster.gd" id="2_gs0hj"]
+[ext_resource type="Script" path="res://scripts/game/VentTower.gd" id="3_y3c58"]
+[ext_resource type="Script" path="res://scripts/game/TutorialSign.gd" id="4_a53x4"]
+
+[sub_resource type="Resource" id="Resource_egjeq"]
+script = ExtResource("1_sle70")
+map_id = "skypark"
+display_name = "Skypark"
+author = "Velocity Engine"
+difficulty = 3
+tags = PackedStringArray("surf", "flow", "air", "arena")
+kill_plane_y = -1600.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n6pw6"]
+size = Vector3(600, 100, 500)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vthr1"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_cjuqx"]
+size = Vector3(600, 100, 500)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bkqwb"]
+size = Vector3(500, 40, 808.00244)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rsklr"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_uxowb"]
+size = Vector3(500, 40, 808.00244)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_upt1l"]
+size = Vector3(1600, 100, 1450)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cpntj"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_nq861"]
+size = Vector3(1600, 100, 1450)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rtjlp"]
+size = Vector3(300, 40, 216.38036)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pnn3f"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_efxir"]
+size = Vector3(300, 40, 216.38036)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_fmfjn"]
+size = Vector3(300, 40, 528.4159)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_81q3c"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_najqd"]
+size = Vector3(300, 40, 528.4159)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_h4ejs"]
+size = Vector3(300, 40, 572.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nt382"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_ie0nh"]
+size = Vector3(300, 40, 572.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tmawy"]
+size = Vector3(1600, 100, 1100)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yc1by"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_rgrd8"]
+size = Vector3(1600, 100, 1100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_i06ca"]
+size = Vector3(250, 40, 216.38036)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swdcn"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_myumj"]
+size = Vector3(250, 40, 216.38036)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wguk0"]
+size = Vector3(250, 40, 216.38036)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8oxql"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_plnp8"]
+size = Vector3(250, 40, 216.38036)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ydtfa"]
+size = Vector3(1600, 100, 1150)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_46sle"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_twaoe"]
+size = Vector3(1600, 100, 1150)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8nnl0"]
+size = Vector3(1600, 100, 900)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mvhju"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_scfx2"]
+size = Vector3(1600, 100, 900)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jg02d"]
+size = Vector3(250, 40, 572.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c5qqs"]
+albedo_color = Color(0.92, 0.93, 0.96, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_omjcn"]
+size = Vector3(250, 40, 572.4)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_na5s6"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ji6ib"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_opase"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_jnpob"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_mfilr"]
+radius = 220.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_eqyt3"]
+radius = 220.0
+
+[node name="SkyparkMap" type="Node3D" unique_id=266250667]
+metadata/map_metadata = SubResource("Resource_egjeq")
+metadata/DropFace_e1 = Vector3(0, 560, 0)
+metadata/DropFace_e2 = Vector3(0, 8, -505)
+metadata/WestKicker_e1 = Vector3(-400, -45, -1400)
+metadata/WestKicker_e2 = Vector3(-400, 45, -1579)
+metadata/T1FaceW_e1 = Vector3(-400, -490, -2605)
+metadata/T1FaceW_e2 = Vector3(-400, -900, -2872)
+metadata/EastFace_e1 = Vector3(100, -40, -1905)
+metadata/EastFace_e2 = Vector3(100, -490, -2185)
+metadata/KickerA_e1 = Vector3(-300, -495, -2300)
+metadata/KickerA_e2 = Vector3(-300, -405, -2479)
+metadata/KickerB_e1 = Vector3(300, -495, -2300)
+metadata/KickerB_e2 = Vector3(300, -405, -2479)
+metadata/VentCatch_e1 = Vector3(450, -40, -1905)
+metadata/VentCatch_e2 = Vector3(450, -490, -2185)
+
+[node name="Summit" type="StaticBody3D" parent="." unique_id=936416788]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 550, 250)
+metadata/surface_role = "floor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Summit" unique_id=435041244]
+shape = SubResource("BoxShape3D_n6pw6")
+
+[node name="Visual" type="MeshInstance3D" parent="Summit" unique_id=1774232605]
+material_override = SubResource("StandardMaterial3D_vthr1")
+mesh = SubResource("BoxMesh_cjuqx")
+
+[node name="DropFace" type="StaticBody3D" parent="." unique_id=1015365773]
+transform = Transform3D(1, 0, 0, 0, 0.674998, 0.73781955, 0, -0.73781955, 0.674998, 0, 263.2592, -252.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DropFace" unique_id=1470876312]
+shape = SubResource("BoxShape3D_bkqwb")
+
+[node name="Visual" type="MeshInstance3D" parent="DropFace" unique_id=636386104]
+material_override = SubResource("StandardMaterial3D_rsklr")
+mesh = SubResource("BoxMesh_uxowb")
+
+[node name="BowlFloor" type="StaticBody3D" parent="." unique_id=1819251820]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -1175)
+metadata/surface_role = "floor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BowlFloor" unique_id=1838790364]
+shape = SubResource("BoxShape3D_upt1l")
+
+[node name="Visual" type="MeshInstance3D" parent="BowlFloor" unique_id=761447444]
+material_override = SubResource("StandardMaterial3D_cpntj")
+mesh = SubResource("BoxMesh_nq861")
+
+[node name="WestKicker" type="StaticBody3D" parent="." unique_id=1937574601]
+transform = Transform3D(1, 0, 0, 0, 0.8934267, -0.44920895, 0, 0.44920895, 0.8934267, -400, -15.670004, -1489.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WestKicker" unique_id=1726400594]
+shape = SubResource("BoxShape3D_rtjlp")
+
+[node name="Visual" type="MeshInstance3D" parent="WestKicker" unique_id=2005802809]
+material_override = SubResource("StandardMaterial3D_pnn3f")
+mesh = SubResource("BoxMesh_efxir")
+
+[node name="T1FaceW" type="StaticBody3D" parent="." unique_id=1529956794]
+transform = Transform3D(1, 0, 0, 0, 0.5457065, 0.83797634, 0, -0.83797634, 0.5457065, -400, -720.6548, -2738.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="T1FaceW" unique_id=943721032]
+shape = SubResource("BoxShape3D_fmfjn")
+
+[node name="Visual" type="MeshInstance3D" parent="T1FaceW" unique_id=1338756604]
+material_override = SubResource("StandardMaterial3D_81q3c")
+mesh = SubResource("BoxMesh_najqd")
+
+[node name="EastFace" type="StaticBody3D" parent="." unique_id=581782528]
+transform = Transform3D(1, 0, 0, 0, 0.5283019, 0.8490566, 0, -0.8490566, 0.5283019, 100, -291.5, -2045)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EastFace" unique_id=471476801]
+shape = SubResource("BoxShape3D_h4ejs")
+
+[node name="Visual" type="MeshInstance3D" parent="EastFace" unique_id=1205958558]
+material_override = SubResource("StandardMaterial3D_nt382")
+mesh = SubResource("BoxMesh_ie0nh")
+
+[node name="Terrace1" type="StaticBody3D" parent="." unique_id=1760204349]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -500, -2050)
+metadata/surface_role = "floor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Terrace1" unique_id=549878139]
+shape = SubResource("BoxShape3D_tmawy")
+
+[node name="Visual" type="MeshInstance3D" parent="Terrace1" unique_id=17470729]
+material_override = SubResource("StandardMaterial3D_yc1by")
+mesh = SubResource("BoxMesh_rgrd8")
+
+[node name="KickerA" type="StaticBody3D" parent="." unique_id=429741279]
+transform = Transform3D(1, 0, 0, 0, 0.8934267, -0.44920895, 0, 0.44920895, 0.8934267, -300, -465.67, -2389.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KickerA" unique_id=684987002]
+shape = SubResource("BoxShape3D_i06ca")
+
+[node name="Visual" type="MeshInstance3D" parent="KickerA" unique_id=1411655318]
+material_override = SubResource("StandardMaterial3D_swdcn")
+mesh = SubResource("BoxMesh_myumj")
+
+[node name="KickerB" type="StaticBody3D" parent="." unique_id=1131238555]
+transform = Transform3D(1, 0, 0, 0, 0.8934267, -0.44920895, 0, 0.44920895, 0.8934267, 300, -465.67, -2389.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KickerB" unique_id=1676490983]
+shape = SubResource("BoxShape3D_wguk0")
+
+[node name="Visual" type="MeshInstance3D" parent="KickerB" unique_id=1805629575]
+material_override = SubResource("StandardMaterial3D_8oxql")
+mesh = SubResource("BoxMesh_plnp8")
+
+[node name="Terrace2" type="StaticBody3D" parent="." unique_id=1322221153]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -950, -3175)
+metadata/surface_role = "floor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Terrace2" unique_id=1627467836]
+shape = SubResource("BoxShape3D_ydtfa")
+
+[node name="Visual" type="MeshInstance3D" parent="Terrace2" unique_id=227181350]
+material_override = SubResource("StandardMaterial3D_46sle")
+mesh = SubResource("BoxMesh_twaoe")
+
+[node name="Booster1" type="Area3D" parent="." unique_id=2021067975]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 650, -400, -2200)
+script = ExtResource("2_gs0hj")
+boost_velocity = Vector3(0, 300, -800)
+default_radius = 80.0
+
+[node name="Terrace3" type="StaticBody3D" parent="." unique_id=1431194900]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1000, -4200)
+metadata/surface_role = "floor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Terrace3" unique_id=813916676]
+shape = SubResource("BoxShape3D_8nnl0")
+
+[node name="Visual" type="MeshInstance3D" parent="Terrace3" unique_id=115906547]
+material_override = SubResource("StandardMaterial3D_mvhju")
+mesh = SubResource("BoxMesh_scfx2")
+
+[node name="VentTower1" type="Area3D" parent="." unique_id=1067018715]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 450, 0, -1500)
+script = ExtResource("3_y3c58")
+radius = 100.0
+height = 750.0
+
+[node name="VentHop" type="Area3D" parent="." unique_id=342736617]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 450, 430, -1500)
+script = ExtResource("2_gs0hj")
+boost_velocity = Vector3(0, -100, -300)
+default_radius = 90.0
+
+[node name="VentCatch" type="StaticBody3D" parent="." unique_id=1502430727]
+transform = Transform3D(1, 0, 0, 0, 0.5283019, 0.8490566, 0, -0.8490566, 0.5283019, 450, -291.5, -2045)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="VentCatch" unique_id=1517916509]
+shape = SubResource("BoxShape3D_jg02d")
+
+[node name="Visual" type="MeshInstance3D" parent="VentCatch" unique_id=1695748169]
+material_override = SubResource("StandardMaterial3D_c5qqs")
+mesh = SubResource("BoxMesh_omjcn")
+
+[node name="RespawnPoint" type="Marker3D" parent="." unique_id=1642074857]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 630, 350)
+
+[node name="DropSign" type="Area3D" parent="." unique_id=865134619]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 200, 640, 100)
+script = ExtResource("4_a53x4")
+sign_text = "SUMMIT DROP
+Ride the face down
+and pick a line!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DropSign" unique_id=1806170917]
+shape = SubResource("SphereShape3D_na5s6")
+
+[node name="SignLabel" type="Label3D" parent="DropSign" unique_id=575892173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="KickerSignW" type="Area3D" parent="." unique_id=138467247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -250, 40, -1300)
+script = ExtResource("4_a53x4")
+sign_text = "KICKER
+Ride up it fast
+and fly to T1!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KickerSignW" unique_id=625268781]
+shape = SubResource("SphereShape3D_ji6ib")
+
+[node name="SignLabel" type="Label3D" parent="KickerSignW" unique_id=1649799651]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="FaceSignW" type="Area3D" parent="." unique_id=773052149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -250, -410, -2420)
+script = ExtResource("4_a53x4")
+sign_text = "SURF RAMP
+Hop off the edge
+and ride it down!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FaceSignW" unique_id=2090667585]
+shape = SubResource("SphereShape3D_opase")
+
+[node name="SignLabel" type="Label3D" parent="FaceSignW" unique_id=1867493833]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="EastSign" type="Area3D" parent="." unique_id=678976654]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -200, 40, -1720)
+script = ExtResource("4_a53x4")
+sign_text = "SURF RAMP
+Hop off the edge
+and ride it down!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EastSign" unique_id=1288129349]
+shape = SubResource("SphereShape3D_jnpob")
+
+[node name="SignLabel" type="Label3D" parent="EastSign" unique_id=1759810605]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="BoosterSign" type="Area3D" parent="." unique_id=679850023]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 650, -410, -2050)
+script = ExtResource("4_a53x4")
+sign_text = "BOOSTER
+Line up and fly!
+Hop the gap south!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BoosterSign" unique_id=162225500]
+shape = SubResource("SphereShape3D_mfilr")
+
+[node name="SignLabel" type="Label3D" parent="BoosterSign" unique_id=1475093242]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="VentSign" type="Area3D" parent="." unique_id=2140770577]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 300, 40, -1500)
+script = ExtResource("4_a53x4")
+sign_text = "VENT
+Ride it to the top!
+Drop onto the face!"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="VentSign" unique_id=165168236]
+shape = SubResource("SphereShape3D_eqyt3")
+
+[node name="SignLabel" type="Label3D" parent="VentSign" unique_id=472916149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 90, 0)
+pixel_size = 0.4
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.95, 0.6, 1)
+font_size = 48
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1979656812]
+transform = Transform3D(0.8480481, 0.41758206, -0.32625088, 0, 0.6156615, 0.7880107, 0.52991927, -0.668271, 0.5221106, 0, 0, 0)
+light_energy = 1.3
+shadow_enabled = true

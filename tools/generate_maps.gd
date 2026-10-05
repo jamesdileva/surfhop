@@ -440,6 +440,30 @@ func build_advanced() -> void:
 	_finish_map("advanced")
 
 
+## S2 Skypark slice: CS2 trigger_push volume (Booster entity).
+func _booster(booster_name: String, pos: Vector3, velocity: Vector3,
+		radius: float) -> void:
+	var b := Area3D.new()
+	b.name = booster_name
+	b.set_script(load("res://scripts/game/Booster.gd"))
+	b.set("boost_velocity", velocity)
+	b.set("default_radius", radius)
+	b.position = pos
+	map.add_child(b)
+
+
+## S2 Skypark slice: updraft column (VentTower entity).
+func _vent(vent_name: String, pos: Vector3, radius: float,
+		height: float) -> void:
+	var v := Area3D.new()
+	v.name = vent_name
+	v.set_script(load("res://scripts/game/VentTower.gd"))
+	v.set("radius", radius)
+	v.set("height", height)
+	v.position = pos
+	map.add_child(v)
+
+
 # --------------------------------------------------------------- challenges --
 
 ## Oscillating wall/platform (AnimatableBody3D + MovingPlatform script).
@@ -523,6 +547,106 @@ func build_rollercoaster() -> void:
 
 	_lighting()
 	_finish_map("rollercoaster")
+
+
+# ------------------------------------------------------------------ skypark --
+# S2 Skypark slice: open fly-arena blockout (vision docs/open_maps_vision.md).
+# Summit drop-in -> bowl -> terraced chains (kicker/catch, steep exit,
+# booster gap) -> kill/respawn summit; vent tower recycles low misses to
+# bowl level. No checkpoints/timer (arena; S3 wires top-speed scoring).
+# Proven relatives reused: kicker->catch spacing copies rollercoaster's
+# Kicker1->R2 pair (catch top +25, 240 past); drop-links are M7 family;
+# hop entries are the slice-2 pattern.
+func build_skypark() -> void:
+	map = Node3D.new()
+	map.name = "SkyparkMap"
+	var meta := MapMetadata.new()
+	meta.map_id = "skypark"
+	meta.display_name = "Skypark"
+	meta.author = "Velocity Engine"
+	meta.difficulty = 3
+	meta.tags = PackedStringArray(["surf", "flow", "air", "arena"])
+	meta.movement_config_path = "res://resources/movement/default.tres"
+	meta.kill_plane_y = -1600.0
+	map.set_meta("map_metadata", meta)
+
+	# Summit platform + embedded drop-in (47.6 deg; e1 40 under the top so
+	# the 8%-oversize box corner stays buried — slice-2 cap-trap lesson).
+	_static_body("Summit", Vector3(600.0, 100.0, 500.0), Vector3(0.0, 550.0, 250.0))
+	_ramp("DropFace", Vector3(0.0, 560.0, 0.0), Vector3(0.0, 8.0, -505.0), 500.0)
+	# Bowl playground.
+	_static_body("BowlFloor", Vector3(1600.0, 100.0, 1450.0), Vector3(0.0, -50.0, -1175.0))
+
+	# West kicker (26.6 deg, buried start) launches onto T1; surfing
+	# resumes on T1FaceW below T1's south edge (EastFace pattern: faces
+	# can never run along slab tops — steep faces bury within ~10u, so
+	# edge-emerge past the edge and merge down into the lower slab).
+	# Flush exit-meet onto T2 (M2 pattern). Kicker flights TRANSPORT.
+	_ramp("WestKicker", Vector3(-400.0, -45.0, -1400.0), Vector3(-400.0, 45.0, -1579.0), 300.0, true)
+	_ramp("T1FaceW", Vector3(-400.0, -490.0, -2605.0), Vector3(-400.0, -900.0, -2872.0), 300.0)
+	# East face (58 deg) emerges BELOW the bowl south edge (R2 pattern):
+	# mid-bowl hops sail over any open face steeper than ~50 (three
+	# trace-proven identical misses), so the entry is an edge-drop mount.
+	# Face merges into T1 top downstream (clean handoff, R4 family).
+	_ramp("EastFace", Vector3(100.0, -40.0, -1905.0), Vector3(100.0, -490.0, -2185.0), 300.0)
+
+	# Terrace 1 + kicker line (twin 26.7 deg): flights TRANSPORT to T2
+	# (flat landings, huge targets) — mid-flight surf-catches of floaty
+	# arcs are unmakable (trace-proven across 7 rounds: the 8% box corner
+	# poisons every edge meeting). T2 south edge gap-hops onto T3 (50u
+	# gap, 50 down — trivial hop, huge margins). T2->T3 grade change is
+	# too small for surf faces (50u over any run is unwalkable-flat OR
+	# buries instantly — both trace-proven dead); T3 is the runout.
+	_static_body("Terrace1", Vector3(1600.0, 100.0, 1100.0), Vector3(0.0, -500.0, -2050.0))
+	_ramp("KickerA", Vector3(-300.0, -495.0, -2300.0), Vector3(-300.0, -405.0, -2479.0), 250.0, true)
+	_ramp("KickerB", Vector3(300.0, -495.0, -2300.0), Vector3(300.0, -405.0, -2479.0), 250.0, true)
+	# S2 tuning: T2 runs long (to -3700) so hot catch exits land on it
+	# instead of sailing the 700u slab into the void; T3 shifts south to
+	# share exactly the edge (no coplanar overlap, audit m7).
+	# S2 tuning: T2 runs to -3750 (slab-bridge under the nubs, R1's exact
+	# 3-phase chain: nub-hop + slab-bridge + edge-drop — gap-hop mounts
+	# proved phase-lottery). T3 adjacent at -3750 (50 step down, hops
+	# cleanly; no coplanar, 50 apart).
+	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -950.0, -3175.0))
+
+	# Booster lane (opt-in east spur of T1): flight TRANSPORTS to T2,
+	# surfing resumes on T2FaceC (same doctrine as the kicker line).
+	# S2 tuning: (0,300,-800) lands mid-T2 — 1200 south overshot T2 onto
+	# T3 directly (trace-proven). Sets exact vector, once per entry.
+	_booster("Booster1", Vector3(650.0, -400.0, -2200.0), Vector3(0.0, 300.0, -800.0), 80.0)
+	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1000.0, -4200.0))
+
+	# Vent tower off the bowl centerline + top booster firing the south
+	# Vent tower off the bowl centerline + top booster firing south:
+	# flight TRANSPORTS to the bowl (lands ~-1760), surfing resumes on
+	# the edge-drop VentCatch below (EastFace pattern, proven).
+	_vent("VentTower1", Vector3(450.0, 0.0, -1500.0), 100.0, 750.0)
+	# S2 tuning: short south push (vz -300) lands the flight on the bowl
+	# inside the map (~-1750) — 500 overshot the bowl onto T1, stranding
+	# riders below the VentCatch edge with no way back up (trace-proven).
+	# Fully automatic still.
+	_booster("VentHop", Vector3(450.0, 430.0, -1500.0), Vector3(0.0, -100.0, -300.0), 90.0)
+	# Edge-drop face below the bowl south edge (EastFace copy, 58 deg):
+	# hop off the edge, mount the emerging face, merge into T1.
+	_ramp("VentCatch", Vector3(450.0, -40.0, -1905.0), Vector3(450.0, -490.0, -2185.0), 250.0)
+
+	_marker(Vector3(0.0, 630.0, 350.0))
+
+	_sign("DropSign", "SUMMIT DROP\nRide the face down\nand pick a line!",
+		Vector3(200.0, 640.0, 100.0))
+	_sign("KickerSignW", "KICKER\nRide up it fast\nand fly to T1!",
+		Vector3(-250.0, 40.0, -1300.0))
+	_sign("FaceSignW", "SURF RAMP\nHop off the edge\nand ride it down!",
+		Vector3(-250.0, -410.0, -2420.0))
+	_sign("EastSign", "SURF RAMP\nHop off the edge\nand ride it down!",
+		Vector3(-200.0, 40.0, -1720.0))
+	_sign("BoosterSign", "BOOSTER\nLine up and fly!\nHop the gap south!",
+		Vector3(650.0, -410.0, -2050.0))
+	_sign("VentSign", "VENT\nRide it to the top!\nDrop onto the face!",
+		Vector3(300.0, 40.0, -1500.0))
+
+	_lighting()
+	_finish_map("skypark")
 
 
 ## Challenge 1: pillar slaloms, low walls, moving walls, narrow bridge.
@@ -696,6 +820,7 @@ func build_metadata_and_presets() -> void:
 		["challenge_precision", "Precision Surf", 4, ["surf", "precision"], "res://resources/movement/default.tres", -1800.0],
 		["challenge_speedrun", "Speed Run", 4, ["bhop", "air-strafe", "speed"], "res://resources/movement/default.tres", -1000.0],
 		["rollercoaster", "Rollercoaster", 3, ["surf", "flow", "air"], "res://resources/movement/default.tres", -2600.0],
+		["skypark", "Skypark", 3, ["surf", "flow", "air", "arena"], "res://resources/movement/default.tres", -1600.0],
 	]:
 		var meta := MapMetadata.new()
 		meta.map_id = m[0]
@@ -719,6 +844,7 @@ func build_dev_scenes() -> void:
 		["dev_challenge_precision", "res://scenes/maps/challenge_precision.tscn"],
 		["dev_challenge_speedrun", "res://scenes/maps/challenge_speedrun.tscn"],
 		["dev_rollercoaster", "res://scenes/maps/rollercoaster.tscn"],
+		["dev_skypark", "res://scenes/maps/skypark.tscn"],
 	]:
 		var dev_root := Node3D.new()
 		dev_root.name = dev[0]
@@ -747,6 +873,7 @@ func _initialize() -> void:
 	build_challenge_precision()
 	build_challenge_speedrun()
 	build_rollercoaster()
+	build_skypark()
 	build_dev_scenes()
 	print("ALL MAPS REGENERATED")
 	quit()

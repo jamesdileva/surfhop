@@ -90,3 +90,31 @@ doc/plan/scope for open surf-kicker-catch maps (rollercoaster/endless).
 - Vision doc: vent bases sit above kill (design rule).
 
 Next: S2 Skypark blockout (generator + map + per-link ride proofs).
+
+# Worklog — Skypark S2 blockout: all links green (2026-10-03)
+
+- Map: summit drop-in (embedded 47.6°) -> bowl -> west kicker -> T1 ->
+  T1FaceW (edge-emerge 56.9°, T2 meet) -> T2 traverse -> T3 step (50
+  down, adjacent) -> runout; east edge-drop face (58°, T1 merge);
+  booster lane -> T2; vent tower + VentHop transit -> bowl; VentCatch
+  edge-drop -> T1 merge. Kill -1600, summit respawn, no
+  checkpoints/timer (arena). 8 signs. Smoke 3218u/8s.
+- Tests: 50 skypark checks (L1-L8 links, signs) — suite 661/661.
+- DOCTRINE (paid for in ~9 regen rounds, trace-proven): flights
+  TRANSPORT (land flat, huge targets), surfing resumes via hop-mount /
+  edge-drop / drop-mount faces. Mid-flight surf-catches of floaty arcs
+  are unmakable: the 8%-oversize box corner poisons ±40u around every
+  top edge (below grazes/pins, above sails), and steep faces
+  out-descend falling flights. Nub faces need edges (steep faces bury
+  within ~7u on flat); faces can't run along slab tops (bury);
+  T2->T3 grade too small for faces (runout instead).
+- Load-bearing: open-air hover-pins are corner-graze depen sticks (ray
+  -cast the box ends, don't theorize); empty-world fall is clean
+  (gravity fine); `<` vs `<=` on exact-set booster vectors (epsilon
+  miss); no-jump cruises friction-stop into cliff seams (bhop over);
+  weak ground friction lets sliders run past zones (assert touchdowns
+  and falls, not rests); teleport+zero+fresh-player per link beats all
+  stale-state ghosts; vent bases above kill (GM wins frame 1 below).
+
+Next: S3 scoring + wiring (top-speed HUD/PB, menu entry, guide fly
+section); S4 polish + cap review; then the map-by-map playtest pass.

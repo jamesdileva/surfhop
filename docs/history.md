@@ -762,7 +762,6 @@ flyover-skippable, can't mount from platforms.
 - Verify: suite **601 / 0** (+20 sign checks); smokes inter/adv OK.
 
 ## Skypark S1 — Booster + VentTower entities (2026-10-03)
-
 - New game-layer entities (framework boundary intact): Booster sets
   exact velocity once per entry; VentTower lifts with clamped accel and
   tags `in_vent`, which the kill plane honors.
@@ -785,3 +784,15 @@ flyover-skippable, can't mount from platforms.
   + minors complete; M10-rollercoaster follow-ups and playtest polish
   remain future work.
 - Verify: suite **552 / 0**; smokes beginner/OC/rollercoaster RESULT=OK.
+
+## Skypark S2 — blockout map, all links green (2026-10-03)
+
+- Summit drop-in -> bowl -> west kicker -> T1 -> T1FaceW (edge-emerge)
+  -> T2 traverse -> T3 step -> runout; east edge-drop; booster lane;
+  vent + VentHop transit; VentCatch edge-drop. Kill -1600, summit
+  respawn, arena (no timer/checkpoints). 8 signs.
+- Doctrine paid for in ~9 regen rounds: flights TRANSPORT (land flat),
+  surfing resumes via proven mounts; mid-flight surf-catches of floaty
+  arcs unmakable (corner poisons ±40u, steep faces out-descend);
+  nub faces need edges; T2->T3 too small for faces.
+- Verify: suite **661 / 0** (+51 skypark); smoke skypark OK (3218u).

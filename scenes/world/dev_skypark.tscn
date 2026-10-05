@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_dlrpo"]
+
+[node name="dev_skypark" type="Node3D" unique_id=1858473247]
+script = ExtResource("1_dlrpo")
+default_map = "res://scenes/maps/skypark.tscn"

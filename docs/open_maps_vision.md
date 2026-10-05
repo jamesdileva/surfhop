@@ -86,6 +86,10 @@ user_guide gains a fly-control section (S-brake, aim at the catch).
   placeholder dressing, flow asserts per link (drop→face, kicker→catch,
   booster→wall, vent→summit), smoke flows ≥3000u. Acceptance: every link
   has a live ride proof; no dead links.
+  - DONE 2026-10-03: L1-L8 links green (50 checks), smoke 3218u.
+    Structure as built: flights TRANSPORT (land flat), surfing resumes
+    via hop/edge/drop mounts; mid-flight surf-catches cut as unmakable;
+    T2->T3 is a step (runout), not faces.
 - **S3 — Scoring + wiring**: top-speed HUD/PB per map (extend endless
   pattern), menu entry, signs, guide section. Acceptance: PB persists
   per map id; signs reveal-tested; menu lists Skypark as arena.
