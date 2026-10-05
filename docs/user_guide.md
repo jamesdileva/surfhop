@@ -106,6 +106,14 @@ and what's physics-correct:
   faster than gravity catches, so use a down-line (or kicker arc) aimed at
   it, never a flat cruise.
 
+**Flying the gap (arena maps).** Once launched, `S` brakes you mid-air:
+tap it to shorten a flight that's running long, release to glide. Pick
+your catch before you leave the lip — steer with `A/D` + mouse toward
+the face, never away from it. Booster pads commit you: line up straight,
+ride through centered, and don't touch the mouse until the catch fills
+your view. Miss everything and the vent tower (or the kill plane) recycles
+you — falling short with speed beats sailing long without it.
+
 Bench check (beginner V-channel, with-debug-timer (bhop cruise) runs):
 
 |entry speed|exit speed|

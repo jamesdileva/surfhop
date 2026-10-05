@@ -796,3 +796,10 @@ flyover-skippable, can't mount from platforms.
   arcs unmakable (corner poisons ±40u, steep faces out-descend);
   nub faces need edges; T2->T3 too small for faces.
 - Verify: suite **661 / 0** (+51 skypark); smoke skypark OK (3218u).
+
+## Skypark S3 — scoring + wiring (2026-10-03)
+
+- Top-speed tracker/HUD gate generalized endless -> endless/arena
+  (per-map-id persistence already worked); skypark menu entry was
+  automatic; guide gained "Flying the gap" (S-brake finally documented).
+- Verify: suite **675 / 0** (+14).

@@ -1,9 +1,10 @@
 class_name TopSpeed
 extends Node
 
-## Endless-mode score tracker (Phase 7 E1): on maps whose metadata is tagged
-## "endless", tracks the current-session peak speed and persists the all-time
-## top per map (MapRecord.best_speed via SaveManager). Dormant everywhere else.
+## Speed-scored arena tracker (Phase 7 E1 endless, S2 Skypark): on maps
+## whose metadata is tagged "endless" or "arena", tracks the
+## current-session peak speed and persists the all-time top per map
+## (MapRecord.best_speed via SaveManager). Dormant everywhere else.
 
 const ANNOUNCE_MARGIN := 25.0  # u/s above the all-time top before re-announcing
 
@@ -34,7 +35,8 @@ func _on_map_loaded(_map_node: Node) -> void:
 	if loader == null or game_manager == null:
 		return
 	var metadata: MapMetadata = loader.current_metadata
-	endless_active = metadata != null and metadata.tags.has("endless")
+	endless_active = metadata != null \
+		and (metadata.tags.has("endless") or metadata.tags.has("arena"))
 	if endless_active:
 		all_time_top = float(
 			get_node("/root/SaveManager").get_top_speed(game_manager.map_name))

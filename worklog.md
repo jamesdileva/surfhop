@@ -118,3 +118,16 @@ Next: S2 Skypark blockout (generator + map + per-link ride proofs).
 
 Next: S3 scoring + wiring (top-speed HUD/PB, menu entry, guide fly
 section); S4 polish + cap review; then the map-by-map playtest pass.
+
+# Worklog — Skypark S3 scoring + wiring (2026-10-03)
+
+- You were right: top-speed HUD/PB existed (E1 endless), gated on the
+  "endless" tag. Generalized the gate to endless/arena in TopSpeed +
+  HUDController (no core change); skypark menu entry was already
+  automatic (discover, non-hidden tags). Missing pieces were the gate,
+  tests, and the guide's fly-control section (S-brake never documented).
+- Tests: `_test_skypark_scoring` (tracker gate, per-map-id persist,
+  announce, arena HUD layout) + skypark menu-row assert. 675/675 (+14).
+- Guide: "Flying the gap" (S-brake, aim at catch, booster commit).
+
+Next: S4 polish + cap review; then the map-by-map playtest pass.

@@ -218,8 +218,9 @@ func get_achievement_text() -> String:
 	return _achievement_label.text
 
 
-## New map (re)loaded: PB belongs to the new map now. Endless-tagged maps
-## swap the race HUD for the top-speed layout (Phase 7 E1).
+## New map (re)loaded: PB belongs to the new map now. Speed-scored maps
+## (tags "endless" or "arena", Phase 7 E1 / S2 Skypark) swap the race HUD
+## for the top-speed layout.
 func _on_map_loaded(_map_node: Node) -> void:
 	_refresh_pb()
 	var endless := _is_endless_map()
@@ -237,7 +238,8 @@ func _is_endless_map() -> bool:
 	var loader := get_node_or_null("/root/LevelLoader")
 	if loader == null or loader.current_metadata == null:
 		return false
-	return bool(loader.current_metadata.tags.has("endless"))
+	var tags: PackedStringArray = loader.current_metadata.tags
+	return tags.has("endless") or tags.has("arena")
 
 
 func _on_top_speed_beaten(speed: float) -> void:

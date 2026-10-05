@@ -113,6 +113,7 @@ func _run_all_tests() -> void:
 	await _test_challenge_oc_roles()
 	await _test_rollercoaster_map()
 	await _test_skypark_map()
+	await _test_skypark_scoring()
 	await _test_kill_planes()
 	await _test_steam()
 	await _test_main_menu_flow()
@@ -3818,6 +3819,84 @@ func _test_skypark_map() -> void:
 	await process_frame
 
 
+func _test_skypark_scoring() -> void:
+	# S3 Skypark slice: arena maps score by top speed (same tracker and
+	# HUD layout as endless, keyed per map id).
+	var ui: Node = root.get_node("UIManager")
+	var loader: Node = root.get_node("LevelLoader")
+	var sm: Node = root.get_node("SaveManager")
+	var bus: Node = root.get_node("SignalBus")
+	var tracker: Node = ui.get_node_or_null("TopSpeed")
+	_check(tracker != null, "TopSpeed tracker owned by UIManager")
+	if tracker == null:
+		return
+
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "skypark":
+			entry = e
+			break
+	_check(not entry.is_empty(), "skypark map discovered for scoring")
+	if entry.is_empty():
+		return
+	_check(entry["metadata"].tags.has("arena"),
+		"skypark metadata carries the 'arena' tag")
+
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	_spawn_test_player_at(player_root, Vector3(0.0, 610.0, 350.0))
+	await _wait_ticks(2)
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "skypark map loads for scoring")
+	await _wait_ticks(3)
+	_check(tracker.endless_active, "tracker activates on arena-tagged map")
+
+	sm._records.records.erase("skypark")
+	tracker._on_map_loaded(loader.current_map)
+	_check(tracker.all_time_top == 0.0, "tracker loaded the reset all-time top")
+	var beaten: Array[float] = []
+	bus.top_speed_beaten.connect(func(speed: float) -> void:
+		beaten.append(speed))
+	bus.velocity_updated.emit(700.0)
+	await physics_frame
+	_check(tracker.session_top == 700.0 and tracker.all_time_top == 700.0,
+		"session peak recorded and persisted (700)")
+	_check(sm.get_top_speed("skypark") == 700.0,
+		"all-time top stored under the skypark map id")
+	_check(not beaten.is_empty(), "first crossing announces top speed")
+	bus.velocity_updated.emit(600.0)
+	await physics_frame
+	_check(tracker.session_top == 700.0,
+		"slower speeds do not reduce the session peak")
+
+	var hud: HUDController = (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	root.add_child(hud)
+	hud._on_map_loaded(loader.current_map)
+	await process_frame
+	_check(not hud.get_timer_label().visible,
+		"timer hidden in arena mode")
+	_check(hud.get_top_speed_label().visible, "TOP label shown in arena mode")
+	_check(hud.get_top_speed_text().contains("TOP"),
+		"top-speed readout populated (%s)" % hud.get_top_speed_text())
+	hud.queue_free()
+
+	var record_path := ProjectSettings.globalize_path(sm.RECORDS_PATH)
+	loader.unload_current()
+	ui.dismiss_menus()
+	sm._records = RecordsResource.new()
+	if FileAccess.file_exists(sm.RECORDS_PATH):
+		DirAccess.remove_absolute(record_path)
+	player_root.queue_free()
+	await process_frame
+
+
 ## Regression sweep for the beginner kill-plane bug (P2 playtest): every
 ## map's kill_plane_y must sit well below its lowest collision surface, or
 ## playable geometry triggers respawn loops. Instances scenes without adding
@@ -4014,6 +4093,8 @@ func _test_main_menu_flow() -> void:
 		"map select lists discovered maps (%d)" % rows.get_child_count())
 	_check(rows.get_node_or_null("test_mapButton") == null,
 		"dev/test maps hidden from map select (audit B7)")
+	_check(rows.get_node_or_null("skyparkButton") != null,
+		"skypark arena listed in map select")
 
 	# --- Launch a map through the flow ---
 	ui.launch_map("res://scenes/maps/test_map.tscn")

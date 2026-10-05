@@ -93,6 +93,8 @@ user_guide gains a fly-control section (S-brake, aim at the catch).
 - **S3 — Scoring + wiring**: top-speed HUD/PB per map (extend endless
   pattern), menu entry, signs, guide section. Acceptance: PB persists
   per map id; signs reveal-tested; menu lists Skypark as arena.
+  - DONE 2026-10-03: tracker gate generalized endless/arena, menu
+    entry automatic, guide fly section added, scoring tests green.
 - **S4 — Polish + test-list**: dressing pass, playtest-driven tuning
   (the map-by-map pass), speed-cap review (see §6).
 
