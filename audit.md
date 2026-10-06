@@ -220,7 +220,7 @@ floor), but the design comment is wrong and speed-lines bypass the lesson.
 **Remedy:** correct the comment; optionally raise walls for the R3
 channel only.
 
-### M10. Intermediate/Advanced relevance — M10a DONE, M10b DONE ✅✅, slice 2 (M10c reverted, R2 embeds) ✅
+### M10. Intermediate/Advanced relevance — M10a DONE, M10b DONE ✅✅, slice 2 (M10c reverted, R2 embeds) ✅, slice A (waterfall bridges) ✅
 M10a shipped the new `rollercoaster` map (see above). M10b:
 - **R2b exit daylight** (user-chose fix): shortened on the same 50° line
   to end 16u above FloorD top, 8u past its edge. Locked by daylight +
@@ -277,6 +277,20 @@ prow-mount; back to M10b geometry):
   changes, next slice). Test lesson: multi-entry ride tests must settle
   (drain stale SURF on flat slab after each teleport) or a stale state
   false-mounts instantly and the deep check fails at the slab.
+Slice A waterfall verdicts (playtest: bhop lines sailed over detached
+steep faces without touching them):
+- Bridged 3: tutorial R1 flush start (same 48° — walkers meet a 30u nub
+  not a 61u wall); inter R1 (flush at FloorB's edge, 50.2° daylight
+  exit onto FloorC — band + ordering hold); adv R1 (1115u 50° run from
+  an edge nub, diving under FloorB with a bridge transition at -6124).
+  Flyovers land ON the face (drop-mounts); only elite speeds clear them
+  whole (accepted mega-skips).
+- Accepted with geometry proofs: inter R2/R3, adv R2 (bridging breaks
+  angles, exits, or seams — gaps need 60°+ faces or buried exits that
+  violate bands; skips need 400–650+); adv R4 (embedded, proven);
+  precision P1–P3 (54–61° bands + daylight over-constrain any bridge;
+  skips fall onto pools slower than surf-carry — self-penalizing via
+  timer). Precision got FAST LINE signs instead (teach, don't force).
 Standing M10b notes: 2500–5500u flat bhop slogs between drops remain on
 inter/advanced BY DESIGN (flats are intentional bhop lines; M10a serves
 flow) — vs CS2's exit-points-at-next-entry linking. Beginner passes

@@ -241,7 +241,10 @@ func build_tutorial() -> void:
 
 	# Surf ramp: 48-degree slab (must exceed the 45-degree walkable limit
 	# unambiguously; exact 45 sat on the classification boundary).
-	_ramp("SurfRamp", Vector3(0.0, 31.0, -1429.0), Vector3(0.0, -405.0, -1822.0), 400.0)
+	# Slice A: top sits AT CourseFloor top (was +31 floating 221u before
+	# the edge) — same 48 deg line, walkers meet a 30u nub instead of a
+	# 61u wall, and jump-overs land on the face below (drop-mounts).
+	_ramp("SurfRamp", Vector3(0.0, 0.0, -1457.0), Vector3(0.0, -405.0, -1822.0), 400.0)
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -364.0, -2250.0))
@@ -338,7 +341,11 @@ func build_intermediate() -> void:
 	# wall and still can't catch speed flyovers (a steep face falls away
 	# faster than gravity). Forcing comes from void-routing: sail-overs
 	# fall to the kill plane, and the next floors sit beyond jump range.
-	_ramp("SurfRamp1", Vector3(0.0, 10.0, -6180.0), Vector3(0.0, -490.0, -6600.0), 340.0)
+	# Slice A: R1 BRIDGES its gap (e1 flush at FloorB's edge, e2 daylights
+	# 35u over FloorC at its edge, 50.2 deg keeps R1<R2<R3). Jump-overs
+	# land on the face below (drop-mounts) instead of skipping to FloorC;
+	# only 700+ flyovers clear all 370u of it (accepted mega-skips).
+	_ramp("SurfRamp1", Vector3(0.0, 0.0, -6200.0), Vector3(0.0, -445.0, -6570.0), 340.0)
 	# Slice 2: R2's prow is EMBEDDED (e1 -535 vs slab top -480, R4 pattern).
 	# Its old +10 nub's box-end cap trapped hop/cruise entries
 	# phase-dependently (diag: same spawn ±40u mounted/stalled by hop-phase
@@ -396,10 +403,11 @@ func build_advanced() -> void:
 	_static_body("FloorE", Vector3(360.0, 100.0, 2640.0), Vector3(0.0, -2130.0, -18010.0))
 	_static_body("FloorF", Vector3(360.0, 100.0, 3000.0), Vector3(0.0, -3040.0, -21100.0))
 
-	# Hop entries mount these faces (rising arc into the face, jump held);
-	# the prow nubs sit ~10u above the approach slabs. Same verdict as
-	# intermediate (see note there): forcing is void-routing, not walls.
-	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5400.0), Vector3(0.0, -790.0, -5865.0), 360.0)
+	# Hop entries mount these faces (rising arc into the face, jump held).
+	# Slice A: R1 LONG-BRIDGES (nub at FloorA's edge, 50.0 deg, 1115u run
+	# diving under FloorB with a bridge transition at -6124). Jump-overs
+	# land on the face (drop-mounts); only 1100+ clears it all (elite).
+	_ramp("SurfRamp1", Vector3(0.0, 10.0, -5450.0), Vector3(0.0, -1317.0, -6565.0), 360.0)
 	# Slice 2: R2's prow EMBEDDED (e1 -856 vs slab top -800, R4 pattern)
 	# — same phase-trap cap as intermediate R2 (suite: mounted but pinned
 	# at spawn). Corner rises ~35u above e1 (8% oversize + half-thickness),
@@ -423,7 +431,7 @@ func build_advanced() -> void:
 	# Slice 2: R4 hop-entry sign (jump 350u, mount emerging face at grade).
 	_sign("SignR4", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, -2040.0, -19150.0))
 	# Slice 3: same telegraph for R1/R2 (right side, 40u above slab).
-	_sign("SignR1", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, 40.0, -5220.0))
+	_sign("SignR1", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, 40.0, -5270.0))
 	_sign("SignR2", "SURF RAMP\nHop onto the face\nand ride it down!", Vector3(150.0, -760.0, -12470.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
@@ -765,6 +773,13 @@ func build_challenge_precision() -> void:
 	# steepest-in-map intent; difficulty now comes from placement (entry
 	# over the void gap, 150-wide face).
 	_ramp("SurfRampP3", Vector3(0.0, -790.0, -2840.0), Vector3(0.0, -1160.0, -3054.0), 150.0)  # ~60 deg
+
+	# Slice A: speed-line telegraphs (faces are the fast line; flat pool
+	# crossings are self-penalizing via the timer — geometry can't force
+	# without breaking angle bands + daylight, so teach instead).
+	_sign("SignP1", "FAST LINE\nSurf it!\nFlat is slow!", Vector3(100.0, 40.0, -650.0))
+	_sign("SignP2", "FAST LINE\nSurf it!\nFlat is slow!", Vector3(100.0, -360.0, -1750.0))
+	_sign("SignP3", "FAST LINE\nSurf it!\nFlat is slow!", Vector3(100.0, -750.0, -2740.0))
 
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 50.0, -80.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -1160.0, -3800.0))

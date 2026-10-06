@@ -131,3 +131,52 @@ section); S4 polish + cap review; then the map-by-map playtest pass.
 - Guide: "Flying the gap" (S-brake, aim at catch, booster commit).
 
 Next: S4 polish + cap review; then the map-by-map playtest pass.
+
+# Worklog — Slice A waterfall entries (2026-10-03)
+
+Shipped: tutorial R1 flush start (same 48°), inter R1 bridged (flush
+at FloorB edge, 50.2° daylight exit), adv R1 long-bridged (edge nub,
+50° run diving under FloorB with bridge transition), precision speed
+signs (FAST LINE — geometry can't force inside angle bands + daylight,
+so teach; skips self-penalize via timer). Suite 688/0; 4 smokes OK.
+Accepted with reasons (documented in audit): inter R2/R3, adv R2/R4
+(gaps can't bridge without breaking angles/exits/seams; skips need
+400-650+, skill-gated, timer sorts), precision geometry (bands +
+daylight over-constrain any bridge).
+
+Test lessons (load-bearing, several paid for twice):
+- Unguarded get_node in a loop ABORTS the func on first miss (speedrun
+  skipped + cleanup skipped + leaked players poisoned GM for roller/
+  L8/menu). Guard with get_node_or_null + null-continue, always.
+- A dedented _check runs for EVERY loop map (phantom P1 fails on OC +
+  speedrun). Watch block levels after edits.
+- Drop-point calibrations must follow geometry moves (recompute
+  surface, respawn 10-20u above it).
+- Spawns that fall inside nub footprints bonk-bounce north (depen
+  eject); spawn clear, hop over — or drop-mount (phase-free).
+- Match map_id (not just non-null) on async loads; fail fast on stale.
+- `<` vs `<=` on exact-set booster vectors (epsilon miss).
+- Capture full suite output to a file; tail/First-N truncation plus
+  stdout/stderr interleave manufactures mysteries (cut CHDBG lines,
+  split error records).
+- Bit-exact repeats = deterministic (diag vs suite divergence means
+  context differs: input phase, load timing — fix with phase-free
+  tests (drops, fresh players), not more theory.
+
+# Playtest round 1 verdict + scope (2026-10-03)
+
+User verdict: waterfall faces bhop-overable on tutorial/intermediate/
+advanced/precision R1s (face sits detached in the gap; jump clears it
+start-to-finish). Beginner channels good (the model). OC wants a ramp-up
++ surf-across finale (banked wall reads random today). Rollercoaster P2
+is a readability/routing loss (white-on-white, ended on last platform).
+Endless needs ramp/visibility polish. Skypark vent needs post-dressing
+retest. Speedrun good as-is (bhop bench).
+
+Scope agreed: Slice A = waterfall entries across maps (faces bridge
+their gaps: tops extended to the approach slabs grade-flush/buried,
+bottoms daylight onto landings — jumping "over" lands further down the
+SAME face instead of bypassing to the next floor). Faces: tutorial R1,
+inter R1/R2/R3, adv R1/R2, precision P1/P2/P3. Then map-by-map guided
+by these notes: OC finale (ramp up + surf across + finish line),
+rollercoaster readability/routing, endless polish, skypark retest.

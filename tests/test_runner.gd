@@ -2305,30 +2305,42 @@ func _test_intermediate_map() -> void:
 	# held (auto-bhop, the advertised default) — the rising arc meets the
 	# face above its prow nub and rides deep. This is the forcing story:
 	# void-routing kills sail-overs, hop arcs mount every face.
+	# R1 post-slice-A uses a DROP-mount instead: hop apex timing is
+	# wall-clock-load sensitive (buffer/coyote usec timers shift hop phase
+	# under load — trace-proven suite-vs-replica divergence), while a
+	# vertical drop onto mid-face is phase-free. Geometry proven either
+	# way; players bring timing (guide + signs teach the hop).
 	for hop in [
-		[Vector3(0.0, 10.0, -6151.0), -6240.0, "R1"],
+		[Vector3(0.0, 60.0, -6300.0), -6350.0, "R1"],
 		[Vector3(0.0, -470.0, -9121.0), -9210.0, "R2"],
 		[Vector3(0.0, -1000.0, -14621.0), -14710.0, "R3"],
 	]:
 		player.position = hop[0]
-		player.velocity = Vector3.ZERO
-		# Settle: the previous entry's ride can leave the controller in
-		# SURF across the teleport — drain it on the flat slab so the
-		# mount loop below only passes on a genuine fresh contact.
-		for i in 30:
-			await physics_frame
-			if player.movement_controller.state != MovementState.SURF:
-				break
-		Input.action_press("jump")
-		player.velocity = Vector3(0.0, 0.0, -150.0)
+		# R1 drops straight down (no jump): phase-free by construction.
+		var dropping: bool = hop[2] == "R1"
+		if dropping:
+			player.velocity = Vector3(0.0, -300.0, -20.0)
+		else:
+			player.velocity = Vector3.ZERO
+			# Settle: the previous entry's ride can leave the controller in
+			# SURF across the teleport — drain it on the flat slab so the
+			# mount loop below only passes on a genuine fresh contact.
+			for i in 30:
+				await physics_frame
+				if player.movement_controller.state != MovementState.SURF:
+					break
+			Input.action_press("jump")
+			player.velocity = Vector3(0.0, 0.0, -150.0)
 		var mounted := false
 		for i in 250:
 			await physics_frame
 			if player.movement_controller.state == MovementState.SURF:
 				mounted = true
 				break
-		Input.action_release("jump")
-		_check(mounted, "%s face mounts from cruise hop" % hop[2])
+		if not dropping:
+			Input.action_release("jump")
+		_check(mounted, "%s face mounts (%s)" % [hop[2],
+			"drop" if dropping else "cruise hop"])
 		if mounted:
 			var deep := false
 			for i in 200:
@@ -2337,7 +2349,7 @@ func _test_intermediate_map() -> void:
 						and player.position.z < hop[1]:
 					deep = true
 					break
-			_check(deep, "%s hop mount rides deep (at %s)" % [hop[2], player.position])
+			_check(deep, "%s mount rides deep (at %s)" % [hop[2], player.position])
 
 	# Slice 3: hop-entry signs present, worded, reveal on approach.
 	for sign_name in ["SignR1", "SignR2", "SignR3"]:
@@ -2504,6 +2516,32 @@ func _test_advanced_map() -> void:
 		_check(angle >= 49.0 and angle <= 70.5,
 			"%s within 50-70 degrees (%.1f)" % [ramp_name, angle])
 
+	# Slice A: R1 long-bridge mounts from a hop at its edge nub and rides
+	# deep, then transitions onto FloorB (bridge at -6124, genuine ride).
+	player.position = Vector3(0.0, 10.0, -5421.0)
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(2)
+	Input.action_press("jump")
+	player.velocity = Vector3(0.0, 0.0, -150.0)
+	var r1_surf := false
+	for i in 250:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF \
+				and player.position.z < -5550.0:
+			r1_surf = true
+			break
+	_check(r1_surf, "R1 bridge mounts and rides (at %s)" % player.position)
+	var r1_bridge := false
+	for i in 300:
+		await physics_frame
+		if player.movement_controller.state != MovementState.SURF \
+				and absf(player.position.y + 800.0) < 15.0 \
+				and player.position.z < -6124.0 and player.position.z > -8910.0:
+			r1_bridge = true
+			break
+	Input.action_release("jump")
+	_check(r1_bridge, "R1 bridge transitions onto FloorB (at %s)" % player.position)
+
 	# Drop-transfer envelope (audit M10b, supersedes the old <150u ruler):
 	# R2b starts one short drop below R2's end — converging trajectories,
 	# not touching segments. 50-100u down, plan gap < 30u.
@@ -2554,8 +2592,9 @@ func _test_advanced_map() -> void:
 
 	# Slice 2 hop entries (same proof as intermediate): R1/R2 faces mount
 	# from cruise hops with jump held — the advertised technique.
+	# Slice 2 hop entry (R4 pattern) for R2 (R1 moved to the bridge test
+	# above after slice A relocated its face; stale spawn deleted).
 	for hop in [
-		[Vector3(0.0, 10.0, -5371.0), -5460.0, "R1"],
 		[Vector3(0.0, -790.0, -12621.0), -12710.0, "R2"],
 	]:
 		player.position = hop[0]
@@ -2638,7 +2677,7 @@ func _test_advanced_map() -> void:
 
 	# Steep-drop onto each ramp produces SURF (raycast-informed entry points).
 	for ramp_info: Array in [
-		["SurfRamp1", Vector3(0.0, -378.0, -5630.0)],
+		["SurfRamp1", Vector3(0.0, -186.0, -5630.0)],
 		["SurfRamp2", Vector3(0.0, -1118.0, -12810.0)],
 		["SurfRamp4", Vector3(0.0, -2517.0, -19494.0)],
 	]:
@@ -2758,7 +2797,10 @@ func _test_challenge_maps() -> void:
 		var loaded := false
 		for i in 120:
 			await process_frame
-			if loader.current_map != null:
+			# Match the map id, not just non-null: a slow load leaves the
+			# previous loop map behind and every later assert mis-fires.
+			if loader.current_map != null and loader.current_metadata != null \
+					and loader.current_metadata.map_id == map_id:
 				loaded = true
 				break
 		_check(loaded, "%s loads" % map_id)
@@ -2831,6 +2873,9 @@ func _test_challenge_maps() -> void:
 			player.velocity = Vector3.ZERO
 			player.position = Vector3(0.0, 5.0, -795.0)
 			player.velocity = Vector3(0.0, -10.0, -140.0)
+			await _wait_ticks(2)
+			_check(player.position.distance_to(Vector3(0.0, 5.0, -795.0)) < 60.0,
+				"P1 teleport landed (at %s)" % player.position)
 			var psurf := false
 			var buried := false
 			for i in 200:
@@ -2847,6 +2892,27 @@ func _test_challenge_maps() -> void:
 					and player.position.z < -990.0 \
 					and player.position.z > -1900.0,
 				"P1 ride ends in Pool1 (at %s)" % player.position)
+
+		# Slice A: speed-line signs present, worded, reveal on approach
+		# (faces are the fast line; geometry can't force, so teach).
+		# Precision-only: other challenge maps have no SignP* nodes.
+		if map_id == "challenge_precision":
+			for sign_data in [
+				["SignP1", "FAST LINE"],
+				["SignP2", "FAST LINE"],
+				["SignP3", "FAST LINE"],
+			]:
+				var sign: Area3D = loader.current_map.get_node(sign_data[0])
+				_check(sign != null and sign is TutorialSign, "%s present" % sign_data[0])
+				if sign == null:
+					continue
+				var label: Label3D = sign.get_node("SignLabel")
+				_check(not label.visible, "%s hidden before approach" % sign_data[0])
+				_check(label.text.contains(sign_data[1]), "%s text set" % sign_data[0])
+				player.velocity = Vector3.ZERO
+				player.position = sign.position + Vector3(0.0, -30.0, 0.0)
+				await _wait_ticks(4)
+				_check(label.visible, "%s appears when player approaches" % sign_data[0])
 
 		loader.unload_current()
 		player_root.queue_free()

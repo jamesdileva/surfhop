@@ -786,7 +786,6 @@ flyover-skippable, can't mount from platforms.
 - Verify: suite **552 / 0**; smokes beginner/OC/rollercoaster RESULT=OK.
 
 ## Skypark S2 — blockout map, all links green (2026-10-03)
-
 - Summit drop-in -> bowl -> west kicker -> T1 -> T1FaceW (edge-emerge)
   -> T2 traverse -> T3 step -> runout; east edge-drop; booster lane;
   vent + VentHop transit; VentCatch edge-drop. Kill -1600, summit
@@ -803,3 +802,20 @@ flyover-skippable, can't mount from platforms.
   (per-map-id persistence already worked); skypark menu entry was
   automatic; guide gained "Flying the gap" (S-brake finally documented).
 - Verify: suite **675 / 0** (+14).
+
+## Slice A — waterfall entries bridged (2026-10-03)
+
+- Playtest: bhop lines sailed over detached steep faces without ever
+  touching them (tutorial/intermediate/advanced/precision R1s).
+- Bridged 3: tutorial R1 flush start (same 48°), inter R1 (flush at
+  FloorB edge, 50.2° daylight exit), adv R1 (1115u 50° run with
+  FloorB-bridge transition). Flyovers land ON the face (drop-mounts);
+  only elite speeds clear them whole (accepted).
+- Accepted with reasons: inter R2/R3, adv R2/R4 (bridging breaks
+  angles/exits/seams; skips need 400-650+); precision geometry
+  (bands + daylight over-constrain; skips self-penalize via timer).
+  Precision got FAST LINE signs instead.
+- Test saga: unguarded get_node aborted the challenge func (cascade
+  poisoned GM for roller/L8/menu until guarded); a dedented assert
+  phantom-failed on every loop map. Both fixed + documented in worklog.
+- Verify: suite **688 / 0**; smokes tutorial/inter/advanced/precision OK.
