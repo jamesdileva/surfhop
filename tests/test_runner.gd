@@ -2770,7 +2770,7 @@ func _test_challenge_maps() -> void:
 	var found: Array[Dictionary] = loader.discover_maps()
 
 	var expectations := {
-		"challenge_oc": {"difficulty": 3, "checkpoints": 2},
+		"challenge_oc": {"difficulty": 3, "checkpoints": 3},
 		"challenge_precision": {"difficulty": 4, "checkpoints": 2},
 		"challenge_speedrun": {"difficulty": 4, "checkpoints": 0},
 	}
@@ -2840,6 +2840,83 @@ func _test_challenge_maps() -> void:
 				await _wait_ticks(30)
 				_check(mover.position.distance_to(pos_a) > 1.0,
 					"moving wall actually moves")
+			# OC finale: kicker launch (bhop cruise, roller pattern),
+			# fly to the entry pool (transport, flat landing); surfing
+			# resumes on the hop-mount face below (R1 pattern, proven).
+			player.position = Vector3(0.0, 10.0, -5150.0)
+			player.velocity = Vector3.ZERO
+			await _wait_ticks(2)
+			Input.action_press("move_forward")
+			Input.action_press("jump")
+			player.velocity = Vector3(0.0, 0.0, -550.0)
+			var flaunched := false
+			for i in 200:
+				await physics_frame
+				if not player.is_on_floor() and player.velocity.y > 50.0:
+					flaunched = true
+					break
+			_check(flaunched, "finale kicker launches the rider airborne")
+			# Fast flights sail past the entry pool onto the finish slab;
+			# slow ones drop into the pool (both safe, speed-gated).
+			var fpool := false
+			for i in 400:
+				await physics_frame
+				if player.movement_controller.state != MovementState.SURF \
+						and absf(player.position.y + 950.0) < 15.0 \
+						and player.position.z < -6400.0 and player.position.z > -7000.0:
+					fpool = true
+					break
+			Input.action_release("move_forward")
+			Input.action_release("jump")
+			_check(fpool, "finale flight lands the entry pool (at %s)" % player.position)
+			# Face hop-mount + deep ride + finish-slab landing.
+			player.queue_free()
+			player = _spawn_test_player_at(player_root, Vector3(0.0, -440.0, -6071.0))
+			player.velocity = Vector3.ZERO
+			await _wait_ticks(2)
+			Input.action_press("jump")
+			player.velocity = Vector3(0.0, 0.0, -150.0)
+			var fmounted := false
+			for i in 250:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF:
+					fmounted = true
+					break
+			_check(fmounted, "finale face mounts (at %s)" % player.position)
+			var fdeep := false
+			for i in 200:
+				await physics_frame
+				if player.movement_controller.state == MovementState.SURF \
+						and player.position.z < -6300.0:
+					fdeep = true
+					break
+			Input.action_release("jump")
+			_check(fdeep, "finale face rides deep (at %s)" % player.position)
+			var fslab := false
+			for i in 200:
+				await physics_frame
+				if player.movement_controller.state != MovementState.SURF \
+						and absf(player.position.y + 950.0) < 15.0 \
+						and player.position.z < -6400.0 and player.position.z > -7000.0:
+					fslab = true
+					break
+			_check(fslab, "finale exit lands the finish slab (at %s)" % player.position)
+			# Signs present, worded, reveal on approach.
+			for sign_data in [
+				["KickerSign", "KICKER"],
+				["FinaleSign", "FINALE"],
+			]:
+				var fsign: Area3D = loader.current_map.get_node_or_null(sign_data[0])
+				_check(fsign != null and fsign is TutorialSign, "%s present" % sign_data[0])
+				if fsign == null:
+					continue
+				var flabel: Label3D = fsign.get_node("SignLabel")
+				_check(not flabel.visible, "%s hidden before approach" % sign_data[0])
+				_check(flabel.text.contains(sign_data[1]), "%s text set" % sign_data[0])
+				player.velocity = Vector3.ZERO
+				player.position = fsign.position + Vector3(0.0, -30.0, 0.0)
+				await _wait_ticks(4)
+				_check(flabel.visible, "%s appears when player approaches" % sign_data[0])
 
 		gm.restart()
 		player.position = Vector3(0.0, 20.0, -40.0)

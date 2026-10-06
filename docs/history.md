@@ -819,3 +819,10 @@ flyover-skippable, can't mount from platforms.
   poisoned GM for roller/L8/menu until guarded); a dedented assert
   phantom-failed on every loop map. Both fixed + documented in worklog.
 - Verify: suite **688 / 0**; smokes tutorial/inter/advanced/precision OK.
+
+## OC finale — kicker up + surf across (2026-10-03)
+
+- Playtest: finale read random, course unfinished. Kicker off FloorC,
+  entry pool + surf face across the void, dedicated finish slab with
+  Checkpoint3. Kill -1200 for sweep margin.
+- Verify: suite **701 / 0** (+13); OC smoke OK.

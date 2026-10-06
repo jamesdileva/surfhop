@@ -132,6 +132,20 @@ section); S4 polish + cap review; then the map-by-map playtest pass.
 
 Next: S4 polish + cap review; then the map-by-map playtest pass.
 
+# Worklog — OC finale: kicker up + surf across (2026-10-03)
+
+- Playtest: banked wall sat on the finish platform (random), course
+  felt unfinished. New finale: kicker UP off FloorC, fly to entry
+  pool / finish slab (transport, flat landings), hop-mount surf face
+  ACROSS the void, drop-link onto a dedicated finish slab with its own
+  checkpoint. Kill -950 -> -1200 (sweep margin under the slab).
+- Tests: launch + long landing + mount + deep + slab landing + both
+  signs; checkpoints 2->3. Suite 701/701; OC smoke OK.
+- Doctrine holds again: kicker->face mid-flight meetings unmakable
+  (same corner/sail physics as S2); flights land flat, surfing resumes
+  via mounts. resources/maps/*.tres are dead files (nothing reads
+  them); baked map_metadata rules.
+
 # Worklog — Slice A waterfall entries (2026-10-03)
 
 Shipped: tutorial R1 flush start (same 48°), inter R1 bridged (flush

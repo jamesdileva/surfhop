@@ -696,7 +696,7 @@ func build_challenge_oc() -> void:
 	meta.difficulty = 3
 	meta.tags = PackedStringArray(["bhop", "obstacles"])
 	meta.movement_config_path = "res://resources/movement/default.tres"
-	meta.kill_plane_y = -950.0
+	meta.kill_plane_y = -1200.0
 	map.set_meta("map_metadata", meta)
 
 	_static_body("FloorA", Vector3(500.0, 100.0, 3100.0), Vector3(0.0, -50.0, -1500.0)) # y=0 z 50..-3050
@@ -727,13 +727,30 @@ func build_challenge_oc() -> void:
 	_moving_body("MovingWall2", Vector3(420.0, 200.0, 40.0), Vector3(0.0, 98.0, -2500.0),
 		Vector3.LEFT, 200.0, 5.0)
 
-	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, 40.0, -5450.0))
+	# OC finale (playtest: the banked wall sat on the finish platform
+	# reading random, course felt unfinished): kicker UP off FloorC,
+	# fly to an ENTRY POOL, hop-mount a surf face ACROSS the void gap,
+	# drop-link onto a dedicated FINISH slab. Kicker flights TRANSPORT
+	# (flat landings — face-meetings of floaty arcs are unmakable, S2
+	# doctrine); surfing resumes via the proven hop-mount. Slow riders
+	# die in the FloorC gap (kill -> Checkpoint2, retry with speed).
+	_ramp("SurfRampKickerF", Vector3(0.0, -45.0, -5350.0), Vector3(0.0, 45.0, -5529.0), 250.0, true)
+	_static_body("EntryPool", Vector3(400.0, 100.0, 300.0), Vector3(0.0, -500.0, -6050.0))
+	_ramp("SurfRampFinal", Vector3(0.0, -440.0, -6100.0), Vector3(0.0, -900.0, -6470.0), 300.0)
+	_static_body("FinishSlab", Vector3(400.0, 100.0, 600.0), Vector3(0.0, -1000.0, -6700.0))
+	_checkpoint("Checkpoint3", Vector3(0.0, -910.0, -6600.0))
+
+	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -910.0, -6900.0))
 	_checkpoint("Checkpoint2", Vector3(0.0, 40.0, -3600.0))
 	_marker(Vector3(0.0, 30.0, -40.0))
 
 	# Audit M8: telegraph the hop entry — grounded contact doesn't surf.
 	_sign("SurfSign", "SURF WALL\nHop onto the banked face and hold D\nto carve along it.",
 		Vector3(150.0, 40.0, -4300.0))
+	_sign("KickerSign", "KICKER\nRide up it FAST\nand fly to the pool!",
+		Vector3(150.0, 40.0, -5200.0))
+	_sign("FinaleSign", "FINALE\nHop on and ride!\nAcross to finish!",
+		Vector3(180.0, -410.0, -5950.0))
 
 	_lighting()
 	_finish_map("challenge_oc")
