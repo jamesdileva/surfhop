@@ -332,6 +332,22 @@ Skypark retest verdicts (`ebae6b7`):
 - Standing note: summit/terraces carry the "platform" role (mid-dark);
   a floating face start (e1 above slab top) pokes ~48u lips through
   terraces — bury, don’t float.
+Skypark catchability verdicts (`bbc96fd`):
+- **Catch math (load-bearing):** a hopping rider (apex 56.25) only
+  intersects a ≥45° face at `x* = (m + vy0/vx)/0.0039` ≈ 355–506u
+  along it. Faces shorter than x* CANNOT be caught at speed — riders
+  fly over and land on the next platform (playtest-confirmed skip).
+  Surfable faces must be ≥45°; therefore every connecting face must
+  be ≥ ~510u long, and ~600u at 46° puts speed landings 60–90% down.
+- Reworked: faces 571–599u at 46°, tops buried inside approach slabs,
+  bottoms flush-merging onto the next platform; terrace drops widened
+  to absorb (T1 top -620, T2 -1240, T3 -1290; kill -1600 unchanged).
+- Kickers steepened 26.6–26.7° → 39–40° (vy ≈308 at 450 u/s, apex
+  ~59u): launches now read. Rideable upper bound stays ~40° (above
+  45° they aren’t runnable).
+- Test lessons: rider position rests AT slab-top level (bands use the
+  top y, no +36); booster/vent link tests must spawn OUTSIDE the
+  volume (teleport-in races `body_entered`).
 
 ---
 

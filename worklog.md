@@ -214,3 +214,12 @@ rollercoaster readability/routing, endless polish, skypark retest.
 - Diagnostics load-bearing: baked scenes load through LevelLoader's threaded path (poll current_map); material dump needs str() on objects; label.text is empty off-tree.
 - Suite 730/730, skypark smoke 3214u/8s (was 1964u). Endless banks get the same indent fix for free.
 
+
+## bbc96fd skypark catchable surf loop (2026-10-08)
+- Playtest: fast riders hopped OVER the 53-56 deg faces to the next platform; kickers felt dead.
+- Math (load-bearing): a hopping rider (apex 56) intersects a 45+ deg face only ~x*=(m+vy0/vx)/0.0039 u along it -> 355-506u depending on speed. 280-330u faces at >50 deg were uncatchable BY CONSTRUCTION at speed.
+- Fix: faces 571-599u at 46 deg -> riders land 60-90% down at any speed, surf the remainder, flush-merge onto the next platform. Terrace drops widened (T1 -620, T2 -1240, T3 -1290) to absorb. Tops buried inside approach slabs (slice-A).
+- Kickers 26.6-26.7 -> 39-40 deg (vy ~308 at 450 u/s, apex ~59u): real zoom.
+- Test lessons: rider position rests AT slab-top level (bands = top y, no +36); booster link tests must spawn OUTSIDE the sphere (teleport-in races body_entered).
+- Suite 730/730, skypark smoke 3425u/8s. Re-confirmed: NEVER edit files via PowerShell (BOM + UTF-8 mojibake) — edit tool only.
+

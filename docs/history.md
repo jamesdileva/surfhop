@@ -844,3 +844,9 @@ flyover-skippable, can't mount from platforms.
 - White ramps fixed two ways (dead-code indent bug in _surface_bodies + missing SurfRamp* prefixes); faces flattened 55-56 -> 53-54 with slice-A buried tops and flush merges; elevated slabs render via the platform role.
 - Verify: suite **730 / 0**; skypark smoke OK (3214u/8s, was 1964u).
 
+
+## Skypark catchable surf loop (2026-10-08)
+
+- Playtest: riders skipped steep faces; kickers felt dead. Faces reworked to 46 deg / 571-599u (math: hop arcs only meet 45+ deg faces ~500u along), terrace drops widened, kickers steepened to ~40 deg for real launches.
+- Verify: suite **730 / 0**; skypark smoke OK (3425u/8s).
+
