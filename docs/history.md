@@ -832,3 +832,9 @@ flyover-skippable, can't mount from platforms.
 - R2 transfer is transport (flight sails over low R2 top, lands Pool2 directly). Pool2 shrinks 800->450 so R3's 60.5-degree face runs exposed into Pool3; R3 mounts via near-vertical drop past nub.
 - Verify: suite **708 / 0** (+7); roller smoke OK (3070u/8s).
 
+
+## Endless visibility polish (2026-10-08)
+
+- Sun ships with the park; platforms/upramps render mid-dark via a new 'platform' surface role; 4 guide signs telegraph the loop and bank side-entries; dev_endless.tscn bootstrap added.
+- Verify: suite **730 / 0** (+22); endless smoke OK (1608u/8s).
+

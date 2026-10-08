@@ -308,6 +308,15 @@ Rollercoaster routing verdicts (playtest: lost past Pool3; P2 gap):
   (hop/run-off flights diverge — 60.5° face out-descends flights,
   gap grew 126→167u); land 20u past nub→face transition corners
   (corner contact perches).
+Endless polish verdicts (playtest: white-on-white + wall-ramps):
+- Sun ships (player rendered near-black under sky ambient); new
+  "platform" role → mid-dark 0.55 (pure `dark_base_for_role()`),
+  floor stays white, obstacles dark; 4 guide signs (spawn loop,
+  E/W bank side-entry telegraphs, platform route). ✅
+- Standing note: side banks (SR2 60°, SR3 50°) mount via side-entry
+  along their 1600u length (frontal grade mounts diverge); spans
+  proven to pierce grade (no stub walls). Test lesson: baked scenes
+  instantiate off-tree — assert serialized `sign_text`, not labels.
 
 ---
 

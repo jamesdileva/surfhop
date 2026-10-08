@@ -201,3 +201,9 @@ rollercoaster readability/routing, endless polish, skypark retest.
 - Doctrine: faces steeper than ~55 deg need near-vertical drop mounts (hop/run-off flights diverge, gap grew 126->167u on 60.5 deg); nub->face transition corner perches (land 20u past).
 - Suite 708/708, smoke roller 3070u/8s. Reverted id-only regen churn on other maps + dev scenes.
 
+
+## ed0aa04 endless visibility polish (2026-10-08)
+- Playtest: white-on-white platforms, unreadable banks. Sun added (player was near-black under sky ambient); new 'platform' role -> mid-dark 0.55 via pure WorldMaterials.dark_base_for_role() (floor 0.0, obstacle 1.0, unknown 0.0); 4 guide signs (spawn loop, E/W bank side-entry telegraphs, platform route).
+- Side banks (SR2 60 deg, SR3 50 deg) mount via side-entry along their 1600u length (frontal grade mounts diverge); pierce proven (spans cross grade, no stub walls). dev_endless.tscn bootstrap added + AGENTS.md list.
+- Test lesson: baked scenes instantiate off-tree (_ready never runs) -> assert serialized sign_text, not label.text. Suite 730/730 (+22), endless smoke 1608u/8s, import clean.
+
