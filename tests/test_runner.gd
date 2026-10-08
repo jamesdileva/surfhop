@@ -3816,11 +3816,12 @@ func _test_skypark_map() -> void:
 	_check(west_deep, "L2 rides T1FaceW deep (at %s)" % player.position)
 
 	# L3 bridge-waterfall onto Terrace2 (continuation of L2's genuine ride).
+	# Terrace2 top is -1240 now (rider position rests at slab-top level).
 	var landed_t2w := false
 	for i in 250:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 900.0) < 15.0 \
+				and absf(player.position.y + 1240.0) < 15.0 \
 				and player.position.z < -2600.0 and player.position.z > -3700.0:
 			landed_t2w = true
 			break
@@ -3859,16 +3860,16 @@ func _test_skypark_map() -> void:
 		for i in 300:
 			await physics_frame
 			if player.movement_controller.state != MovementState.SURF \
-					and absf(player.position.y + 900.0) < 15.0 \
+					and absf(player.position.y + 1240.0) < 15.0 \
 					and player.position.z < -2600.0 and player.position.z > -3700.0:
 				lane_landed = true
 				break
 		_check(lane_landed, "L5 kicker lane %.0f lands T2 (at %s)"
 			% [lane, player.position])
 		# T2 traverse south + step-hop onto T3 (50 step down, adjacent
-		# slabs — the T2->T3 link).
+		# slabs — the T2->T3 link). T2 top -1240, T3 top -1290.
 		player.queue_free()
-		player = _spawn_test_player_at(player_root, Vector3(lane, -890.0, -3300.0))
+		player = _spawn_test_player_at(player_root, Vector3(lane, -1190.0, -3300.0))
 		player.velocity = Vector3.ZERO
 		await _wait_ticks(2)
 		Input.action_press("jump")
@@ -3877,7 +3878,7 @@ func _test_skypark_map() -> void:
 		for i in 300:
 			await physics_frame
 			if player.movement_controller.state != MovementState.SURF \
-					and absf(player.position.y + 950.0) < 15.0 \
+					and absf(player.position.y + 1290.0) < 15.0 \
 					and player.position.z < -3750.0 and player.position.z > -4650.0:
 				lane_t3 = true
 				break
@@ -3889,8 +3890,10 @@ func _test_skypark_map() -> void:
 	# T2FaceC (same doctrine as L5). Jump held: steady cruise frictions
 	# out and falls into the T1/T2 cliff seam (trace-proven corner clip);
 	# bhop preserves over it and the volume fires pre-first-apex anyway.
+	# Spawn OUTSIDE the sphere and fall in — teleporting inside races the
+	# body_entered signal (S1 lesson); T1 top is -620 now.
 	player.queue_free()
-	player = _spawn_test_player_at(player_root, Vector3(650.0, -440.0, -2050.0))
+	player = _spawn_test_player_at(player_root, Vector3(650.0, -500.0, -2120.0))
 	player.velocity = Vector3.ZERO
 	await _wait_ticks(2)
 	Input.action_press("jump")
@@ -3907,14 +3910,14 @@ func _test_skypark_map() -> void:
 	for i in 300:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 900.0) < 15.0 \
+				and absf(player.position.y + 1240.0) < 15.0 \
 				and player.position.z < -2600.0 and player.position.z > -3700.0:
 			landed_t2e = true
 			break
 	_check(landed_t2e, "L6 flight lands T2 (at %s)" % player.position)
 	# T2 traverse south + step-hop onto adjacent T3 (same as L5 lanes).
 	player.queue_free()
-	player = _spawn_test_player_at(player_root, Vector3(650.0, -890.0, -3650.0))
+	player = _spawn_test_player_at(player_root, Vector3(650.0, -1190.0, -3650.0))
 	player.velocity = Vector3.ZERO
 	await _wait_ticks(2)
 	Input.action_press("jump")
@@ -3923,7 +3926,7 @@ func _test_skypark_map() -> void:
 	for i in 200:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 950.0) < 15.0 \
+				and absf(player.position.y + 1290.0) < 15.0 \
 				and player.position.z < -3750.0 and player.position.z > -4650.0:
 			landed_t3 = true
 			break
@@ -3944,14 +3947,15 @@ func _test_skypark_map() -> void:
 			vent_fired = true
 			break
 	_check(vent_fired, "L7 vent-top booster fires south (v=%s)" % player.velocity)
-	# Flight falls onto T1: assert the FALL (band above the slab), not the
-	# rest — weak ground friction lets sliders run past the zone before
-	# stopping (trace-proven overshoot to -2269).
+	# Flight falls toward T1: assert the FALL (band above the slab), not
+	# the rest — weak ground friction lets sliders run past the zone
+	# before stopping (trace-proven overshoot). T1 top is -620 now; the
+	# hop's (0,-100,-300) flight reaches the slab near z -1950.
 	var vent_falling := false
 	for i in 300:
 		await physics_frame
-		if player.position.y < -350.0 and player.position.y > -445.0 \
-				and player.position.z < -2000.0 and player.position.z > -2600.0:
+		if player.position.y < -520.0 and player.position.y > -615.0 \
+				and player.position.z < -1800.0 and player.position.z > -2600.0:
 			vent_falling = true
 			break
 	_check(vent_falling, "L7 flight falls toward Terrace1 (at %s)" % player.position)
@@ -3978,12 +3982,12 @@ func _test_skypark_map() -> void:
 			break
 	Input.action_release("jump")
 	_check(vent_deep, "L7 VentCatch rides deep (at %s)" % player.position)
-	# Exit merges into Terrace1.
+	# Exit merges into Terrace1 (top -620; position rests at slab-top).
 	var vent_t1 := false
 	for i in 200:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 450.0) < 15.0 \
+				and absf(player.position.y + 620.0) < 15.0 \
 				and player.position.z < -2000.0 and player.position.z > -2600.0:
 			vent_t1 = true
 			break
