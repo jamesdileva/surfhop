@@ -296,6 +296,18 @@ inter/advanced BY DESIGN (flats are intentional bhop lines; M10a serves
 flow) — vs CS2's exit-points-at-next-entry linking. Beginner passes
 (flush alternation). M10b did not add chains, windows, or curves; those
 stay future work per §6 tier levers.
+Rollercoaster routing verdicts (playtest: lost past Pool3; P2 gap):
+- R2 transfer restructured to transport (kicker flight lands Pool2 slab;
+  mid-flight surf-meetings unmakable x13 rounds). FinishSign added at
+  the channel mouth for Pool3→finale routing.
+- Root cause: Pool2 (800 deep) buried R3's face (11u of 615u exposed) —
+  R3 unmountable by construction. Pool2 800→450 (ends -2050); R3 face
+  runs exposed into Pool3 (drop-mount past nub → deep ride → pool
+  catch ~-2450). Suite 708/708; smoke 3070u/8s. ✅
+- Doctrine: faces steeper than ~55° need near-vertical drop mounts
+  (hop/run-off flights diverge — 60.5° face out-descends flights,
+  gap grew 126→167u); land 20u past nub→face transition corners
+  (corner contact perches).
 
 ---
 

@@ -194,3 +194,10 @@ SAME face instead of bypassing to the next floor). Faces: tutorial R1,
 inter R1/R2/R3, adv R1/R2, precision P1/P2/P3. Then map-by-map guided
 by these notes: OC finale (ramp up + surf across + finish line),
 rollercoaster readability/routing, endless polish, skypark retest.
+
+## d1363d5 roller R2 transport + R3 exposed (2026-10-08)
+- R2 transfer restructured to transport (kicker flight lands Pool2 slab); mid-flight surf-meetings unmakable x13 rounds (face rate vs fall rate never converge).
+- Root cause found: Pool2 (800 deep) buried R3's face (11u of 615u exposed) -> R3 unmountable by construction. Pool2 800->450 (ends -2050); R3 face runs exposed into Pool3 (grounds ~-2450).
+- Doctrine: faces steeper than ~55 deg need near-vertical drop mounts (hop/run-off flights diverge, gap grew 126->167u on 60.5 deg); nub->face transition corner perches (land 20u past).
+- Suite 708/708, smoke roller 3070u/8s. Reverted id-only regen churn on other maps + dev scenes.
+

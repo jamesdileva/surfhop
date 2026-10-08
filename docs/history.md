@@ -826,3 +826,9 @@ flyover-skippable, can't mount from platforms.
   entry pool + surf face across the void, dedicated finish slab with
   Checkpoint3. Kill -1200 for sweep margin.
 - Verify: suite **701 / 0** (+13); OC smoke OK.
+
+## Rollercoaster routing — R2 transport + R3 exposed ride (2026-10-08)
+
+- R2 transfer is transport (flight sails over low R2 top, lands Pool2 directly). Pool2 shrinks 800->450 so R3's 60.5-degree face runs exposed into Pool3; R3 mounts via near-vertical drop past nub.
+- Verify: suite **708 / 0** (+7); roller smoke OK (3070u/8s).
+
