@@ -91,21 +91,47 @@ func _generate_map() -> Node:
 	# stepping down onto the top); UpRampB rises PlatformA top 200
 	# (z=-3461) to PlatformB top 340 at its south edge. Both < 9°, trivially
 	# walkable, no jumping required.
+	# Playtest polish: platforms/ramps carry the "platform" role (not
+	# "floor") so WorldMaterials renders them mid-dark — white tops on a
+	# white floor read as walls when you hit their 200-340u sides blind.
 	_add_box(root, "PlatformA", Vector3(0, 180, -2600),
-		Vector3(1800, 40, 1800))
+		Vector3(1800, 40, 1800), Vector3.ZERO, "platform")
 	_add_box(root, "UpRampA", Vector3(0, 78.0, -1018.0),
-		Vector3(1200, 40, 1450), UPRA_ROT)
+		Vector3(1200, 40, 1450), UPRA_ROT, "platform")
 	# Platform B: top at y = 340, 7.2-degree approach off Platform A.
 	_add_box(root, "PlatformB", Vector3(0, 320, -5300),
-		Vector3(1400, 40, 1400))
+		Vector3(1400, 40, 1400), Vector3.ZERO, "platform")
 	_add_box(root, "UpRampB", Vector3(0, 248.5, -4003.0),
-		Vector3(1000, 40, 1230), UPRB_ROT)
+		Vector3(1000, 40, 1230), UPRB_ROT, "platform")
 
 	# --- Strafe corridor near spawn: carve speed between the walls ---
 	_add_box(root, "CorridorWallL", Vector3(-700, 110, 2000),
 		Vector3(60, 240, 2400), Vector3.ZERO, "obstacle")
 	_add_box(root, "CorridorWallR", Vector3(700, 110, 2000),
 		Vector3(60, 240, 2400), Vector3.ZERO, "obstacle")
+
+	# --- Guide signs (playtest: park reads as random white) ---
+	# Spawn board states the loop; bank boards telegraph the side-entry
+	# mount (ride ALONG the green bank, graze the face); platform board
+	# points at the walk-up route. Label3Ds billboard through walls.
+	_sign(root, "SpawnSign", "ENDLESS SKATEPARK\nSurf the green banks\nR respawns you",
+		Vector3(200, 80, 2600))
+	_sign(root, "BankSignE", "EAST BANK\nRide along it\nto mount",
+		Vector3(1975, 120, 400))
+	_sign(root, "BankSignW", "WEST BANK\nRide along it\nto mount",
+		Vector3(-1975, 120, 400))
+	_sign(root, "PlatformSign", "PLATFORMS\nWalk up the ramps\nDrop onto the banks",
+		Vector3(400, 280, -1900))
+
+	# Sun only (single-skybox contract: WorldMaterials owns the dark-sky
+	# env at runtime and strips map-owned ones; without a sun the player
+	# renders near-black under sky ambient).
+	var sun := DirectionalLight3D.new()
+	sun.name = "Sun"
+	sun.rotation_degrees = Vector3(-52.0, -32.0, 0.0)
+	sun.light_energy = 1.3
+	sun.shadow_enabled = true
+	root.add_child(sun)
 
 	# pack() only serializes nodes owned by the root — assign ownership
 	# through the whole tree first.
@@ -115,6 +141,30 @@ func _generate_map() -> Node:
 	var error := ResourceSaver.save(packed, "res://scenes/maps/endless.tscn")
 	print("scene saved: %s (error %d)" % ["endless.tscn", error])
 	return root
+
+
+func _sign(parent: Node3D, sign_name: String, text: String, pos: Vector3) -> void:
+	var sign_node := Area3D.new()
+	sign_node.name = sign_name
+	sign_node.set_script(load("res://scripts/game/TutorialSign.gd"))
+	sign_node.sign_text = text
+	sign_node.position = pos
+	var sshape := CollisionShape3D.new()
+	sshape.name = "CollisionShape3D"
+	var sphere := SphereShape3D.new()
+	sphere.radius = 220.0
+	sshape.shape = sphere
+	sign_node.add_child(sshape)
+	var label := Label3D.new()
+	label.name = "SignLabel"
+	label.position = Vector3(0.0, 90.0, 0.0)
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.pixel_size = 0.4
+	label.font_size = 48
+	label.modulate = Color(1.0, 0.95, 0.6)
+	sign_node.add_child(label)
+	parent.add_child(sign_node)
 
 
 func _set_owner_recursive(node: Node, owner: Node) -> void:

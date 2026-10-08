@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/game/DevMain.gd" id="1_en8dl"]
+
+[node name="dev_endless" type="Node3D" unique_id=2871409563]
+script = ExtResource("1_en8dl")
+default_map = "res://scenes/maps/endless.tscn"

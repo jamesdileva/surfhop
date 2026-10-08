@@ -4617,6 +4617,53 @@ func _test_endless_repair() -> void:
 
 	_check_ramp_reaches(park, "UpRampA", "PlatformA", 200.0, -12.0, 2.0)
 	_check_ramp_reaches(park, "UpRampB", "PlatformB", 340.0, 185.0, 200.0)
+
+	# Endless polish: sun ships (player shading under the dark sky).
+	var sun: Node = park.find_child("Sun", true, false)
+	_check(sun != null and sun is DirectionalLight3D, "endless sun present")
+	# Platform roles read mid-dark (white-on-white fix), floor stays
+	# white, corridor walls stay dark.
+	for plat_name in ["PlatformA", "PlatformB", "UpRampA", "UpRampB"]:
+		var plat_body: Node = park.find_child(plat_name, true, false)
+		_check(plat_body != null and String(plat_body.get_meta("surface_role")) == "platform",
+			"%s carries the platform role" % plat_name)
+	var floor_body: Node = park.find_child("Floor", true, false)
+	_check(floor_body != null and String(floor_body.get_meta("surface_role")) == "floor",
+		"endless floor keeps the floor role")
+	var wall_body: Node = park.find_child("CorridorWallL", true, false)
+	_check(wall_body != null and String(wall_body.get_meta("surface_role")) == "obstacle",
+		"endless corridor wall keeps the obstacle role")
+	_check(WorldMaterials.dark_base_for_role("floor") == 0.0, "floor role maps white")
+	_check(WorldMaterials.dark_base_for_role("platform") == 0.55, "platform role maps mid-dark")
+	_check(WorldMaterials.dark_base_for_role("obstacle") == 1.0, "obstacle role maps dark")
+	_check(WorldMaterials.dark_base_for_role("bogus") == 0.0, "unknown role maps white")
+	# Guide signs present + worded.
+	for sign_data in [["SpawnSign", "SKATEPARK"], ["BankSignE", "EAST BANK"],
+			["BankSignW", "WEST BANK"], ["PlatformSign", "PLATFORMS"]]:
+		var esign: Area3D = park.find_child(sign_data[0], true, false)
+		_check(esign != null and esign is TutorialSign, "%s present" % sign_data[0])
+		if esign == null:
+			continue
+		# Baked scene is off-tree (_ready never ran): assert the
+		# serialized sign_text, which _ready copies onto the label.
+		_check(String(esign.sign_text).contains(sign_data[1]), "%s text set" % sign_data[0])
+	# Banks pierce the floor slab (vertical span crosses grade) — no stub
+	# walls sitting on grade for riders to ram blind.
+	for bank_name in ["SurfRamp1", "SurfRamp2", "SurfRamp3"]:
+		var bank: Node3D = park.find_child(bank_name, true, false)
+		var bshape: CollisionShape3D = bank.find_children(
+			"*", "CollisionShape3D", true, false)[0] as CollisionShape3D
+		var bbox := bshape.shape as BoxShape3D
+		var lo_y := 1e9
+		var hi_y := -1e9
+		for sx in [-1.0, 1.0]:
+			for sy in [-1.0, 1.0]:
+				for sz in [-1.0, 1.0]:
+					var corner: Vector3 = bank.transform * (Vector3(sx, sy, sz) * bbox.size / 2.0)
+					lo_y = minf(lo_y, corner.y)
+					hi_y = maxf(hi_y, corner.y)
+		_check(hi_y > 50.0 and lo_y < -50.0,
+			"%s pierces grade (%.0f to %.0f)" % [bank_name, lo_y, hi_y])
 	park.free()
 
 

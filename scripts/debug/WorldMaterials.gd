@@ -60,6 +60,19 @@ func tint_for_metadata(metadata: MapMetadata) -> Color:
 	return DIFFICULTY_TINTS[difficulty]
 
 
+## Role -> dark_base: floors stay white, elevated "platform" tops go
+## mid-dark (white platform on white floor reads as a wall when you hit
+## its sides blind), "obstacle" walls/pillars go fully dark.
+static func dark_base_for_role(role: String) -> float:
+	match role:
+		"obstacle":
+			return 1.0
+		"platform":
+			return 0.55
+		_:
+			return 0.0
+
+
 func _style_map(map_node: Node) -> void:
 	var loader := get_node_or_null("/root/LevelLoader")
 	var metadata: MapMetadata = loader.current_metadata if loader != null else null
@@ -71,8 +84,8 @@ func _style_map(map_node: Node) -> void:
 		# base so they read against floors at a glance. SurfRamp* bodies are
 		# excluded above — their glow shader already carries a dark base.
 		var dark := 0.0
-		if body.has_meta("surface_role") and String(body.get_meta("surface_role")) == "obstacle":
-			dark = 1.0
+		if body.has_meta("surface_role"):
+			dark = dark_base_for_role(String(body.get_meta("surface_role")))
 		for mesh in body.find_children("*", "MeshInstance3D", true, false):
 			var mesh_instance := mesh as MeshInstance3D
 			var material := ShaderMaterial.new()

@@ -114,6 +114,7 @@ godot --path . scenes/world/dev_advanced.tscn   # added Sprint 22
 godot --path . scenes/world/dev_challenge_oc.tscn          # Sprint 23
 godot --path . scenes/world/dev_challenge_precision.tscn   # Sprint 23
 godot --path . scenes/world/dev_challenge_speedrun.tscn    # Sprint 23
+godot --path . scenes/world/dev_endless.tscn              # endless polish
 ```
 
 Controls: WASD move, Space jump, mouse look, R restart-from-checkpoint,
