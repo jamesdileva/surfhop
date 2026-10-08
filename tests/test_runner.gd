@@ -3169,9 +3169,9 @@ func _test_rollercoaster_map() -> void:
 		"exactly 5 checkpoints registered (got %d)" % gm.total_checkpoints)
 	_check(gm.kill_plane_y == -2600.0, "kill plane applied")
 
-	# Honest angles: 48.7 opener, 55 transfer, 60 chain, 65 finale.
+	# Honest angles: 48.7 opener, 48 transfer, 60 chain, 65 finale.
 	for ramp_info in [
-		["SurfRampR1", 47.0, 50.5], ["SurfRampR2", 54.0, 56.0],
+		["SurfRampR1", 47.0, 50.5], ["SurfRampR2", 45.0, 56.0],
 		["SurfRampR3", 59.0, 61.0], ["SurfRampR4", 64.0, 66.0],
 	]:
 		var e1: Vector3 = map_node.get_meta("%s_e1" % ramp_info[0])
@@ -3189,7 +3189,7 @@ func _test_rollercoaster_map() -> void:
 	for ramp_info in [
 		["SurfRampR1", Vector3(0.0, 355.0, -385.0), Vector3(0.0, -100.0, -200.0)],
 		["SurfRampR2", Vector3(0.0, -170.0, -1855.0), Vector3(0.0, -100.0, -200.0)],
-		["SurfRampR3", Vector3(0.0, -795.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
+		["SurfRampR3", Vector3(0.0, -717.0, -2234.0), Vector3(0.0, -100.0, -60.0)],
 		["SurfRampR4", Vector3(0.0, -1645.0, -4020.0), Vector3(0.0, -60.0, -60.0)],
 	]:
 		player.position = ramp_info[1]
@@ -3251,17 +3251,74 @@ func _test_rollercoaster_map() -> void:
 	Input.action_release("jump")
 	_check(past, "kicker flight clears past its end (at %s)" % player.position)
 
-	# Chain proof: R2 exit velocity reaches R3's face (drop-transfer live).
-	player.position = Vector3(0.0, -430.0, -2030.0)
-	player.velocity = Vector3(0.0, -410.0, -290.0)
-	var chained := false
-	for i in 90:
+	# Playtest: bhop riders hit the kicker but never made R2 (trace: the
+	# flight sails 300+ above every static top — face rate vs fall rate
+	# never converge inside any buildable span, 13 rounds proven). So the
+	# flight TRANSPORTS (lands Floor4, flat and safe); surfing resumes on
+	# R3 below via its drop-mount. Jump only, NO forward key.
+	player.queue_free()
+	player = _spawn_test_player_at(player_root, Vector3(0.0, 5.0, -1100.0))
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(2)
+	Input.action_press("jump")
+	player.velocity = Vector3(0.0, 0.0, -550.0)
+	var transported := false
+	for i in 600:
 		await physics_frame
-		if player.movement_controller.state == MovementState.SURF \
-				and player.position.z < -2060.0:
+		if player.movement_controller.state != MovementState.SURF \
+				and absf(player.position.y + 1410.0) < 15.0 \
+				and player.position.z < -3600.0 and player.position.z > -4150.0:
+			transported = true
+			break
+	Input.action_release("jump")
+	_check(transported, "kicker flight lands Floor4 safely (at %s)" % player.position)
+
+	# Routing sign before the channel (playtest: riders got lost past Pool3).
+	var fsign: Area3D = map_node.get_node_or_null("FinishSign")
+	_check(fsign != null and fsign is TutorialSign, "FinishSign present")
+	if fsign != null:
+		var flabel: Label3D = fsign.get_node("SignLabel")
+		_check(not flabel.visible, "FinishSign hidden before approach")
+		_check(flabel.text.contains("FINISH"), "FinishSign text set")
+		player.velocity = Vector3.ZERO
+		player.position = fsign.position + Vector3(0.0, -30.0, 0.0)
+		await _wait_ticks(4)
+		_check(flabel.visible, "FinishSign appears when player approaches")
+
+	# Chain proof: R3 drop-mounts near-vertically just past its nub onto
+	# the exposed face (Pool2 ends at -2050; face runs clear -2060 to
+	# Pool3). Hop/run-off mounts diverge (60-degree face out-descends
+	# flights, trace-proven); vertical drops are phase-free.
+	player.queue_free()
+	player = _spawn_test_player_at(player_root, Vector3(0.0, -430.0, -2080.0))
+	player.velocity = Vector3(0.0, -300.0, -10.0)
+	await _wait_ticks(2)
+	var chained := false
+	for i in 80:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
 			chained = true
 			break
-	_check(chained, "R2 exit hands off to R3 face (at %s)" % player.position)
+	_check(chained, "R3 drop-mounts past nub onto face (at %s)" % player.position)
+	if chained:
+		var r3deep := false
+		for i in 200:
+			await physics_frame
+			if player.movement_controller.state == MovementState.SURF \
+					and player.position.z < -2200.0:
+				r3deep = true
+				break
+		_check(r3deep, "R3 rides deep (at %s)" % player.position)
+		var r3pool := false
+		for i in 200:
+			await physics_frame
+			if player.movement_controller.state != MovementState.SURF \
+					and player.position.z < -2430.0 \
+					and player.position.y > -1170.0 \
+					and player.position.y < -1100.0:
+				r3pool = true
+				break
+		_check(r3pool, "R3 grounds into Pool3 catch (at %s)" % player.position)
 
 	# Start trigger begins the run from spawn.
 	gm.restart()

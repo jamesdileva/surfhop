@@ -43,14 +43,17 @@ func _static_body(body_name: String, size: Vector3, pos: Vector3,
 
 
 func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
-		ascending := false) -> StaticBody3D:
+	ascending := false, top_margin := 0.04) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = ramp_name
 	var shape := CollisionShape3D.new()
 	shape.name = "CollisionShape3D"
 	var box := BoxShape3D.new()
 	var span := e2 - e1
-	var slope_len := span.length() * 1.08
+	# Box oversize past the ends (visual + forgiving edges). top_margin 0
+	# kills the prow corner where flights must pass clean above it
+	# (roller R2: the 8% corner poisoned the kicker-flight meeting).
+	var slope_len := span.length() * (1.0 + top_margin + 0.04)
 	box.size = Vector3(width, 40.0, slope_len)
 	shape.shape = box
 	body.add_child(shape)
@@ -512,17 +515,23 @@ func build_rollercoaster() -> void:
 	# "hidden kicker" report — same white as the pool before the rename.
 	_ramp("SurfRampKicker1", Vector3(0.0, -45.0, -1261.0), Vector3(0.0, 45.0, -1440.0), 250.0, true)
 
-	# Transfer ramp 55 degrees, top meets the kicker flight (M10a anchor —
-	# M10c's +75 raise was reverted: it perched the prow 145u over Pool1).
-	_ramp("SurfRampR2", Vector3(0.0, 70.0, -1680.0), Vector3(0.0, -430.0, -2030.0), 320.0)
+	# Transfer ramp 48.2 degrees (low top over the gap: the kicker
+	# flight sails 60+ above it and lands Pool2 directly (transport);
+	# R3 below keeps its own hop-mount. Chasing mid-flight meetings
+	# proved unmakable across 13 rounds (face rate vs fall rate never
+	# converge inside any buildable span).
+	_ramp("SurfRampR2", Vector3(0.0, 25.0, -1560.0), Vector3(0.0, -535.0, -2060.0), 320.0, false, 0.0)
 
-	# Pool 2 catch + drop-transfer to the 60-degree face (M7 pattern:
-	# steeper exit path converges onto the shallower face below).
-	_static_body("Pool2", Vector3(400.0, 100.0, 800.0), Vector3(0.0, -530.0, -2400.0))
-	# R3 keeps its M10a prow (59.9°): the +75 raise here steepened it to
-	# 62.7° and displaced the drop into P2 (rider grazed the raised prow,
-	# trace-proven). Drop-transfer alignment beats lip-blocking mid-map.
-	_ramp("SurfRampR3", Vector3(0.0, -510.0, -2060.0), Vector3(0.0, -1110.0, -2408.0), 300.0)
+	# Pool 2 catch (R2 transport grounds ~-2015 onto its slab; riders walk
+	# 35u south to its edge). Ends at -2050 so R3's face runs EXPOSED
+	# south of it — the old 800-deep slab buried R3's face (only 11u of
+	# 615u exposed), making R3 unmountable by construction.
+	_static_body("Pool2", Vector3(400.0, 100.0, 450.0), Vector3(0.0, -530.0, -1825.0))
+	# R3 60.5-degree ride: +10 nub at Pool2's south edge, fully exposed
+	# face diving into Pool3 (grounds ~-2450, pool catch). Mounts take a
+	# near-vertical drop just past the nub (hop/run-off flights diverge:
+	# a 60-degree face out-descends them). Keeps the 60-degree step.
+	_ramp("SurfRampR3", Vector3(0.0, -470.0, -2060.0), Vector3(0.0, -1085.0, -2408.0), 300.0, false, 0.0)
 
 	# Pool 3 catch + optional banked carve wall on its east side.
 	_static_body("Pool3", Vector3(520.0, 100.0, 700.0), Vector3(0.0, -1210.0, -2750.0))
@@ -540,7 +549,7 @@ func build_rollercoaster() -> void:
 	_trigger("StartTrigger", "res://scenes/world/StartTrigger.tscn", Vector3(0.0, 650.0, 150.0))
 	_trigger("FinishTrigger", "res://scenes/world/FinishTrigger.tscn", Vector3(0.0, -2010.0, -4650.0))
 	_checkpoint("Checkpoint1", Vector3(0.0, 40.0, -1050.0))
-	_checkpoint("Checkpoint2", Vector3(0.0, -440.0, -2400.0))
+	_checkpoint("Checkpoint2", Vector3(0.0, -440.0, -1900.0))
 	_checkpoint("Checkpoint3", Vector3(0.0, -1120.0, -2750.0))
 	_checkpoint("Checkpoint4", Vector3(0.0, -1370.0, -3700.0))
 	_checkpoint("Checkpoint5", Vector3(0.0, -2010.0, -4400.0))
@@ -548,10 +557,14 @@ func build_rollercoaster() -> void:
 
 	_sign("DropSign", "FIRST DROP\nRun off the edge and ride\nthe big face down!",
 		Vector3(180.0, 640.0, 150.0))
-	_sign("KickerSign", "KICKER\nRide up it fast\nand fly to the next ramp!",
+	_sign("KickerSign", "KICKER\nRide up it fast\nEase off W, meet R2!",
 		Vector3(180.0, 40.0, -1200.0))
 	_sign("WallSign", "CARVE WALL\nHop on and hold D\nto carve!",
 		Vector3(150.0, -1080.0, -2600.0))
+	# Playtest routing: riders got lost past Pool3 (ended on the last
+	# platform). Point at the channel + finale from its mouth.
+	_sign("FinishSign", "FINISH\nDown the channel!\nFinal ramp ahead!",
+		Vector3(150.0, -1330.0, -3300.0))
 
 	_lighting()
 	_finish_map("rollercoaster")
