@@ -838,3 +838,9 @@ flyover-skippable, can't mount from platforms.
 - Sun ships with the park; platforms/upramps render mid-dark via a new 'platform' surface role; 4 guide signs telegraph the loop and bank side-entries; dev_endless.tscn bootstrap added.
 - Verify: suite **730 / 0** (+22); endless smoke OK (1608u/8s).
 
+
+## Skypark retest polish (2026-10-08)
+
+- White ramps fixed two ways (dead-code indent bug in _surface_bodies + missing SurfRamp* prefixes); faces flattened 55-56 -> 53-54 with slice-A buried tops and flush merges; elevated slabs render via the platform role.
+- Verify: suite **730 / 0**; skypark smoke OK (3214u/8s, was 1964u).
+

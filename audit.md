@@ -317,6 +317,21 @@ Endless polish verdicts (playtest: white-on-white + wall-ramps):
   along their 1600u length (frontal grade mounts diverge); spans
   proven to pierce grade (no stub walls). Test lesson: baked scenes
   instantiate off-tree — assert serialized `sign_text`, not labels.
+Skypark retest verdicts (`ebae6b7`):
+- White ramps root-caused: `WorldMaterials._surface_bodies` dead-code
+  indent bug (append outside the `SurfRamp` guard) re-tinted every
+  ramp white through the neon shader; AND skypark faces were never
+  `SurfRamp*`-prefixed so the glow dark-base path skipped them. Both
+  fixed (names renamed; guard now actually excludes). ✅
+- Placement per slice-A doctrine: face tops buried inside approach
+  slabs (T1FaceW -20u under T1, EastFace/VentCatch -8u under bowl,
+  Drop -4u under summit) so hops land further down the SAME face;
+  angles 55–56° → 53–54°; bottoms flush-merge at landing tops
+  (T1FaceW → T2 top, EastFace/VentCatch → T1 top). Corners stay in
+  the accepted ≤30u-nub family. ✅
+- Standing note: summit/terraces carry the "platform" role (mid-dark);
+  a floating face start (e1 above slab top) pokes ~48u lips through
+  terraces — bury, don’t float.
 
 ---
 

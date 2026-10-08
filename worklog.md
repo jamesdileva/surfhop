@@ -207,3 +207,10 @@ rollercoaster readability/routing, endless polish, skypark retest.
 - Side banks (SR2 60 deg, SR3 50 deg) mount via side-entry along their 1600u length (frontal grade mounts diverge); pierce proven (spans cross grade, no stub walls). dev_endless.tscn bootstrap added + AGENTS.md list.
 - Test lesson: baked scenes instantiate off-tree (_ready never runs) -> assert serialized sign_text, not label.text. Suite 730/730 (+22), endless smoke 1608u/8s, import clean.
 
+
+## ebae6b7 skypark retest polish (2026-10-08)
+- White-on-white ramps: (1) WorldMaterials._surface_bodies dead-code indent bug (append outside the SurfRamp guard) re-tinted ramps white — fixed; (2) skypark faces never SurfRamp*-prefixed -> glow dark-base path skipped them. Renamed all 7 faces.
+- Placement (slice-A): face tops buried inside approach slabs (hops land further down the SAME face); 55-56 deg -> 53-54 deg; flush-merges at landing tops. Summit/Terraces -> platform role (mid-dark).
+- Diagnostics load-bearing: baked scenes load through LevelLoader's threaded path (poll current_map); material dump needs str() on objects; label.text is empty off-tree.
+- Suite 730/730, skypark smoke 3214u/8s (was 1964u). Endless banks get the same indent fix for free.
+
