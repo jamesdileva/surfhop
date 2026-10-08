@@ -593,8 +593,12 @@ func build_skypark() -> void:
 
 	# Summit platform + embedded drop-in (47.6 deg; e1 40 under the top so
 	# the 8%-oversize box corner stays buried — slice-2 cap-trap lesson).
-	_static_body("Summit", Vector3(600.0, 100.0, 500.0), Vector3(0.0, 550.0, 250.0))
-	_ramp("DropFace", Vector3(0.0, 560.0, 0.0), Vector3(0.0, 8.0, -505.0), 500.0)
+	# Summit/Terraces carry the "platform" role: white tops on a white
+	# world read as walls when you hit their sides (endless polish).
+	_static_body("Summit", Vector3(600.0, 100.0, 500.0), Vector3(0.0, 550.0, 250.0), "platform")
+	# SurfRamp* prefix: glow shader + dark base (VisualEffects), skipped by
+	# floor tinting. Playtest retest: unprefixed faces rendered white.
+	_ramp("SurfRampDrop", Vector3(0.0, 546.0, -10.0), Vector3(0.0, 8.0, -505.0), 500.0)
 	# Bowl playground.
 	_static_body("BowlFloor", Vector3(1600.0, 100.0, 1450.0), Vector3(0.0, -50.0, -1175.0))
 
@@ -603,13 +607,23 @@ func build_skypark() -> void:
 	# can never run along slab tops — steep faces bury within ~10u, so
 	# edge-emerge past the edge and merge down into the lower slab).
 	# Flush exit-meet onto T2 (M2 pattern). Kicker flights TRANSPORT.
-	_ramp("WestKicker", Vector3(-400.0, -45.0, -1400.0), Vector3(-400.0, 45.0, -1579.0), 300.0, true)
-	_ramp("T1FaceW", Vector3(-400.0, -490.0, -2605.0), Vector3(-400.0, -900.0, -2872.0), 300.0)
-	# East face (58 deg) emerges BELOW the bowl south edge (R2 pattern):
+	_ramp("SurfRampWKicker", Vector3(-400.0, -45.0, -1400.0), Vector3(-400.0, 45.0, -1579.0), 300.0, true)
+	# Retest polish (slice-A doctrine): top buried 20u under T1's top
+	# INSIDE its footprint (z -2576 < -2600 edge) so hops land further
+	# down the SAME face instead of sailing past; flattened 56 -> 54;
+	# bottom flush-merges at T2 top (-950). Corner stays ~10u proud
+	# (the accepted 30u-nub family), not the 48u lip a floating start
+	# would poke through the terrace.
+	_ramp("SurfRampT1FaceW", Vector3(-400.0, -470.0, -2576.0), Vector3(-400.0, -950.0, -2923.0), 300.0)
+	# East face (53 deg) emerges BELOW the bowl south edge (R2 pattern):
 	# mid-bowl hops sail over any open face steeper than ~50 (three
 	# trace-proven identical misses), so the entry is an edge-drop mount.
 	# Face merges into T1 top downstream (clean handoff, R4 family).
-	_ramp("EastFace", Vector3(100.0, -40.0, -1905.0), Vector3(100.0, -490.0, -2185.0), 300.0)
+	# Retest polish (slice-A doctrine): top buried 8u under the bowl top
+	# INSIDE its footprint (z -1876 < -1900 edge) so hops land further
+	# down the SAME face instead of sailing past; flattened 55 -> 53;
+	# bottom raised to a flush merge at T1 top (-450).
+	_ramp("SurfRampT1FaceE", Vector3(100.0, -8.0, -1876.0), Vector3(100.0, -450.0, -2206.0), 300.0)
 
 	# Terrace 1 + kicker line (twin 26.7 deg): flights TRANSPORT to T2
 	# (flat landings, huge targets) — mid-flight surf-catches of floaty
@@ -618,9 +632,9 @@ func build_skypark() -> void:
 	# gap, 50 down — trivial hop, huge margins). T2->T3 grade change is
 	# too small for surf faces (50u over any run is unwalkable-flat OR
 	# buries instantly — both trace-proven dead); T3 is the runout.
-	_static_body("Terrace1", Vector3(1600.0, 100.0, 1100.0), Vector3(0.0, -500.0, -2050.0))
-	_ramp("KickerA", Vector3(-300.0, -495.0, -2300.0), Vector3(-300.0, -405.0, -2479.0), 250.0, true)
-	_ramp("KickerB", Vector3(300.0, -495.0, -2300.0), Vector3(300.0, -405.0, -2479.0), 250.0, true)
+	_static_body("Terrace1", Vector3(1600.0, 100.0, 1100.0), Vector3(0.0, -500.0, -2050.0), "platform")
+	_ramp("SurfRampKickerA", Vector3(-300.0, -495.0, -2300.0), Vector3(-300.0, -405.0, -2479.0), 250.0, true)
+	_ramp("SurfRampKickerB", Vector3(300.0, -495.0, -2300.0), Vector3(300.0, -405.0, -2479.0), 250.0, true)
 	# S2 tuning: T2 runs long (to -3700) so hot catch exits land on it
 	# instead of sailing the 700u slab into the void; T3 shifts south to
 	# share exactly the edge (no coplanar overlap, audit m7).
@@ -628,14 +642,14 @@ func build_skypark() -> void:
 	# 3-phase chain: nub-hop + slab-bridge + edge-drop — gap-hop mounts
 	# proved phase-lottery). T3 adjacent at -3750 (50 step down, hops
 	# cleanly; no coplanar, 50 apart).
-	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -950.0, -3175.0))
+	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -950.0, -3175.0), "platform")
 
 	# Booster lane (opt-in east spur of T1): flight TRANSPORTS to T2,
 	# surfing resumes on T2FaceC (same doctrine as the kicker line).
 	# S2 tuning: (0,300,-800) lands mid-T2 — 1200 south overshot T2 onto
 	# T3 directly (trace-proven). Sets exact vector, once per entry.
 	_booster("Booster1", Vector3(650.0, -400.0, -2200.0), Vector3(0.0, 300.0, -800.0), 80.0)
-	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1000.0, -4200.0))
+	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1000.0, -4200.0), "platform")
 
 	# Vent tower off the bowl centerline + top booster firing the south
 	# Vent tower off the bowl centerline + top booster firing south:
@@ -647,9 +661,11 @@ func build_skypark() -> void:
 	# riders below the VentCatch edge with no way back up (trace-proven).
 	# Fully automatic still.
 	_booster("VentHop", Vector3(450.0, 430.0, -1500.0), Vector3(0.0, -100.0, -300.0), 90.0)
-	# Edge-drop face below the bowl south edge (EastFace copy, 58 deg):
-	# hop off the edge, mount the emerging face, merge into T1.
-	_ramp("VentCatch", Vector3(450.0, -40.0, -1905.0), Vector3(450.0, -490.0, -2185.0), 250.0)
+	# Edge-drop face below the bowl south edge (EastFace copy, 53 deg):
+	# Hop off the edge, mount the emerging face, merge into T1. Retest
+	# polish: top buried 8u inside the bowl footprint (slice-A bridging —
+	# hops land further down the same face), bottom flush at T1 top.
+	_ramp("SurfRampVentCatch", Vector3(450.0, -8.0, -1876.0), Vector3(450.0, -450.0, -2206.0), 250.0)
 
 	_marker(Vector3(0.0, 630.0, 350.0))
 
