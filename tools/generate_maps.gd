@@ -588,7 +588,7 @@ func build_skypark() -> void:
 	meta.difficulty = 3
 	meta.tags = PackedStringArray(["surf", "flow", "air", "arena"])
 	meta.movement_config_path = "res://resources/movement/default.tres"
-	meta.kill_plane_y = -1600.0
+	meta.kill_plane_y = -1700.0
 	map.set_meta("map_metadata", meta)
 
 	# Summit platform + embedded drop-in. Summit top is 600 (pos y 550,
@@ -612,34 +612,43 @@ func build_skypark() -> void:
 	# Surfing resumes on T1FaceW below T1's south edge (EastFace pattern:
 	# faces can never run along slab tops — steep faces bury within ~10u,
 	# so edge-emerge past the edge and merge down into the lower slab).
-	# Re-worked with the drop: top buried 20u under T1's top inside its
-	# footprint, 46 deg over a 579u run, flush merge into T2's top.
-	_ramp("SurfRampT1FaceW", Vector3(-400.0, -640.0, -2576.0), Vector3(-400.0, -1240.0, -3155.0), 300.0)
+	# Curve-launch rework: top buried 23u under T1's top just inside its
+	# south edge (-3376 < -3400); 46 deg over 602u; bottom daylights 30u
+	# above T2's top, then the LIP (39 deg, grounded in T2's slab) —
+	# riders jump it (bhop buffer) and FLY onto T2's middle. Trace-proven:
+	# jointed "curves" are useless here — pitches under 45 deg classify
+	# as GROUND (audit B3 cliff) and porpoise the rider off the arc.
+	_ramp("SurfRampT1FaceW", Vector3(-400.0, -750.0, -3376.0), Vector3(-400.0, -1373.0, -3978.0), 300.0)
+	_ramp("SurfRampT1FaceWLip", Vector3(-400.0, -1391.0, -3978.0), Vector3(-400.0, -1291.0, -4101.0), 300.0, true)
 	# East face (46 deg) emerges BELOW the bowl south edge (R2 pattern):
 	# mid-bowl hops sail over any open face steeper than ~50 (three
 	# trace-proven identical misses), so the entry is a run/hop off the
-	# bowl edge. Face merges into T1 top downstream (clean handoff).
-	# Slice-A bridging: top buried 8u inside the bowl footprint (z -1876
-	# < -1900 edge) so hops land further down the SAME face; 571-ish run
-	# keeps the landing on-face at bhop speed.
-	_ramp("SurfRampT1FaceE", Vector3(100.0, -8.0, -1876.0), Vector3(100.0, -620.0, -2467.0), 300.0)
+	# bowl edge. Slice-A bridging: top buried 8u inside the bowl
+	# footprint (z -1876 < -1900 edge) so hops land further down the SAME
+	# face. 660u run keeps landings mid-face at any speed.
+	# Curve-launch rework: bottom daylights 38u above T1's top, then the
+	# LIP (39 deg) — jump it and FLY onto T1's long middle (trace: lands
+	# z -3000..-3290 across h 400..733).
+	_ramp("SurfRampT1FaceE", Vector3(100.0, -8.0, -1876.0), Vector3(100.0, -692.0, -2536.0), 300.0)
+	_ramp("SurfRampT1FaceELip", Vector3(100.0, -710.0, -2536.0), Vector3(100.0, -610.0, -2659.0), 300.0, true)
 
 	# Terrace 1 + kicker line (twin 40 deg): flights TRANSPORT to T2.
-	# Terrace drops widened to absorb the long faces: T1 top -620, T2
-	# top -1240, T3 top -1290 (T2->T3 stays the trivial 50u hop — the
-	# grade is too small for a surf face, trace-proven dead).
-	_static_body("Terrace1", Vector3(1600.0, 100.0, 1100.0), Vector3(0.0, -670.0, -2050.0), "platform")
-	_ramp("SurfRampKickerA", Vector3(-300.0, -695.0, -2300.0), Vector3(-300.0, -545.0, -2479.0), 250.0, true)
-	_ramp("SurfRampKickerB", Vector3(300.0, -695.0, -2300.0), Vector3(300.0, -545.0, -2479.0), 250.0, true)
+	# Curve-launch layout: T1 top -730, stretched south (-2200..-3400) so
+	# the EastFace/VentCatch curve flights land mid-slab; T2/T3 shift
+	# south edge-aligned (T2 -3600..-4750 top -1403, T3 -4750..-5650 top
+	# -1453). T2->T3 stays the trivial 50u hop.
+	_static_body("Terrace1", Vector3(1600.0, 100.0, 1200.0), Vector3(0.0, -780.0, -2800.0), "platform")
+	_ramp("SurfRampKickerA", Vector3(-300.0, -755.0, -2900.0), Vector3(-300.0, -645.0, -3031.0), 250.0, true)
+	_ramp("SurfRampKickerB", Vector3(300.0, -755.0, -2900.0), Vector3(300.0, -645.0, -3031.0), 250.0, true)
 	# S2 tuning: T2 runs long (to -3700) so hot catch exits land on it
 	# instead of sailing the 700u slab into the void; T3 shifts south to
 	# share exactly the edge (no coplanar overlap, audit m7).
-	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -1290.0, -3175.0), "platform")
+	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -1453.0, -4175.0), "platform")
 
 	# Booster lane (opt-in east spur of T1): flight TRANSPORTS to T2,
 	# surfing resumes on T2FaceC (same doctrine as the kicker line).
-	_booster("Booster1", Vector3(650.0, -580.0, -2200.0), Vector3(0.0, 300.0, -800.0), 80.0)
-	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1340.0, -4200.0), "platform")
+	_booster("Booster1", Vector3(650.0, -691.0, -2900.0), Vector3(0.0, 300.0, -800.0), 80.0)
+	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1503.0, -5200.0), "platform")
 
 	# Vent tower off the bowl centerline + top booster firing the south
 	# Vent tower off the bowl centerline + top booster firing south:
@@ -652,10 +661,11 @@ func build_skypark() -> void:
 	# Fully automatic still.
 	_booster("VentHop", Vector3(450.0, 430.0, -1500.0), Vector3(0.0, -100.0, -300.0), 90.0)
 	# Edge-drop face below the bowl south edge (EastFace copy, 46 deg):
-	# Hop off the edge, mount the emerging face, merge into T1. Top
-	# buried 8u inside the bowl footprint (slice-A bridging), bottom
-	# flush at T1's new top (-620).
-	_ramp("SurfRampVentCatch", Vector3(450.0, -8.0, -1876.0), Vector3(450.0, -620.0, -2467.0), 250.0)
+	# Hop off the edge, mount the emerging face, hit the LIP and FLY onto
+	# T1's long middle. Top buried 8u inside the bowl footprint
+	# (slice-A bridging), 39 deg lip at the bottom.
+	_ramp("SurfRampVentCatch", Vector3(450.0, -8.0, -1876.0), Vector3(450.0, -692.0, -2536.0), 250.0)
+	_ramp("SurfRampVentCatchLip", Vector3(450.0, -710.0, -2536.0), Vector3(450.0, -610.0, -2659.0), 250.0, true)
 
 	_marker(Vector3(0.0, 630.0, 350.0))
 
@@ -663,12 +673,12 @@ func build_skypark() -> void:
 		Vector3(200.0, 640.0, 100.0))
 	_sign("KickerSignW", "KICKER\nRide up it fast\nand fly to T1!",
 		Vector3(-250.0, 40.0, -1300.0))
-	_sign("FaceSignW", "SURF RAMP\nHop off the edge\nand ride it down!",
-		Vector3(-250.0, -950.0, -2900.0))
-	_sign("EastSign", "SURF RAMP\nHop off the edge\nand ride it down!",
+	_sign("FaceSignW", "SURF RAMP\nRide the curve\nand FLY!",
+		Vector3(-250.0, -1050.0, -3750.0))
+	_sign("EastSign", "SURF RAMP\nRide the curve\nand FLY!",
 		Vector3(-200.0, 40.0, -1720.0))
 	_sign("BoosterSign", "BOOSTER\nLine up and fly!\nHop the gap south!",
-		Vector3(650.0, -560.0, -2050.0))
+		Vector3(650.0, -670.0, -2750.0))
 	_sign("VentSign", "VENT\nRide it to the top!\nDrop onto the face!",
 		Vector3(300.0, 40.0, -1500.0))
 

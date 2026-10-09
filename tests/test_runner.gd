@@ -113,6 +113,7 @@ func _run_all_tests() -> void:
 	await _test_challenge_oc_roles()
 	await _test_rollercoaster_map()
 	await _test_skypark_map()
+	await _test_skypark_chains()
 	await _test_skypark_scoring()
 	await _test_kill_planes()
 	await _test_steam()
@@ -3749,7 +3750,7 @@ func _test_skypark_map() -> void:
 	var map: Node3D = loader.current_map
 
 	_check(gm.total_checkpoints == 0, "arena has no checkpoints")
-	_check(gm.kill_plane_y == -1600.0,
+	_check(gm.kill_plane_y == -1700.0,
 		"metadata kill plane applied (%s)" % gm.kill_plane_y)
 
 	# L1 summit drop: hop-chain off the summit meets the embedded face.
@@ -3791,9 +3792,10 @@ func _test_skypark_map() -> void:
 	Input.action_release("jump")
 	_check(launched, "L2 kicker launches (at %s)" % player.position)
 	# T1FaceW edge-drop mount (fresh rider, L4 pattern — hop off T1's
-	# edge onto the emerging face below). Then ride to the T2 meet.
+	# south edge onto the emerging face below). Then ride the curve and
+	# FLY (see _test_skypark_chains for the full-chain proof).
 	player.queue_free()
-	player = _spawn_test_player_at(player_root, Vector3(-400.0, -440.0, -2571.0))
+	player = _spawn_test_player_at(player_root, Vector3(-400.0, -700.0, -3371.0))
 	player.velocity = Vector3.ZERO
 	await _wait_ticks(2)
 	Input.action_press("jump")
@@ -3809,26 +3811,29 @@ func _test_skypark_map() -> void:
 	for i in 200:
 		await physics_frame
 		if player.movement_controller.state == MovementState.SURF \
-				and player.position.z < -2750.0:
+				and player.position.z < -3550.0:
 			west_deep = true
 			break
 	Input.action_release("jump")
 	_check(west_deep, "L2 rides T1FaceW deep (at %s)" % player.position)
 
-	# L3 bridge-waterfall onto Terrace2 (continuation of L2's genuine ride).
-	# Terrace2 top is -1240 now (rider position rests at slab-top level).
-	var landed_t2w := false
+	# L3 exit: the rider leaves the face at the lip (airborne, heading
+	# south). The full flight-to-T2 proof is _test_skypark_chains'
+	# WestChain (fresh rider, deterministic); autobhop-buffer phase
+	# lottery can land an in-line rider back ON the lip roof (safe).
+	var exited_lip := false
 	for i in 250:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 1240.0) < 15.0 \
-				and player.position.z < -2600.0 and player.position.z > -3700.0:
-			landed_t2w = true
+				and player.position.z < -3978.0 \
+				and player.velocity.z < -300.0:
+			exited_lip = true
 			break
 	Input.action_release("jump")
-	_check(landed_t2w, "L3 exit lands Terrace2 (at %s)" % player.position)
+	_check(exited_lip, "L3 exits off the lip (at %s)" % player.position)
 
-	# L4 east face edge-drop mount + ride, merges into Terrace1.
+	# L4 east face edge-drop mount + ride, then the curve FLIES onto T1
+	# (full-chain proof in _test_skypark_chains; here just mount + ride).
 	# Mid-bowl hops sail over steep open faces (three identical misses
 	# trace-proven), so the entry drops off the bowl edge onto the
 	# emerging face below (R2 pattern).
@@ -3853,23 +3858,25 @@ func _test_skypark_map() -> void:
 	# tick), while the launch itself is proven by L2. Deterministic.)
 	for lane in [-300.0, 300.0]:
 		player.queue_free()
-		player = _spawn_test_player_at(player_root, Vector3(lane, -550.0, -2650.0))
+		player = _spawn_test_player_at(player_root, Vector3(lane, -750.0, -3450.0))
 		player.velocity = Vector3(0.0, -200.0, -400.0)
 		await _wait_ticks(2)
+		# L5 lane drops toward T2's north end; the west lip roof (-3978..
+		# -4101) is terrain too — a rest on T2's top OR the lip counts.
 		var lane_landed := false
 		for i in 300:
 			await physics_frame
 			if player.movement_controller.state != MovementState.SURF \
-					and absf(player.position.y + 1240.0) < 15.0 \
-					and player.position.z < -2600.0 and player.position.z > -3700.0:
+					and player.position.y > -1490.0 and player.position.y < -1250.0 \
+					and player.position.z < -3600.0 and player.position.z > -4750.0:
 				lane_landed = true
 				break
 		_check(lane_landed, "L5 kicker lane %.0f lands T2 (at %s)"
 			% [lane, player.position])
 		# T2 traverse south + step-hop onto T3 (50 step down, adjacent
-		# slabs — the T2->T3 link). T2 top -1240, T3 top -1290.
+		# slabs — the T2->T3 link). T2 top -1403, T3 top -1453.
 		player.queue_free()
-		player = _spawn_test_player_at(player_root, Vector3(lane, -1190.0, -3300.0))
+		player = _spawn_test_player_at(player_root, Vector3(lane, -1350.0, -4550.0))
 		player.velocity = Vector3.ZERO
 		await _wait_ticks(2)
 		Input.action_press("jump")
@@ -3878,8 +3885,8 @@ func _test_skypark_map() -> void:
 		for i in 300:
 			await physics_frame
 			if player.movement_controller.state != MovementState.SURF \
-					and absf(player.position.y + 1290.0) < 15.0 \
-					and player.position.z < -3750.0 and player.position.z > -4650.0:
+					and absf(player.position.y + 1453.0) < 15.0 \
+					and player.position.z < -4750.0 and player.position.z > -5650.0:
 				lane_t3 = true
 				break
 		Input.action_release("jump")
@@ -3891,9 +3898,10 @@ func _test_skypark_map() -> void:
 	# out and falls into the T1/T2 cliff seam (trace-proven corner clip);
 	# bhop preserves over it and the volume fires pre-first-apex anyway.
 	# Spawn OUTSIDE the sphere and fall in — teleporting inside races the
-	# body_entered signal (S1 lesson); T1 top is -620 now.
+	# body_entered signal (S1 lesson); T1 top is -730 now, booster sits
+	# mid-T1 at (650,-691,-2900).
 	player.queue_free()
-	player = _spawn_test_player_at(player_root, Vector3(650.0, -500.0, -2120.0))
+	player = _spawn_test_player_at(player_root, Vector3(650.0, -680.0, -2800.0))
 	player.velocity = Vector3.ZERO
 	await _wait_ticks(2)
 	Input.action_press("jump")
@@ -3910,14 +3918,14 @@ func _test_skypark_map() -> void:
 	for i in 300:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 1240.0) < 15.0 \
-				and player.position.z < -2600.0 and player.position.z > -3700.0:
+				and absf(player.position.y + 1403.0) < 15.0 \
+				and player.position.z < -3600.0 and player.position.z > -4750.0:
 			landed_t2e = true
 			break
 	_check(landed_t2e, "L6 flight lands T2 (at %s)" % player.position)
 	# T2 traverse south + step-hop onto adjacent T3 (same as L5 lanes).
 	player.queue_free()
-	player = _spawn_test_player_at(player_root, Vector3(650.0, -1190.0, -3650.0))
+	player = _spawn_test_player_at(player_root, Vector3(650.0, -1350.0, -4550.0))
 	player.velocity = Vector3.ZERO
 	await _wait_ticks(2)
 	Input.action_press("jump")
@@ -3926,8 +3934,8 @@ func _test_skypark_map() -> void:
 	for i in 200:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 1290.0) < 15.0 \
-				and player.position.z < -3750.0 and player.position.z > -4650.0:
+				and absf(player.position.y + 1453.0) < 15.0 \
+				and player.position.z < -4750.0 and player.position.z > -5650.0:
 			landed_t3 = true
 			break
 	Input.action_release("jump")
@@ -3982,16 +3990,18 @@ func _test_skypark_map() -> void:
 			break
 	Input.action_release("jump")
 	_check(vent_deep, "L7 VentCatch rides deep (at %s)" % player.position)
-	# Exit merges into Terrace1 (top -620; position rests at slab-top).
+	# Exit FLIES off the lip toward Terrace1 (top -730). The full
+	# flight-to-T1 proof is the chains test's VentChain; an in-line
+	# rider can land back on the lip roof (phase lottery, safe).
 	var vent_t1 := false
 	for i in 200:
 		await physics_frame
 		if player.movement_controller.state != MovementState.SURF \
-				and absf(player.position.y + 620.0) < 15.0 \
-				and player.position.z < -2000.0 and player.position.z > -2600.0:
+				and player.position.z < -2536.0 \
+				and player.velocity.z < -300.0:
 			vent_t1 = true
 			break
-	_check(vent_t1, "L7 exit merges into Terrace1 (at %s)" % player.position)
+	_check(vent_t1, "L7 exits off the lip (at %s)" % player.position)
 
 	# L8 kill plane respawns at the summit spawn.
 	player.position = Vector3(0.0, -1700.0, -4500.0)
@@ -4021,6 +4031,116 @@ func _test_skypark_map() -> void:
 
 	loader.unload_current()
 	await process_frame
+
+
+func _test_skypark_chains() -> void:
+	# Curve-launch chains: mount the face, ride down, keep speed through
+	# the segmented curve (no seam stall), launch off the lip, land the
+	# target platform. One continuous rider per chain (the real proof).
+	# Pilot gate: EastChain must go green before the pattern replicates.
+	var loader: Node = root.get_node("LevelLoader")
+	var found: Array[Dictionary] = loader.discover_maps()
+	var entry: Dictionary = {}
+	for e in found:
+		if e["metadata"].map_id == "skypark":
+			entry = e
+			break
+	_check(not entry.is_empty(), "skypark discovered for chains")
+	if entry.is_empty():
+		return
+	var player_root := Node3D.new()
+	root.add_child(player_root)
+	loader.load_map(entry["path"])
+	var loaded := false
+	for i in 120:
+		await process_frame
+		if loader.current_map != null:
+			loaded = true
+			break
+	_check(loaded, "skypark loads for chains")
+	await _wait_ticks(5)
+
+	# EastChain: bowl edge hop -> EastFace -> lip jump -> FLY onto T1.
+	# Curve zone replaced by the lip: face bottom -2536, lip top -2659.
+	await _ride_chain(player_root, "EastChain",
+		Vector3(100.0, 10.0, -1871.0), -2536.0, -730.0, -2750.0, -3390.0)
+	# VentChain: same pattern at x=450.
+	await _ride_chain(player_root, "VentChain",
+		Vector3(450.0, 10.0, -1871.0), -2536.0, -730.0, -2750.0, -3390.0)
+	# WestChain: T1 south-edge hop -> T1FaceW -> lip jump -> FLY onto T2.
+	await _ride_chain(player_root, "WestChain",
+		Vector3(-400.0, -700.0, -3371.0), -3978.0, -1403.0, -4200.0, -4700.0)
+
+	player_root.queue_free()
+	loader.unload_current()
+	await process_frame
+
+
+## One full chain ride: mount the face, surf down (SURF state, speed
+## grows), reach the lip with real speed, jump off it (bhop buffer —
+## the engine's proven kicker launch), land the target platform.
+## lip_base_z: the face bottom where the lip starts. Trace-proven flight
+## bands: h 400..733 from the lip lands mid-target across the range.
+func _ride_chain(player_root: Node3D, chain_name: String, spawn: Vector3,
+		lip_base_z: float, land_top: float, land_lo: float, land_hi: float) -> void:
+	var player: Player = _spawn_test_player_at(player_root, spawn)
+	player.velocity = Vector3.ZERO
+	await _wait_ticks(2)
+	Input.action_press("jump")
+	player.velocity = Vector3(0.0, 0.0, -150.0)
+	var mounted := false
+	for i in 250:
+		await physics_frame
+		if player.movement_controller.state == MovementState.SURF:
+			mounted = true
+			break
+	_check(mounted, "%s mounts the face (at %s)" % [chain_name, player.position])
+	if not mounted:
+		Input.action_release("jump")
+		player.queue_free()
+		return
+	# Surf down to the lip, tracking the speed arriving at the lip base.
+	var h_lip := 0.0
+	var reached_lip := false
+	var min_h_surf := 1e9
+	for i in 400:
+		await physics_frame
+		var h := Vector2(player.velocity.x, player.velocity.z).length()
+		if player.movement_controller.state == MovementState.SURF:
+			min_h_surf = minf(min_h_surf, h)
+		if player.position.z < lip_base_z:
+			h_lip = h
+			reached_lip = true
+			break
+	_check(reached_lip, "%s reaches the lip (at %s)" % [chain_name, player.position])
+	_check(h_lip > 400.0, "%s arrives at the lip fast (h=%.0f)" % [chain_name, h_lip])
+	# No seam stall: surf speed never collapsed on the way down.
+	_check(min_h_surf > 250.0, "%s keeps speed down the face (min h=%.0f)"
+		% [chain_name, min_h_surf])
+	# Lip launch: the held jump buffers and fires on the lip (trace:
+	# vy +300 at takeoff). Accept the launch anywhere past the lip base.
+	var launched := false
+	for i in 200:
+		await physics_frame
+		if player.position.z < lip_base_z \
+				and player.movement_controller.state != MovementState.SURF \
+				and player.velocity.y > 250.0:
+			launched = true
+			break
+	_check(launched, "%s jumps off the lip (at %s v=%s)"
+		% [chain_name, player.position, player.velocity])
+	# Flight lands the target slab.
+	var landed := false
+	for i in 300:
+		await physics_frame
+		if player.movement_controller.state != MovementState.SURF \
+				and absf(player.position.y - land_top) < 15.0 \
+				and player.position.z < land_lo and player.position.z > land_hi:
+			landed = true
+			break
+	Input.action_release("jump")
+	_check(landed, "%s flight lands the platform (at %s)" % [chain_name, player.position])
+	player.queue_free()
 
 
 func _test_skypark_scoring() -> void:
