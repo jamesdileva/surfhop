@@ -223,3 +223,11 @@ rollercoaster readability/routing, endless polish, skypark retest.
 - Test lessons: rider position rests AT slab-top level (bands = top y, no +36); booster link tests must spawn OUTSIDE the sphere (teleport-in races body_entered).
 - Suite 730/730, skypark smoke 3425u/8s. Re-confirmed: NEVER edit files via PowerShell (BOM + UTF-8 mojibake) — edit tool only.
 
+
+## 665089b skypark kicker lips (2026-10-09)
+- User: kickers do nothing on platforms; faces too steep to survive; kickers belong at ramp ends so you surf INTO the launch.
+- Two trace-proven design kills: (1) jointed face->lip curves are NET-DESCENDING (sin integral over -46..+35) AND their sub-45 deg joints classify as GROUND (audit B3 cliff) -> riders porpoise off the arc (diag: vy zeroed, zero contact normal at C1); (2) face-into-uphill-wall projection zeroes sliding riders. The launch is the bhop-buffer jump at the lip — the engine's documented kicker behavior (ground-sliders zero, bhoppers launch).
+- Shipped: 39 deg lips at each face end (EastFace/VentCatch -> fly onto T1 mid; T1FaceW -> T2 mid), terraces re-widened (T1 -730, T2 -1403, T3 -1453), kickers moved north of the west lip roof, kill -1700. New _test_skypark_chains: all 3 chains prove mount -> speed at lip (>400) -> launch (vy>250) -> landing band.
+- Phase lottery is real: in-line continuation riders (L3/L5/L7) can land back ON the lip roof — kept as exit-only checks; the chains test owns the full-flight proof.
+- Suite 750/750, skypark smoke 3437u/8s, import clean.
+

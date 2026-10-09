@@ -348,6 +348,25 @@ Skypark catchability verdicts (`bbc96fd`):
 - Test lessons: rider position rests AT slab-top level (bands use the
   top y, no +36); booster/vent link tests must spawn OUTSIDE the
   volume (teleport-in races `body_entered`).
+Skypark kicker-lip verdicts (`665089b`):
+- User ask: kickers belong at the ends of surf ramps (surf INTO the
+  launch). Shipped: 39° lips at each face bottom (EastFace/VentCatch →
+  fly to T1 mid; T1FaceW → T2 mid); terraces re-widened (T1 top -730,
+  T2 -1403, T3 -1453); kill -1700.
+- **Two trace-proven design kills (load-bearing):** (1) a jointed
+  face→lip curve is NET-DESCENDING (∫sin over a −46°→+35° swing dips
+  ~−18u) AND its sub-45° joints classify as GROUND (audit B3 cliff) —
+  riders porpoise off the arc (diag: vy zeroed + zero contact normal at
+  the first joint). (2) A face meeting an uphill wall projects sliding
+  riders to a stop — ramps cannot throw a ground-contacting rider.
+- **Launch mechanism (settled):** the kicker lip launch is the
+  bhop-buffer jump at the lip — the engine's documented kicker behavior
+  ("ground-sliders leave the lip with ~zero vy; airborne players launch
+  normally", beginner rework). Booster assist remains the fallback if
+  playtest finds the jump-launch weak.
+- Phase lottery (documented, recurring): in-line continuation riders can
+  land back ON a lip roof. Link tests assert the EXIT; the fresh-rider
+  chain test proves the full flight + landing.
 
 ---
 

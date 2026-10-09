@@ -850,3 +850,9 @@ flyover-skippable, can't mount from platforms.
 - Playtest: riders skipped steep faces; kickers felt dead. Faces reworked to 46 deg / 571-599u (math: hop arcs only meet 45+ deg faces ~500u along), terrace drops widened, kickers steepened to ~40 deg for real launches.
 - Verify: suite **730 / 0**; skypark smoke OK (3425u/8s).
 
+
+## Skypark kicker lips (2026-10-09)
+
+- Kickers now sit at the end of each surf face (EastFace/VentCatch -> T1, T1FaceW -> T2): bhop the platform, hop the edge, surf the face, jump the lip, fly to the next platform. Jointed-curve transitions and pure-ramp launches were both trace-disproven (sub-45 deg joints classify as ground; uphill walls zero sliding riders) — the launch is the bhop-buffer jump at the lip.
+- Verify: suite **750 / 0** (+20 chain checks); skypark smoke OK (3437u/8s).
+
