@@ -367,6 +367,29 @@ Skypark kicker-lip verdicts (`665089b`):
 - Phase lottery (documented, recurring): in-line continuation riders can
   land back ON a lip roof. Link tests assert the EXIT; the fresh-rider
   chain test proves the full flight + landing.
+Skypark park rework verdicts (`c089ce4`):
+- **Curve-ramp ends (replaces V kinks):** `_kicker_end` = 6-joint turn
+  (−46°→+39°, overlapping boxes, M2 seam rules) + straight 39° lip.
+  Riders surf down holding W (ground accel carries the climb — trace:
+  the dip-catch at the first joint keeps h), jump at the lip top
+  (vy +300), land the next platform. ✅
+- **Smooth multi-joint curves cannot launch** (re-confirmed):
+  sub-45° joints classify as GROUND (B3 cliff) and uphill walls zero
+  sliding riders; the launch is the bhop jump at the lip.
+- **Sky route + loop closure:** SkyLift1 bowl→SkyA (top −100) +
+  SkyAFace→T2; SkyLift2 T1→SkyB (−850) + SkyBFace→T3; SkyLift3
+  T3→SkyC (−600); SkyLift4 SkyC→SkyB; SkyLift5 SkyB→bowl. Upward
+  travel is booster-fed (hop apex 56u). Terraces widened: T1 −730
+  (1200 deep), T2 −1403 (1150), T3 −1453 (900); kill −1700.
+- **Geometry traps (trace-proven, load-bearing):** rotated ramp boxes
+  overhang gaps — probe with raycasts, not midpoint math; Booster1's
+  x=650 lane bonked the SkyA face underside (z −3560) and wall-slid
+  into the gap; x=400 sat under KickerB; x=0 (the kickers' gap) works.
+  Lift spheres hijack riders at lip zones — keep 40u+ clear.
+- **Test lessons:** spawn riders AT rest height (a 17u fall eats the
+  80 ms jump buffer); setting `player.velocity` after a jump press
+  zeroes the impulse (set `.z` only); spawn above lift spheres with
+  zero lateral velocity.
 
 ---
 

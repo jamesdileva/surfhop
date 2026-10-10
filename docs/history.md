@@ -856,3 +856,9 @@ flyover-skippable, can't mount from platforms.
 - Kickers now sit at the end of each surf face (EastFace/VentCatch -> T1, T1FaceW -> T2): bhop the platform, hop the edge, surf the face, jump the lip, fly to the next platform. Jointed-curve transitions and pure-ramp launches were both trace-disproven (sub-45 deg joints classify as ground; uphill walls zero sliding riders) — the launch is the bhop-buffer jump at the lip.
 - Verify: suite **750 / 0** (+20 chain checks); skypark smoke OK (3437u/8s).
 
+
+## Skypark park rework — curves, sky route, loop (2026-10-09)
+
+- Each 46 deg face now ends in a gradual 6-joint turn + 39 deg lip: surf down holding W, jump at the lip top, fly to the next platform. New sky route closes the loop (bowl -> SkyA -> T2 -> T3 -> SkyC -> SkyB -> bowl) with surfable faces on the sky slabs; lift-fed upward travel (hop apex is 56u - ramps can't climb).
+- Verify: suite **798 / 0** (+48 chain + sky checks); skypark smoke OK (3326u/8s).
+

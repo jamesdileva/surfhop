@@ -231,3 +231,12 @@ rollercoaster readability/routing, endless polish, skypark retest.
 - Phase lottery is real: in-line continuation riders (L3/L5/L7) can land back ON the lip roof — kept as exit-only checks; the chains test owns the full-flight proof.
 - Suite 750/750, skypark smoke 3437u/8s, import clean.
 
+
+## c089ce4 skypark park rework: curves, sky route, loop (2026-10-09)
+- User playtest: face-lips read as \/ V kinks (want gradual); kickers belong at ramp ends (surf INTO the launch); add sky ramps; no way back up = map ends; faces too slanted to survive.
+- _kicker_end: 6-joint turn -46->+39 (1.7x overlapping boxes, M2 seam rules, 14/cos sink) + straight 39 deg lip. Riders surf down holding W (trace: ground accel carries the climb; the dip-catch at C1 keeps h), jump at the lip top (vy+300), land the next platform. Trace-proven again: smooth multi-joint CURVES don't launch - the sub-45 deg joints are GROUND (audit B3 cliff) and uphill walls zero sliding riders; the jump at the lip IS the kicker.
+- Sky route (new): SkyLift1 bowl->SkyA (top -100) + SkyAFace->T2 express; SkyLift2 T1->SkyB (-850) + SkyBFace->T3; SkyLift3 T3->SkyC (-600); SkyLift4 SkyC->SkyB; SkyLift5 SkyB->bowl. Map loops; sky slabs carry surfable faces.
+- Geometry: terraces widened (T1 -730 1200 deep, T2 -1403 1150 deep, T3 -1453 900 deep); Booster1 x=650->0 (x=650 bonked SkyA face underside at z -3560, wall-slid into the gap; x=400 was under KickerB; x=0 is the kickers' gap clear of lips). Kill -1700.
+- Test lessons: rotated ramp boxes overhang gaps - probe with raycasts, don't hand-math midpoints; lift spheres hijack riders at lip zones (keep 40u+ clear); spawn test riders AT rest height (a 17u fall eats the 80ms jump buffer); setting player.velocity AFTER a jump press zeroes the impulse (set .z only); spawn above lift spheres with zero lateral velocity.
+- Suite 798/798 (+48), skypark smoke 3326u/8s, import clean.
+
