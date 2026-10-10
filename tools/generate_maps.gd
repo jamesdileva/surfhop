@@ -65,7 +65,7 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
 	ramp_visual.material_override = _floor_material()
 	body.add_child(ramp_visual)
 	var angle := rad_to_deg(atan(abs(span.y) / abs(span.z)))
-	# Descending ramps tilt one way, ascending kickers the other â€” a kicker
+	# Descending ramps tilt one way, ascending kickers the other — a kicker
 	# rotated as a descender becomes a steep drop that throws players into
 	# the void (caught by the beginner traversal test).
 	body.rotation.x = deg_to_rad(angle) if ascending else -deg_to_rad(angle)
@@ -75,6 +75,64 @@ func _ramp(ramp_name: String, e1: Vector3, e2: Vector3, width: float,
 		map.set_meta("%s_e2" % ramp_name, e2)
 	map.add_child(body)
 	return body
+
+
+## Gradual turn between two pitches — the quarter-pipe bottom that
+## replaces the hard face-into-lip kink (playtest: the kink read as a
+## "\/" wall and stopped sliding riders). p0 is the face bottom; pitches
+## are signed (negative = descending southward). Each joint overlaps its
+## neighbors (M2: overlap, never gaps) with near-touching top vertices
+## (CS2-Surf-Mapping curved-ramp guide). NOTE: joints under 45 degrees
+## classify as GROUND (audit B3 cliff) — riders RIDE them holding W
+## (trace-proven: ground accel carries the climb; the launch is still
+## the jump at the lip). Returns the turn's end (the lip's base).
+func _curve_turn(prefix: String, p0: Vector3, p0_pitch_deg: float,
+		exit_pitch_deg: float, joints: int, joint_len: float,
+		width: float) -> Vector3:
+	var cursor := p0
+	for i in joints:
+		var a := lerpf(p0_pitch_deg, exit_pitch_deg,
+			(float(i) + 0.5) / float(joints))
+		var rad := deg_to_rad(a)
+		var step := Vector3(0.0, sin(rad), -cos(rad)) * joint_len
+		var body := StaticBody3D.new()
+		body.name = "%sC%d" % [prefix, i + 1]
+		var shape := CollisionShape3D.new()
+		shape.name = "CollisionShape3D"
+		var box := BoxShape3D.new()
+		# 1.7x overlap past each joint (M2: overlap, never gaps).
+		box.size = Vector3(width, 40.0, joint_len * 1.7)
+		shape.shape = box
+		body.add_child(shape)
+		var visual := MeshInstance3D.new()
+		visual.name = "Visual"
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(width, 40.0, joint_len * 1.7)
+		visual.mesh = mesh
+		visual.material_override = _floor_material()
+		body.add_child(visual)
+		body.rotation.x = rad
+		# Same 14u sink as _ramp (scaled by 1/cos): the face-to-curve
+		# joint meets flush instead of stepping.
+		body.position = cursor + step * 0.5 \
+			- Vector3(0.0, 14.0 / cos(rad), 0.0)
+		map.add_child(body)
+		cursor += step
+	return cursor
+
+
+## Full face-end chain: curve turn from the face's pitch up to the lip
+## pitch, then a straight lip whose top is the launch point. Returns the
+## lip top (for flight math + tests).
+func _kicker_end(prefix: String, face_e2: Vector3, face_pitch_deg: float,
+		width: float, lip_pitch_deg: float, lip_run: float) -> Vector3:
+	var lip_base := _curve_turn(prefix, face_e2, face_pitch_deg,
+		lip_pitch_deg, 6, 34.0, width)
+	var lip_top := lip_base + Vector3(0.0, sin(deg_to_rad(lip_pitch_deg)),
+		-cos(deg_to_rad(lip_pitch_deg))) * lip_run
+	_ramp("%sLip" % prefix, lip_base, lip_top, width, true)
+	return lip_top
+
 
 
 ## CS-style V-channel junction (playtest P2 round 3): two opposing 56-degree
@@ -619,7 +677,11 @@ func build_skypark() -> void:
 	# jointed "curves" are useless here — pitches under 45 deg classify
 	# as GROUND (audit B3 cliff) and porpoise the rider off the arc.
 	_ramp("SurfRampT1FaceW", Vector3(-400.0, -750.0, -3376.0), Vector3(-400.0, -1373.0, -3978.0), 300.0)
-	_ramp("SurfRampT1FaceWLip", Vector3(-400.0, -1391.0, -3978.0), Vector3(-400.0, -1291.0, -4101.0), 300.0, true)
+	# Kicker at the face's end (user loop: surf INTO the launch): a
+	# gradual 6-joint turn (-46 to +39) then a straight lip. Trace-proven:
+	# ride it holding W (ground accel carries the climb); the launch is
+	# the jump at the lip top. Flights land mid-T2 (slow) or T3 (fast).
+	_kicker_end("SurfRampT1FaceW", Vector3(-400.0, -1373.0, -3978.0), -46.0, 300.0, 39.0, 100.0)
 	# East face (46 deg) emerges BELOW the bowl south edge (R2 pattern):
 	# mid-bowl hops sail over any open face steeper than ~50 (three
 	# trace-proven identical misses), so the entry is a run/hop off the
@@ -630,7 +692,7 @@ func build_skypark() -> void:
 	# LIP (39 deg) — jump it and FLY onto T1's long middle (trace: lands
 	# z -3000..-3290 across h 400..733).
 	_ramp("SurfRampT1FaceE", Vector3(100.0, -8.0, -1876.0), Vector3(100.0, -692.0, -2536.0), 300.0)
-	_ramp("SurfRampT1FaceELip", Vector3(100.0, -710.0, -2536.0), Vector3(100.0, -610.0, -2659.0), 300.0, true)
+	_kicker_end("SurfRampT1FaceE", Vector3(100.0, -692.0, -2536.0), -46.0, 300.0, 39.0, 100.0)
 
 	# Terrace 1 + kicker line (twin 40 deg): flights TRANSPORT to T2.
 	# Curve-launch layout: T1 top -730, stretched south (-2200..-3400) so
@@ -645,9 +707,13 @@ func build_skypark() -> void:
 	# share exactly the edge (no coplanar overlap, audit m7).
 	_static_body("Terrace2", Vector3(1600.0, 100.0, 1150.0), Vector3(0.0, -1453.0, -4175.0), "platform")
 
-	# Booster lane (opt-in east spur of T1): flight TRANSPORTS to T2,
-	# surfing resumes on T2FaceC (same doctrine as the kicker line).
-	_booster("Booster1", Vector3(650.0, -691.0, -2900.0), Vector3(0.0, 300.0, -800.0), 80.0)
+	# Booster lane (opt-in mid-spur of T1, between the kickers at
+	# x 175..425/-425..-175 and clear of the chain lips at z -2722):
+	# flight TRANSPORTS to T2. S2 tuning: -800 undershot T2's north
+	# wall after the terrace widen (trace-proven wall-slide into the
+	# gap); -950 lands mid-T2. Old x=650 lane bonked the SkyA face's
+	# underside at z -3560; x=400 sat under KickerB.
+	_booster("Booster1", Vector3(0.0, -691.0, -2900.0), Vector3(0.0, 300.0, -950.0), 80.0)
 	_static_body("Terrace3", Vector3(1600.0, 100.0, 900.0), Vector3(0.0, -1503.0, -5200.0), "platform")
 
 	# Vent tower off the bowl centerline + top booster firing the south
@@ -665,7 +731,43 @@ func build_skypark() -> void:
 	# T1's long middle. Top buried 8u inside the bowl footprint
 	# (slice-A bridging), 39 deg lip at the bottom.
 	_ramp("SurfRampVentCatch", Vector3(450.0, -8.0, -1876.0), Vector3(450.0, -692.0, -2536.0), 250.0)
-	_ramp("SurfRampVentCatchLip", Vector3(450.0, -710.0, -2536.0), Vector3(450.0, -610.0, -2659.0), 250.0, true)
+	_kicker_end("SurfRampVentCatch", Vector3(450.0, -692.0, -2536.0), -46.0, 250.0, 39.0, 100.0)
+
+	# --- Sky route (playtest: "ramps in the sky" + the way back up) ---
+	# Lifts feed floating slabs; every sky slab carries a surfable face +
+	# lip so the sky is RIDDEN, not just flown through. Loop: bowl ->
+	# SkyA -> T2 -> T3 -> SkyC -> SkyB -> T3, and SkyB -> bowl (home).
+	# Upward travel is booster-fed (a hop apexes at 56u — ramps can't
+	# climb). Face drops are sized for catchable 46 deg runs (>= ~550u).
+	# SkyA (top -100, east spur above the bowl's south edge).
+	_static_body("SkySlabA", Vector3(850.0, 100.0, 800.0), Vector3(1025.0, -150.0, -2700.0), "platform")
+	_booster("SkyLift1", Vector3(700.0, 20.0, -1830.0), Vector3(150.0, 850.0, -350.0), 80.0)
+	# SkyA's face runs at x=650 so its lip flight lands inside T2's
+	# x-bounds (+/-800) — an x=975 face would throw riders into the void
+	# past T2's east edge. Riders walk west from the lift landing.
+	_ramp("SurfRampSkyAFace", Vector3(650.0, -120.0, -3076.0), Vector3(650.0, -750.0, -3684.0), 300.0)
+	_kicker_end("SurfRampSkyAFace", Vector3(650.0, -750.0, -3684.0), -46.0, 300.0, 39.0, 100.0)
+	# SkyB (top -850, above T2's north end).
+	_static_body("SkySlabB", Vector3(850.0, 100.0, 800.0), Vector3(1025.0, -900.0, -4000.0), "platform")
+	# SkyLift2 at T1's east edge + 40u clear of the SkyA face's east
+	# edge (x 800): an x=880 spot grazed the lip zone.
+	_booster("SkyLift2", Vector3(920.0, -691.0, -3300.0), Vector3(150.0, 950.0, -350.0), 80.0)
+	# SkyB's face runs at x=650 for the same T3 x-bounds reason.
+	_ramp("SurfRampSkyBFace", Vector3(650.0, -870.0, -4376.0), Vector3(650.0, -1440.0, -4926.0), 300.0)
+	_kicker_end("SurfRampSkyBFace", Vector3(650.0, -1440.0, -4926.0), -46.0, 300.0, 39.0, 100.0)
+	# SkyC (top -600, above T3's south end): transit pad for the way back
+	# up. Lift3 in from T3; Lift4 out to SkyB; Lift5 (on SkyB) home to
+	# the bowl. No face (its drops can't host a catchable one) — the sky
+	# surf lines live on SkyA/SkyB.
+	_static_body("SkySlabC", Vector3(850.0, 100.0, 800.0), Vector3(1025.0, -650.0, -5100.0), "platform")
+	_booster("SkyLift3", Vector3(700.0, -1464.0, -5600.0), Vector3(0.0, 1200.0, 100.0), 80.0)
+	_booster("SkyLift4", Vector3(900.0, -564.0, -4800.0), Vector3(0.0, 484.0, 500.0), 80.0)
+	# SkyLift5 (SkyB -> bowl): the loop-closer. East side of SkyB, clear
+	# of the SkyA lip's north end (x 500..800, z -3840..-3950) which
+	# otherwise hijacks lip riders westward (trace-proven). Lands bowl.
+	_booster("SkyLift5", Vector3(1100.0, -814.0, -3900.0), Vector3(-450.0, 1271.0, 900.0), 80.0)
+	_sign("SkySign", "SKY LIFT\nRide in to fly up!\nSurf the sky!",
+		Vector3(550.0, 80.0, -1700.0))
 
 	_marker(Vector3(0.0, 630.0, 350.0))
 
